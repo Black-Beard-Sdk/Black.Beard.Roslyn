@@ -23,6 +23,8 @@ namespace Bb.ComponentModel.Accessors
         string _displayDesciption = null;
         private bool? _required = null;
         private dynamic _defaultValue = null;
+
+
         /// <summary>
         /// The _accessors
         /// </summary>

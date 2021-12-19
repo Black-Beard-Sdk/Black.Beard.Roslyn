@@ -51,16 +51,21 @@ namespace Bb.ComponentModel
         private static bool EvaluateMethodParameters(MethodInfo item, List<Type> parameters)
         {
 
-            var _parameters = item.GetParameters();
-            if (_parameters.Length != parameters.Count)
-                return false;
-
-            for (var i = 0; i < parameters.Count; i++)
+            if (parameters != null)
             {
-                var _p1 = _parameters[i];
-                var _p2 = parameters[i];
-                if (_p1.ParameterType != _p2)
+
+                var _parameters = item.GetParameters();
+                if (_parameters.Length != parameters.Count)
                     return false;
+
+                for (var i = 0; i < parameters.Count; i++)
+                {
+                    var _p1 = _parameters[i];
+                    var _p2 = parameters[i];
+                    if (_p1.ParameterType != _p2)
+                        return false;
+                }
+
             }
 
             return true;
