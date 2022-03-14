@@ -1,4 +1,5 @@
 ﻿using Bb.Compilers;
+using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace Bb.Json.Jslt.Builds
         public BuildCSharp()
         {
 
+            this.LanguageVersion = LanguageVersion.CSharp6;
             _compiledAssemblies = new Dictionary<string, AssemblyResult>();
 
             Sources = new SourceCodes();
@@ -29,12 +31,15 @@ namespace Bb.Json.Jslt.Builds
                 System.IO.Directory.CreateDirectory(OutputPath);
         }
 
+        public LanguageVersion LanguageVersion { get; set; }
 
         public string OutputPath { get; set; }
 
         public SourceCodes Sources { get; }
 
         public HashSet<Assembly> References { get; }
+
+        public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
 
         public AssemblyResult Build(string assemblyName = null)
         {
@@ -46,13 +51,18 @@ namespace Bb.Json.Jslt.Builds
             if (!_compiledAssemblies.TryGetValue(key, out AssemblyResult result))
             {
 
-                var compiler = new RoslynCompiler(new HashSet<Assembly>(References));
+                var compiler = new RoslynCompiler(new HashSet<Assembly>(References))
+                {
+                    ConfigureCompilation = ConfigureCompilation,
+                }
+                .SetLanguage(LanguageVersion)
+                ;
 
                 foreach (var item in Sources.Documents)
                     compiler.AddCodeSource(item.Datas, item.Filename);
 
                 result = compiler.SetOutput(OutputPath)
-                       .Generate()
+                       .Generate(key)
                    ;
 
                 if (result.Success)

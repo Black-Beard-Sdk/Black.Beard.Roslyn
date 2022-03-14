@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -24,11 +25,14 @@ namespace Bb.Compilers
         public string AssemblyFilePdb { get; internal set; }
 
         public List<DiagnosticResult> Disgnostics { get; internal set; }
+
         public List<string> Documents { get; }
 
         public bool Success { get; internal set; }
 
         public Exception Exception { get; internal set; }
+
+        public SyntaxTree[] Codes { get; internal set; }
 
         public Assembly LoadAssembly()
         {

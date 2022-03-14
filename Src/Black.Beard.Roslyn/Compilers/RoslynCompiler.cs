@@ -23,6 +23,7 @@ namespace Bb.Compilers
         public RoslynCompiler(HashSet<Assembly> assemblies)
         {
 
+            this.LanguageVersion = LanguageVersion.CSharp6;
             assemblies.Add(typeof(System.Object).Assembly);
             assemblies.Add(typeof(System.ComponentModel.DescriptionAttribute).Assembly);
 
@@ -42,6 +43,12 @@ namespace Bb.Compilers
         }
 
         #region Methods
+
+        public RoslynCompiler SetLanguage(LanguageVersion languageVersion)
+        {
+            this.LanguageVersion = languageVersion;
+            return this;
+        }
 
         public RoslynCompiler AddCodeSource(string source, string path = null)
         {
@@ -80,11 +87,15 @@ namespace Bb.Compilers
             return this;
         }
 
-        public AssemblyResult Generate()
+        public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
+
+        public LanguageVersion LanguageVersion { get; private set; }
+
+        public AssemblyResult Generate(string? assemblyName = null)
         {
 
             var date = DateTime.Now;
-            this._assemblyName = $"assembly_{this._hash}_{date.Year}{date.Month}{date.Day}_{date.Hour}{date.Minute}{date.Second}";
+            this._assemblyName = assemblyName ?? $"assembly_{this._hash}_{date.Year}{date.Month}{date.Day}_{date.Hour}{date.Minute}{date.Second}{date.Millisecond}";
 
             AssemblyResult result = GetAssemblyResult();
 
@@ -98,27 +109,32 @@ namespace Bb.Compilers
 
             var _references = ResolveAsemblies(usings);
 
-            CSharpCompilationOptions DefaultCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                    .WithOverflowChecks(true)
+            CSharpCompilationOptions defaultCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                    
+                .WithOverflowChecks(true)
 
-                    .WithOptimizationLevel(System.Diagnostics.Debugger.IsAttached
-                        ? Microsoft.CodeAnalysis.OptimizationLevel.Debug
-                        : Microsoft.CodeAnalysis.OptimizationLevel.Release)
+                
+                .WithOptimizationLevel(System.Diagnostics.Debugger.IsAttached
+                    ? Microsoft.CodeAnalysis.OptimizationLevel.Debug
+                    : Microsoft.CodeAnalysis.OptimizationLevel.Release)
 
-                    .WithPlatform(Platform.AnyCpu)
+                .WithPlatform(Platform.AnyCpu)
+                
+                .WithModuleName($"{_assemblyName}.dll")
+                    
+                //.WithUsings(repository.Usings)
+                
+                ;
 
-                    .WithModuleName($"{_assemblyName}.dll")
-
-                    //.WithUsings(repository.Usings)
-
-                    ;
+            if (ConfigureCompilation != null)
+                ConfigureCompilation(defaultCompilationOptions);
 
             var compilation = CSharpCompilation.Create
                 (
                     result.AssemblyName,
                      parsedSyntaxTree,
                     _references,
-                    DefaultCompilationOptions
+                    defaultCompilationOptions
                 );
 
             try
@@ -162,6 +178,9 @@ namespace Bb.Compilers
                 Trace.WriteLine(new { Message = $"Compilation of {result.AssemblyName} return : ", Exception = ex });
 
             }
+
+
+            result.Codes = parsedSyntaxTree;
 
             return result;
 
@@ -220,16 +239,16 @@ namespace Bb.Compilers
                 File.Delete(result.AssemblyFilePdb);
         }
 
-        private Microsoft.CodeAnalysis.SyntaxTree[] Parse(AssemblyResult result)
+        private SyntaxTree[] Parse(AssemblyResult result)
         {
 
-            List<Microsoft.CodeAnalysis.SyntaxTree> _sources = new List<SyntaxTree>();
+            List<SyntaxTree> _sources = new List<SyntaxTree>();
             foreach (var item in this._sources)
             {
 
                 result.Documents.Add(item.Filepath);
 
-                CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp6);
+                CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(this.LanguageVersion);
                 var stringText = Microsoft.CodeAnalysis.Text.SourceText.From(item.Content, Encoding.UTF8);
                 var tree = SyntaxFactory.ParseSyntaxTree(stringText, options, item.Filepath);
                 _sources.Add(tree);
