@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using static Bb.Compilers.CommentHelper;
 
 namespace Bb.Json.Jslt.Builds
 {
+
 
     public class BuildCSharp
     {
@@ -16,19 +18,19 @@ namespace Bb.Json.Jslt.Builds
         public BuildCSharp()
         {
 
+            this.References = new AssemblyReferences();
+            Sources = new SourceCodes();
+
             this.LanguageVersion = LanguageVersion.CSharp6;
             _compiledAssemblies = new Dictionary<string, AssemblyResult>();
 
-            Sources = new SourceCodes();
-            References = new HashSet<Assembly>()
-            {
-                typeof(BuildCSharp).Assembly,
-                typeof(Uri).Assembly,
-            };
+            OutputPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "_builds");
 
-            OutputPath = System.IO.Path.GetTempPath();
             if (!System.IO.Directory.Exists(OutputPath))
                 System.IO.Directory.CreateDirectory(OutputPath);
+
+            ResolveAssembliesInCode = false;
+
         }
 
         public LanguageVersion LanguageVersion { get; set; }
@@ -37,23 +39,48 @@ namespace Bb.Json.Jslt.Builds
 
         public SourceCodes Sources { get; }
 
-        public HashSet<Assembly> References { get; }
+        public AssemblyReferences References { get; }
 
         public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
 
+        public bool ResolveObjects { get; set; }
+
+        public bool ResolveAssembliesInCode { get; set; }
+
+        public bool Debug { get; set; }
+
+
         public AssemblyResult Build(string assemblyName = null)
         {
-            
-            List<SourceCode> list = new List<SourceCode>();
 
+            List<KeyValuePair<string, Exception>> e = new List<KeyValuePair<string, Exception>>();
             var key = assemblyName ?? Sources.GetUniqueAssemblyName();
 
             if (!_compiledAssemblies.TryGetValue(key, out AssemblyResult result))
             {
 
-                var compiler = new RoslynCompiler(new HashSet<Assembly>(References))
+                if (ResolveAssembliesInCode)
                 {
-                    ConfigureCompilation = ConfigureCompilation,
+
+                    CompilationProperties compilationProperties = new CompilationProperties();
+                    foreach (var item in Sources.Documents)
+                    {
+                        try
+                        {
+                            item.Datas.ResolveProperties(compilationProperties);
+                            compilationProperties.Apply(this);
+                        }
+                        catch (Exception ex)
+                        {
+                            e.Add(new KeyValuePair<string, Exception>(item.Filename, ex));
+                        }
+                    }
+
+                }
+
+                var compiler = new RoslynCompiler(References, this.ResolveObjects, this.Debug)
+                {
+                    ConfigureCompilation = Configure,
                 }
                 .SetLanguage(LanguageVersion)
                 ;
@@ -61,12 +88,33 @@ namespace Bb.Json.Jslt.Builds
                 foreach (var item in Sources.Documents)
                     compiler.AddCodeSource(item.Datas, item.Filename);
 
-                result = compiler.SetOutput(OutputPath)
-                       .Generate(key)
+                result = compiler
+                    .SetOutput(OutputPath)
+                    .Generate(key)
                    ;
 
                 if (result.Success)
                     _compiledAssemblies.Add(key, result);
+
+                foreach (var item in e)
+                    result.Disgnostics.Insert(0,
+                        new DiagnosticResult()
+                        {
+                            Id = String.Empty,
+                            WarningLevel = 3,
+                            IsWarningAsError = false,
+                            Severity = "Warning",
+                            Message = item.Value.Message,
+                            Locations = new List<LocationResult>()
+                            {
+                                new LocationResult()
+                                {
+                                    FilePath = item.Key,
+                                }
+                            }
+                        });
+
+                
 
             }
 
@@ -74,6 +122,13 @@ namespace Bb.Json.Jslt.Builds
 
         }
 
+        private void Configure(CSharpCompilationOptions obj)
+        {
+
+            if (ConfigureCompilation != null)
+                ConfigureCompilation(obj);
+
+        }
 
         private readonly Dictionary<string, AssemblyResult> _compiledAssemblies;
 

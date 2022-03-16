@@ -1,4 +1,5 @@
 ﻿using Bb.ComponentModel;
+using Bb.Json.Jslt.Builds;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -19,13 +20,11 @@ namespace Bb.Compilers
     public class RoslynCompiler
     {
 
-
-        public RoslynCompiler(HashSet<Assembly> assemblies)
+        public RoslynCompiler(AssemblyReferences assemblies, bool resolveObjects, bool Debug)
         {
-
+            this.Debug = Debug;
+            this.ResolveObjects = resolveObjects;
             this.LanguageVersion = LanguageVersion.CSharp6;
-            assemblies.Add(typeof(System.Object).Assembly);
-            assemblies.Add(typeof(System.ComponentModel.DescriptionAttribute).Assembly);
 
             var ass = new string[] { "netstandard", "mscorlib", "System.Runtime" };
 
@@ -37,8 +36,8 @@ namespace Bb.Compilers
             }
 
             _defaultReferences = new List<MetadataReference>();
-            foreach (Assembly assembly in assemblies)
-                AddReference(assembly);
+            foreach (PortableExecutableReference assembly in assemblies)
+                _defaultReferences.Add(assembly);
 
         }
 
@@ -57,30 +56,6 @@ namespace Bb.Compilers
             return this;
         }
 
-        public RoslynCompiler AddReference(string location)
-        {
-            PortableExecutableReference newReference = AssemblyMetadata.CreateFromFile(location).GetReference();
-            if (_assemblies.Add(newReference.FilePath))
-                _defaultReferences.Add(newReference);
-            return this;
-        }
-
-        public RoslynCompiler AddReference(Type type)
-        {
-            if (!string.IsNullOrEmpty(type.Namespace))
-                _namespaces.Add(type.Namespace);
-            AddReference(type.Assembly);
-            return this;
-        }
-
-        public RoslynCompiler AddReference(Assembly assembly)
-        {
-            var newReference = AssemblyMetadata.CreateFromFile(assembly.Location).GetReference();
-            if (_assemblies.Add(assembly.Location))
-                _defaultReferences.Add(newReference);
-            return this;
-        }
-
         public RoslynCompiler SetOutput(string outputPah)
         {
             this._outputPah = outputPah;
@@ -90,6 +65,10 @@ namespace Bb.Compilers
         public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
 
         public LanguageVersion LanguageVersion { get; private set; }
+                     
+        public bool ResolveObjects { get; set; }
+        
+        public bool Debug { get; set; }
 
         public AssemblyResult Generate(string? assemblyName = null)
         {
@@ -110,32 +89,31 @@ namespace Bb.Compilers
             var _references = ResolveAsemblies(usings);
 
             CSharpCompilationOptions defaultCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                    
+
                 .WithOverflowChecks(true)
 
-                
-                .WithOptimizationLevel(System.Diagnostics.Debugger.IsAttached
-                    ? Microsoft.CodeAnalysis.OptimizationLevel.Debug
-                    : Microsoft.CodeAnalysis.OptimizationLevel.Release)
+                .WithOptimizationLevel(this.Debug
+                    ? OptimizationLevel.Debug
+                    : OptimizationLevel.Release)
 
                 .WithPlatform(Platform.AnyCpu)
-                
+
                 .WithModuleName($"{_assemblyName}.dll")
-                    
+
                 //.WithUsings(repository.Usings)
-                
                 ;
 
             if (ConfigureCompilation != null)
                 ConfigureCompilation(defaultCompilationOptions);
 
+           
             var compilation = CSharpCompilation.Create
-                (
-                    result.AssemblyName,
-                     parsedSyntaxTree,
-                    _references,
-                    defaultCompilationOptions
-                );
+            (
+                result.AssemblyName,
+                 parsedSyntaxTree,
+                _references,
+                defaultCompilationOptions       
+            );
 
             try
             {
@@ -150,7 +128,7 @@ namespace Bb.Compilers
 
                     EmitResult resultEmit = compilation.Emit(peStream, pdbStream);
                     var diags = resultEmit.Diagnostics.ToList().Select(c => c.ToString()).ToArray();
-                    
+
                     Trace.WriteLine(
                         new
                         {
@@ -181,6 +159,16 @@ namespace Bb.Compilers
 
 
             result.Codes = parsedSyntaxTree;
+
+
+            List<CodeObject> objects = new List<CodeObject>();
+            if (this.ResolveObjects)
+                foreach (var item in parsedSyntaxTree)
+                {
+                    var o = ObjectResolverVisitor.GetObjects(item);
+                    objects.AddRange(o);
+                }
+            
 
             return result;
 
@@ -261,7 +249,6 @@ namespace Bb.Compilers
 
         // private static readonly string runtimePath = Path.Combine(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory(), "{0}.dll");
         private readonly List<MetadataReference> _defaultReferences;
-        private HashSet<string> _namespaces = new HashSet<string>();
         private HashSet<string> _assemblies = new HashSet<string>();
         private List<FileCode> _sources = new List<FileCode>();
 
