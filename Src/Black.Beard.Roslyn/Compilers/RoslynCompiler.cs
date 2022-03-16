@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Collections.Immutable;
 
 namespace Bb.Compilers
 {
@@ -17,10 +18,9 @@ namespace Bb.Compilers
     public class RoslynCompiler
     {
 
-        public RoslynCompiler(AssemblyReferences assemblies, bool resolveObjects, bool Debug)
+        public RoslynCompiler(AssemblyReferences assemblies)
         {
-            this.Debug = Debug;
-            this.ResolveObjects = resolveObjects;
+
             this.LanguageVersion = LanguageVersion.CSharp6;
 
             var ass = new string[] { "netstandard", "mscorlib", "System.Runtime" };
@@ -36,15 +36,18 @@ namespace Bb.Compilers
             foreach (PortableExecutableReference assembly in assemblies)
                 _defaultReferences.Add(assembly);
 
+
         }
+
+        public string KeyFile {get;set;}
+
+        public bool DelaySign { get; set;}
+
+        public ImmutableArray<byte> StrongNameKey { get; set; } = ImmutableArray<byte>.Empty;
+
+        public DocumentationMode DocumentationMode { get; set; } = DocumentationMode.Parse;
 
         #region Methods
-
-        public RoslynCompiler SetLanguage(LanguageVersion languageVersion)
-        {
-            this.LanguageVersion = languageVersion;
-            return this;
-        }
 
         public RoslynCompiler AddCodeSource(string source, string path = null)
         {
@@ -61,10 +64,10 @@ namespace Bb.Compilers
 
         public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
 
-        public LanguageVersion LanguageVersion { get; private set; }
-                     
+        public LanguageVersion LanguageVersion { get; set; }
+
         public bool ResolveObjects { get; set; }
-        
+
         public bool Debug { get; set; }
 
         public AssemblyResult Generate(string? assemblyName = null)
@@ -85,7 +88,9 @@ namespace Bb.Compilers
 
             var _references = ResolveAsemblies(usings);
 
-            CSharpCompilationOptions defaultCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+            CSharpCompilationOptions compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+
+                .WithModuleName($"{_assemblyName}.dll")
 
                 .WithOverflowChecks(true)
 
@@ -95,21 +100,33 @@ namespace Bb.Compilers
 
                 .WithPlatform(Platform.AnyCpu)
 
-                .WithModuleName($"{_assemblyName}.dll")
+            //.WithUsings(repository.Usings)
+            ;
 
-                //.WithUsings(repository.Usings)
-                ;
+            if (this.KeyFile != null)
+            {
+
+                if (File.Exists(this.KeyFile))
+                {
+
+                    
+
+                    compilationOptions.WithCryptoKeyFile(this.KeyFile)
+                                      .WithDelaySign(this.DelaySign)
+                                      .WithCryptoPublicKey(StrongNameKey);
+                }
+            }
 
             if (ConfigureCompilation != null)
-                ConfigureCompilation(defaultCompilationOptions);
+                ConfigureCompilation(compilationOptions);
 
-           
+
             var compilation = CSharpCompilation.Create
             (
                 result.AssemblyName,
                  parsedSyntaxTree,
                 _references,
-                defaultCompilationOptions       
+                compilationOptions
             );
 
             try
@@ -165,7 +182,7 @@ namespace Bb.Compilers
                     var o = ObjectResolverVisitor.GetObjects(item);
                     objects.AddRange(o);
                 }
-            
+
 
             return result;
 
@@ -234,6 +251,10 @@ namespace Bb.Compilers
                 result.Documents.Add(item.Filepath);
 
                 CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(this.LanguageVersion);
+
+                if (this.DocumentationMode != options.DocumentationMode)
+                    options.WithDocumentationMode(this.DocumentationMode);
+
                 var stringText = Microsoft.CodeAnalysis.Text.SourceText.From(item.Content, Encoding.UTF8);
                 var tree = SyntaxFactory.ParseSyntaxTree(stringText, options, item.Filepath);
                 _sources.Add(tree);

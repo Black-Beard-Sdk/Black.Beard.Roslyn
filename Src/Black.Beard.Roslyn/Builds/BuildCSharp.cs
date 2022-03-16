@@ -1,7 +1,9 @@
 ﻿using Bb.Compilers;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -16,8 +18,11 @@ namespace Bb.Builds
     {
 
 
-        public BuildCSharp()
+        public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
         {
+
+            if (configureCompilation != null)
+                this.ConfigureCompilation = configureCompilation;
 
             this.References = new AssemblyReferences();
             Sources = new SourceCodes();
@@ -29,6 +34,8 @@ namespace Bb.Builds
 
             if (!System.IO.Directory.Exists(OutputPath))
                 System.IO.Directory.CreateDirectory(OutputPath);
+
+            this._suppress = new Dictionary<string, ReportDiagnostic>();
 
             ResolveAssembliesInCode = false;
 
@@ -55,13 +62,47 @@ namespace Bb.Builds
 
         public AssemblyReferences References { get; }
 
-        public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
+        public string KeyFile { get; set; }
+
+        public bool DelaySign { get; set; }
+
+        public ImmutableArray<byte> StrongNameKey { get; set; }
+
+        public Action<CSharpCompilationOptions> ConfigureCompilation { get; }
 
         public bool ResolveObjects { get; set; }
 
         public bool ResolveAssembliesInCode { get; set; }
 
         public bool Debug { get; set; }
+
+        public DocumentationMode DocumentationMode { get; set; } = DocumentationMode.Parse;
+
+
+        public BuildCSharp Suppress(params string[] ids)
+        {
+
+            foreach (var item in ids)
+                _suppress.Add(item, ReportDiagnostic.Suppress);
+
+            return this;
+
+        }
+
+        public BuildCSharp SetDiagnostic(ReportDiagnostic reportMode, params string[] ids)
+        {
+
+            foreach (var idKey in ids)
+            {
+                if (!_suppress.ContainsKey(idKey))
+                    _suppress.Add(idKey, reportMode);
+                else
+                    _suppress[idKey] = reportMode;
+            }
+
+            return this;
+
+        }
 
 
         public AssemblyResult Build(string assemblyName = null)
@@ -92,11 +133,18 @@ namespace Bb.Builds
 
                 }
 
-                var compiler = new RoslynCompiler(References, this.ResolveObjects, this.Debug)
+                var compiler = new RoslynCompiler(References)
                 {
                     ConfigureCompilation = Configure,
+                    DocumentationMode = this.DocumentationMode,
+                    KeyFile = this.KeyFile,
+                    DelaySign = this.DelaySign,
+                    StrongNameKey = this.StrongNameKey,
+                    ResolveObjects = this.ResolveObjects,
+                    Debug = this.Debug,
+                    LanguageVersion = this.LanguageVersion,
+                    
                 }
-                .SetLanguage(LanguageVersion)
                 ;
 
                 foreach (var item in Sources.Documents)
@@ -128,7 +176,7 @@ namespace Bb.Builds
                             }
                         });
 
-                
+
 
             }
 
@@ -139,12 +187,19 @@ namespace Bb.Builds
         private void Configure(CSharpCompilationOptions obj)
         {
 
+            if (_suppress.Count > 0)
+                obj.WithSpecificDiagnosticOptions(_suppress);
+
             if (ConfigureCompilation != null)
                 ConfigureCompilation(obj);
+
+
 
         }
 
         private readonly Dictionary<string, AssemblyResult> _compiledAssemblies;
+
+        private readonly Dictionary<string, ReportDiagnostic> _suppress;
 
     }
 
