@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Bb.ComponentModel;
+using Microsoft.CodeAnalysis;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,9 +17,9 @@ namespace Bb.Builds
             this._references = new Dictionary<string, PortableExecutableReference>();
 
             AddRange(
-                typeof(BuildCSharp), 
-                typeof(Uri), 
-                typeof(object), 
+                typeof(BuildCSharp),
+                typeof(Uri),
+                typeof(object),
                 typeof(System.ComponentModel.DescriptionAttribute)
                 );
 
@@ -42,13 +43,13 @@ namespace Bb.Builds
                 throw new NullReferenceException(nameof(assemblies));
 
             foreach (var item in assemblies)
-                Add(item);
+                AddAssemblyFile(item);
 
         }
 
         public void AddRange(params Assembly[] assemblies)
         {
-            
+
             if (assemblies == null)
                 throw new NullReferenceException(nameof(assemblies));
 
@@ -73,11 +74,11 @@ namespace Bb.Builds
             if (assembly == null)
                 throw new NullReferenceException(nameof(assembly));
 
-            Add( assembly.Location);
+            AddAssemblyFile(assembly.Location);
 
         }
 
-        public void Add(string location)
+        public void AddAssemblyFile(string location)
         {
 
             if (!File.Exists(location))
@@ -92,6 +93,31 @@ namespace Bb.Builds
 
         }
 
+        public void AddAssemblyName(string assemblyName)
+        {
+
+            if (string.IsNullOrEmpty(assemblyName))
+                throw new ArgumentNullException(nameof(assemblyName));
+
+            var ass = TypeDiscovery.Instance.AddAssemblyname(assemblyName);
+
+            if (ass == null)
+                throw new FileLoadException(assemblyName);
+
+            Add(ass);
+
+        }
+
+        public void Add(string key, PortableExecutableReference reference)
+        {
+
+            if (reference == null)
+                throw new NullReferenceException(nameof(reference));
+
+            if (!this._references.ContainsKey(key))
+                this._references.Add(key, reference);
+
+        }
 
         public IEnumerator<PortableExecutableReference> GetEnumerator()
         {

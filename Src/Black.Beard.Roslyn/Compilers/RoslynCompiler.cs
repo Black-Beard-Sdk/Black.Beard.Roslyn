@@ -36,7 +36,6 @@ namespace Bb.Compilers
             foreach (PortableExecutableReference assembly in assemblies)
                 _defaultReferences.Add(assembly);
 
-
         }
 
         public string KeyFile {get;set;}
@@ -108,8 +107,6 @@ namespace Bb.Compilers
 
                 if (File.Exists(this.KeyFile))
                 {
-
-                    
 
                     compilationOptions.WithCryptoKeyFile(this.KeyFile)
                                       .WithDelaySign(this.DelaySign)

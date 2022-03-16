@@ -188,12 +188,12 @@ namespace Bb.Builds
         {
 
             if (_suppress.Count > 0)
-                obj.WithSpecificDiagnosticOptions(_suppress);
-
+            {
+                var dic = ImmutableDictionary.CreateRange(_suppress);
+                obj.WithSpecificDiagnosticOptions(dic);
+            }
             if (ConfigureCompilation != null)
                 ConfigureCompilation(obj);
-
-
 
         }
 

@@ -1,5 +1,6 @@
 using Bb.Builds;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Xunit;
@@ -28,7 +29,9 @@ namespace Black.Beard.Roslyn.XTests
                 Debug = true,
                 LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp7,
             }
-            .AddSource(file2);
+            .AddSource(file2)
+            .Suppress("CS1702", "CS1998")
+            ;
 
             var result = builder.Build();
 
