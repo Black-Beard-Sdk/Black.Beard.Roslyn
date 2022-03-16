@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace Bb.Json.Jslt.Builds
+namespace Bb.Builds
 {
 
     public class SourceCode

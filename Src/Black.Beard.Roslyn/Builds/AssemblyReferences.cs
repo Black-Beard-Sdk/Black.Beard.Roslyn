@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace Bb.Json.Jslt.Builds
+namespace Bb.Builds
 {
     public class AssemblyReferences : IEnumerable<PortableExecutableReference>
     {
@@ -80,7 +80,7 @@ namespace Bb.Json.Jslt.Builds
         public void Add(string location)
         {
 
-            if (File.Exists(location))
+            if (!File.Exists(location))
                 throw new FileNotFoundException(location);
 
             PortableExecutableReference newReference = AssemblyMetadata

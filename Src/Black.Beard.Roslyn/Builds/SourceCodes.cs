@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bb.Json.Jslt.Builds
+namespace Bb.Builds
 {
     public class SourceCodes
     {

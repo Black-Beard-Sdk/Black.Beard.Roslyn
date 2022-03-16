@@ -2,12 +2,13 @@
 using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using static Bb.Compilers.CommentHelper;
 
-namespace Bb.Json.Jslt.Builds
+namespace Bb.Builds
 {
 
 
@@ -31,6 +32,19 @@ namespace Bb.Json.Jslt.Builds
 
             ResolveAssembliesInCode = false;
 
+        }
+
+        public BuildCSharp AddSource(FileInfo path)
+        {
+            AddSource(path.FullName);
+            return this;
+
+        }
+
+        public BuildCSharp AddSource(string path)
+        {
+            this.Sources.Add(path);
+            return this;
         }
 
         public LanguageVersion LanguageVersion { get; set; }
