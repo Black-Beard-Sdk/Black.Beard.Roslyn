@@ -99,7 +99,7 @@ namespace Bb.Builds
             if (string.IsNullOrEmpty(assemblyName))
                 throw new ArgumentNullException(nameof(assemblyName));
 
-            var ass = TypeDiscovery.Instance.AddAssemblyname(assemblyName);
+            var ass = TypeDiscovery.Instance.AddAssemblyname(assemblyName, true);
 
             if (ass == null)
                 throw new FileLoadException(assemblyName);

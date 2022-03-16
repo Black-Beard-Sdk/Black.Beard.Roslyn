@@ -58,7 +58,7 @@ namespace Bb.Compilers
                         if (v.Value is string s)
                         {
                             //var assemblyName = AssemblyName.GetAssemblyName(s);
-                            var assembly = TypeDiscovery.Instance.AddAssemblyname(s);
+                            var assembly = TypeDiscovery.Instance.AddAssemblyname(s, true);
                             result.AddAssembly(assembly);
                         }
 
