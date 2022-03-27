@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>disabled</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="1.0.8" />	  
+	  <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
+	  <PackageReference Include="Microsoft.CodeAnalysis" Version="4.1.0" />
+	  <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.1.0" />	  
+  </ItemGroup>
+
+</Project>
