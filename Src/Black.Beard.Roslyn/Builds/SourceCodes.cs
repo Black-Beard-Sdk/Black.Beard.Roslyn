@@ -30,8 +30,8 @@ namespace Bb.Builds
             this.EnsureUptodated();
             foreach (var item in _sources.Values)
             {
-                key ^= item.Name.Calculate();
-                key ^= item.Datas.Calculate();
+                key ^= item.Name.CalculateCrc32();
+                key ^= item.Datas.CalculateCrc32();
             }
 
             return "assembly_" + key.ToString();
