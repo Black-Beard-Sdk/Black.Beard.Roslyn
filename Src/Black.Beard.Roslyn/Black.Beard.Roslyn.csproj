@@ -3,25 +3,12 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<RootNamespace>Bb</RootNamespace>
+		
 		<Description>Helper for compile Csharp at runtime</Description>
 		<RepositoryUrl>https://github.com/Black-Beard-Sdk/Black.Beard.Roslyn</RepositoryUrl>
-
-
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl></PackageProjectUrl>
-		<!--<GenerateAppxPackageOnBuild></GenerateAppxPackageOnBuild>
-	  <GenerateDocumentationFile></GenerateDocumentationFile>
-	  <GenerateLibraryLayout></GenerateLibraryLayout>
-	  <GenerateManifests></GenerateManifests>
-	  <GenerateSerializationAssemblies></GenerateSerializationAssemblies>
-	  <PackageId></PackageId>
-	  <PackageIconUrl></PackageIconUrl>
-	  <PackageLicenseExpression></PackageLicenseExpression>
-	  <PackageLicenseFile></PackageLicenseFile>
-	  <PackageOutputPath></PackageOutputPath>
-	  <PackageReleaseNotes></PackageReleaseNotes>
-	  <PackageRequireLicenseAcceptance></PackageRequireLicenseAcceptance>-->
 
 	</PropertyGroup>
 

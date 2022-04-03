@@ -7,15 +7,14 @@ using System.Data;
 namespace Bb.Schemas.DataSets
 {
 
+
     public class DataSetJsonSchemaVisitor : JsonSchemaVisitor<CodeObject>
     {
-
 
         public DataSetJsonSchemaVisitor()
         {
             
         }
-
 
         protected override void AppendProperty(CodeObject parent, CodeObject child)
         {

@@ -43,7 +43,7 @@ namespace Black.Beard.Build.XTests
 
                 });
 
-            var result = project.Build();
+            var result = project.Build(inMemory: true, load: true);
 
             var assembly = project.Assembly;
 

@@ -8,7 +8,6 @@ namespace Bb.Schemas.CodeDom
     public class CodeDomJsonSchemaVisitor : JsonSchemaVisitor<CodeObject>
     {
 
-
         public CodeDomJsonSchemaVisitor()
         {
 
