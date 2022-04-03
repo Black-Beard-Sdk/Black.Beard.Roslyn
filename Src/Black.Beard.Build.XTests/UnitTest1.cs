@@ -25,7 +25,7 @@ namespace Black.Beard.Build.XTests
             var name = "Black.Beard.tests";
             var dir = new DirectoryInfo(Path.Combine(this._baseDirectory.FullName, name));
 
-            var project = new MsProject(name, dir)
+            var project = new MsCsProject(name, dir)
                 .Sdk(ProjectSdk.MicrosoftNETSdk)
                 .SetPropertyGroup(c =>
                 {
@@ -41,11 +41,11 @@ namespace Black.Beard.Build.XTests
                      .PackageReference("Black.Beard.Helpers.ContentLoaders", new Version("1.0.8"))
                     ;
 
-                })
-                .Build()
-                ;
+                });
 
-            var assembly = project.AssemblyFile;
+            var result = project.Build();
+
+            var assembly = project.Assembly;
 
         }
 

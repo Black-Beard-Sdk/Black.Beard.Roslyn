@@ -13,9 +13,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Black.Beard.Roslyn", "Black
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Black.Beard.Roslyn.XTests", "Black.Beard.Roslyn.XTests\Black.Beard.Roslyn.XTests.csproj", "{66FE6D4A-F973-4D6B-8BC8-F02AEDDCDB1C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Black.Beard.Build", "Black.Beard.Build\Black.Beard.Build.csproj", "{7F38F4C9-9B07-4405-B8EA-90DC35B91A70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Black.Beard.Build", "Black.Beard.Build\Black.Beard.Build.csproj", "{7F38F4C9-9B07-4405-B8EA-90DC35B91A70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Black.Beard.Build.XTests", "Black.Beard.Build.XTests\Black.Beard.Build.XTests.csproj", "{C131BBA0-4C7A-46FB-961D-6B07490CCE2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Black.Beard.Build.XTests", "Black.Beard.Build.XTests\Black.Beard.Build.XTests.csproj", "{C131BBA0-4C7A-46FB-961D-6B07490CCE2C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Black.Beard.Schemas", "Black.Beard.Schemas\Black.Beard.Schemas.csproj", "{67CA8857-284B-40D9-B731-061621BD6C55}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Black.Beard.Schemas.XUnitTests", "Black.Beard.Schemas.XUnitTests\Black.Beard.Schemas.XUnitTests.csproj", "{51B13486-1F9D-4882-8084-5B0BD7F2B4DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{C131BBA0-4C7A-46FB-961D-6B07490CCE2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C131BBA0-4C7A-46FB-961D-6B07490CCE2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C131BBA0-4C7A-46FB-961D-6B07490CCE2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67CA8857-284B-40D9-B731-061621BD6C55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67CA8857-284B-40D9-B731-061621BD6C55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67CA8857-284B-40D9-B731-061621BD6C55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67CA8857-284B-40D9-B731-061621BD6C55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51B13486-1F9D-4882-8084-5B0BD7F2B4DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51B13486-1F9D-4882-8084-5B0BD7F2B4DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51B13486-1F9D-4882-8084-5B0BD7F2B4DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51B13486-1F9D-4882-8084-5B0BD7F2B4DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
