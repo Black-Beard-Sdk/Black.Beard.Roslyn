@@ -42,24 +42,7 @@ namespace Black.Beard.Jslt.Output.StoreSql.XUnitTests
             var result = project.Build();
 
             Assert.True(result);
-
-            //AssemblyResult assembly = GetCsharpBuilder(samples.FullName);
-
-            //if (assembly.Success)
-            //{
-            //    var ass = assembly.LoadAssembly();
-            //    var type = ass.GetTypes().First(c => c.Name == "Sample1");
-            //    Assert.NotNull(type);
-
-            //    var property = type.GetProperties().FirstOrDefault(c => nameof(Sample1.Name) == c.Name);
-            //    Assert.NotNull(property);
-
-            //}
-            //else
-            //{
-            //    var payload = File.ReadAllText(samples.FullName);
-            //    throw new Exception();
-            //}
+          
         }
 
         private MsCsProject GetProject()
