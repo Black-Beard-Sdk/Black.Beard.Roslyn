@@ -8,8 +8,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		
-		<PackageReference Include="Black.Beard.Roslyn" Version="1.0.15" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
 		<PackageReference Include="NJsonSchema" Version="10.7.0" />
 		<PackageReference Include="xunit" Version="2.4.1" />

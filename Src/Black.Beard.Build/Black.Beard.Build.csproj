@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.0" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.1" />
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.0" />
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.0" />
 		<PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
