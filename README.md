@@ -6,7 +6,7 @@ Helpers for compile Csharp with Roslyn.
 The way use the tool installed on your machine. It does'nt work in dotnet is not installed.
 
 
-Sample the use Black.Beard.Build
+Sample the use Black.Beard.Build for create a csproj
 ```CSHARP
 
     //Usings
@@ -19,7 +19,7 @@ Sample the use Black.Beard.Build
     var dir = new DirectoryInfo(Path.Combine(this._baseDirectory.FullName, name));
 
 
-    var project = new MsCsProject(name, dir)
+    var project = new MsProject(name, dir)
         
         .Sdk(ProjectSdk.MicrosoftNETSdk)    // Specify the target build
 
@@ -46,6 +46,26 @@ Sample the use Black.Beard.Build
     // fetch the new assembly
     var assembly = project.Assembly;
 
+```
+
+or the helper
+``` CSHARP
+
+    var project = MsProjects.CreateCsProject(dir.FullName, name, 
+    TargetFramework.Net6, 
+    "Bb"                
+    )
+    .SetPropertyGroup(a =>
+    {
+        a.Description("MyDescription");
+    })
+    .Packages(p =>
+    {
+        p.PackageReference("Black.Beard.ComponentModel", new Version("1.0.36"))
+         .PackageReference("Black.Beard.Helpers.ContentLoaders", new Version("1.0.8"))
+        ;
+    
+    });
 ```
 
 

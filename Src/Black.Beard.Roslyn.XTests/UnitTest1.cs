@@ -5,7 +5,7 @@ using System.IO;
 using System.Reflection;
 using Xunit;
 
-namespace Black.Beard.Roslyn.XTests
+namespace Bb.Beard.Roslyn.XTests
 {
     public class UnitTest1
     {

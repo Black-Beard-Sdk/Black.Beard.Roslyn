@@ -1,4 +1,5 @@
 ﻿using NJsonSchema;
+using System.Data;
 
 namespace Bb.Schemas
 {
@@ -6,6 +7,13 @@ namespace Bb.Schemas
 
     public abstract class JsonSchemaVisitor<T>
     {
+
+        protected void ReleaseMe(JsonSchemaVisitor<T>.Context context)
+        {
+
+
+
+        }
 
         public JsonSchemaVisitor()
         {
@@ -34,31 +42,41 @@ namespace Bb.Schemas
 
         protected virtual T VisitModel(JsonSchema schema, string name)
         {
-    
+
             if (string.IsNullOrEmpty(name))
                 name = EvaluateModelName(schema);
 
             var result = AddOutputModels(schema, name, CreateModel(schema, name));
 
-            foreach (var item in schema.Properties)
-            {
-                T resultProperty = Visit(item.Value, name);
-                AppendProperty(result, resultProperty);
-            }
+            ParseProperties(schema, result);
 
             return result;
 
         }
 
+        protected List<Object> ParseProperties(JsonSchema schema, T result)
+        {
+
+            if (result == null)
+                throw new ArgumentNullException(nameof(result));
+
+            List<Object> properties = new List<Object>();
+            foreach (var item in schema.Properties)
+            {
+                T resultProperty = Visit(item.Value, String.Empty);
+                AppendProperty(result, resultProperty);
+                properties.Add(resultProperty);
+            }
+
+            return properties;
+
+        }
 
         protected abstract void AppendProperty(T parent, T child);
 
-
         protected abstract T VisitProperty(JsonSchemaProperty property);
 
-
         protected abstract T CreateModel(JsonSchema schema, string name);
-
 
         protected virtual string EvaluateModelName(JsonSchema schema)
         {
@@ -69,7 +87,6 @@ namespace Bb.Schemas
             return null;
 
         }
-
 
         [System.Diagnostics.DebuggerHidden]
         [System.Diagnostics.DebuggerNonUserCode]
@@ -136,8 +153,59 @@ namespace Bb.Schemas
         private Dictionary<string, T> _objects = new Dictionary<string, T>();
         private List<T> _members = new List<T>();
 
+        private Stack<Context> _stack = new Stack<Context>();
 
-        
+        protected Context CurrentContext()
+        {
+            if (this._stack.Count > 0)
+                return this._stack.Peek();
+            return null;
+        }
+
+        protected Context ChildContext()
+        {
+            return new Context(this, CurrentContext());
+        }
+
+
+        protected class Context : IDisposable
+        {
+
+            public Context(JsonSchemaVisitor<T> parent, Context contextParent)
+            {
+                this._parent = parent;
+                this._contextParent = contextParent;
+                _parent._stack.Push(this);
+                this._dic = new Dictionary<string, object>();
+            }
+
+            public Context Parent { get { return _contextParent; } }
+
+            public object this[string key]
+            {
+                get { return _dic[key]; }
+                set { _dic[key] = value; }
+            }
+
+            public void Dispose()
+            {
+
+                var o = _parent._stack.Pop();
+
+                if (o != this)
+                    throw new InvalidOperationException("context not expected");
+
+                _parent.ReleaseMe(this);
+
+            }
+
+            private readonly JsonSchemaVisitor<T> _parent;
+            private readonly JsonSchemaVisitor<T>.Context _contextParent;
+            private readonly Dictionary<string, object> _dic;
+
+        }
+
+
     }
 
 

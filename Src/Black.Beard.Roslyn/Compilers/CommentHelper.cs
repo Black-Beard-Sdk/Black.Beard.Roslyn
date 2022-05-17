@@ -1,10 +1,10 @@
 ﻿using Bb.ComponentModel;
 using Microsoft.CodeAnalysis;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Bb.Compilers
@@ -25,10 +25,10 @@ namespace Bb.Compilers
                 foreach (var line in lines)
                 {
 
-                    var o = JObject.Parse(line.Trim('@'));
+                    var o = System.Text.Json.JsonDocument.Parse(line.Trim('@'));
+                    var p = o.RootElement;
 
-                    foreach (var property in o.Properties())
-                    {
+                    foreach (JsonProperty property in p.EnumerateObject())
                         switch (property.Name.ToLower())
                         {
 
@@ -38,36 +38,41 @@ namespace Bb.Compilers
 
                             default:
                                 break;
+
                         }
-                    }
 
                 }
             }
 
         }
 
-        private static void ParseAssemblies(JToken assemblies, CompilationProperties result)
+        private static void ParseAssemblies(JsonElement assemblies, CompilationProperties result)
         {
 
-            if (assemblies is JArray array)
-            {
-                foreach (var item in array)
-                    if (item is JValue v)
-                    {
+            //if (assemblies.ValueKind == JsonValueKind.Array)
+            //{
 
-                        if (v.Value is string s)
-                        {
-                            //var assemblyName = AssemblyName.GetAssemblyName(s);
-                            var assembly = TypeDiscovery.Instance.AddAssemblyname(s, true);
-                            result.AddAssembly(assembly);
-                        }
+            //    var e = assemblies.EnumerateArray();
+            //    while(e.MoveNext())
+            //    {
+            //        if (e.Current is JValue v)
+            //        {
 
-                    }
-            }
-            else
-            {
+            //            if (v.Value is string s)
+            //            {
+            //                //var assemblyName = AssemblyName.GetAssemblyName(s);
+            //                var assembly = TypeDiscovery.Instance.AddAssemblyname(s, true);
+            //                result.AddAssembly(assembly);
+            //            }
 
-            }
+            //        }
+            //    }
+
+            //}
+            //else
+            //{
+
+            //}
 
         }
 

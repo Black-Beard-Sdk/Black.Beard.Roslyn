@@ -11,7 +11,7 @@ using System.Text;
 using Xunit;
 
 
-namespace Black.Beard.Jslt.Output.StoreSql.XUnitTests
+namespace Bb.Beard.Jslt.Output.StoreSql.XUnitTests
 {
 
     public class CodeDomBuildWithRoslynUnitTest

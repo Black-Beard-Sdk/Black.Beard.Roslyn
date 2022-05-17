@@ -9,12 +9,12 @@
 
 	<ItemGroup>
 		
-		<PackageReference Include="Black.Beard.Roslyn" Version="1.0.12" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-		<PackageReference Include="NJsonSchema" Version="10.6.10" />
+		<PackageReference Include="Black.Beard.Roslyn" Version="1.0.15" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+		<PackageReference Include="NJsonSchema" Version="10.7.0" />
 		<PackageReference Include="xunit" Version="2.4.1" />
 
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
@@ -28,7 +28,14 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Black.Beard.Build\Black.Beard.Build.csproj" />
+		<ProjectReference Include="..\Black.Beard.CodeDom\Black.Beard.CodeDom.csproj" />
 		<ProjectReference Include="..\Black.Beard.Schemas\Black.Beard.Schemas.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="laposte_poincont2.json">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

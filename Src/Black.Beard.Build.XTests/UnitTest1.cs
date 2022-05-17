@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using Xunit;
 
-namespace Black.Beard.Build.XTests
+namespace Bb.Beard.Build.XTests
 {
 
     public class UnitTest1
@@ -25,7 +25,7 @@ namespace Black.Beard.Build.XTests
             var name = "Black.Beard.tests";
             var dir = new DirectoryInfo(Path.Combine(this._baseDirectory.FullName, name));
 
-            var project = new MsCsProject(name, dir)
+            var project = new MsProject(name, dir)
                 .Sdk(ProjectSdk.MicrosoftNETSdk)
                 .SetPropertyGroup(c =>
                 {
@@ -49,6 +49,37 @@ namespace Black.Beard.Build.XTests
 
         }
 
+
+        [Fact]
+        public void Test2()
+        {
+
+            var name = "Black.Beard.tests";
+            var dir = new DirectoryInfo(Path.Combine(this._baseDirectory.FullName, name));
+
+            var project = MsProjects.CreateCsProject(dir.FullName, name, 
+                TargetFramework.Net6, 
+                "Bb"                
+                )
+                .SetPropertyGroup(a =>
+                {
+                    a.Description("MyDescription");
+                })
+                .Packages(p =>
+                {
+                    p.PackageReference("Black.Beard.ComponentModel", new Version("1.0.36"))
+                     .PackageReference("Black.Beard.Helpers.ContentLoaders", new Version("1.0.8"))
+                    ;
+
+                });
+
+            var result = project.Build(inMemory: true, load: true);
+            var assembly = project.Assembly;
+
+        }
+
+
     }
+
 
 }

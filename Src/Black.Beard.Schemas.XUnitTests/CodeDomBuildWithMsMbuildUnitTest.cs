@@ -12,7 +12,7 @@ using System.Text;
 using Xunit;
 
 
-namespace Black.Beard.Jslt.Output.StoreSql.XUnitTests
+namespace Bb.Beard.Jslt.Output.StoreSql.XUnitTests
 {
 
     public class CodeDomBuildWithMsMbuildUnitTest
@@ -29,7 +29,7 @@ namespace Black.Beard.Jslt.Output.StoreSql.XUnitTests
         public void TestSample1()
         {
 
-            MsCsProject project = GetProject();
+            MsProject project = GetProject();
 
             JsonSchema schema = JsonSchema.FromType(typeof(Sample1));
             var samples = "CodeDOMSample"
@@ -45,13 +45,13 @@ namespace Black.Beard.Jslt.Output.StoreSql.XUnitTests
           
         }
 
-        private MsCsProject GetProject()
+        private MsProject GetProject()
         {
 
             string name = GetAssemblyName();
             var dir = new DirectoryInfo(Path.Combine(this._dir.FullName, name));
 
-            var project = new MsCsProject(name, dir)
+            var project = new MsProject(name, dir)
 
                 .Sdk(ProjectSdk.MicrosoftNETSdk)
 
