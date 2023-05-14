@@ -57,19 +57,20 @@ namespace Bb.Beard.Build.XTests
             var name = "Black.Beard.tests";
             var dir = new DirectoryInfo(Path.Combine(this._baseDirectory.FullName, name));
 
-            var project = MsProjectsForBuild.CreateCsProject(dir.FullName, name, 
-                TargetFramework.Net6, "Bb")
-                .SetPropertyGroup(a =>
-                {
-                    a.Description("MyDescription");
-                })
-                .Packages(p =>
-                {
-                    p.PackageReference("Black.Beard.ComponentModel", new Version("1.0.36"))
-                     .PackageReference("Black.Beard.Helpers.ContentLoaders", new Version("1.0.8"))
-                    ;
+            var project = MsProjectsForBuild
+                    .CreateProject(dir.FullName, name, 
+                        TargetFramework.Net6, "Bb")
+                        .SetPropertyGroup(a =>
+                        {
+                            a.Description("MyDescription");
+                        })
+                        .Packages(p =>
+                        {
+                            p.PackageReference("Black.Beard.ComponentModel", new Version("1.0.36"))
+                             .PackageReference("Black.Beard.Helpers.ContentLoaders", new Version("1.0.8"))
+                            ;
 
-                });
+                        });
 
             var result = project.Build(inMemory: true, load: true);
             var assembly = project.Assembly;

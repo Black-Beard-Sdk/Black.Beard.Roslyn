@@ -6,8 +6,8 @@ namespace Bb.Projects
     public class PropertyGroup : Group
     {
 
-        public PropertyGroup() 
-            : base (false)
+        public PropertyGroup()
+            : base(false)
         {
         }
 
@@ -64,7 +64,7 @@ namespace Bb.Projects
                 Add(new AssemblyVersion(version));
             return this;
         }
-        
+
         public PropertyGroup FileVersion(Version version)
         {
             if (version != null)
@@ -135,37 +135,44 @@ namespace Bb.Projects
 
         public PropertyGroup PackageReadmeFile(string value)
         {
-            if (!string.IsNullOrEmpty(value)) 
+            if (!string.IsNullOrEmpty(value))
                 Add(new PackageReadmeFile(value));
             return this;
         }
 
         public PropertyGroup PackageProjectUrl(string value)
         {
-            if (!string.IsNullOrEmpty(value)) 
+            if (!string.IsNullOrEmpty(value))
                 Add(new PackageProjectUrl(value));
             return this;
         }
 
         public PropertyGroup Description(string value)
         {
-            if (!string.IsNullOrEmpty(value)) 
+            if (!string.IsNullOrEmpty(value))
                 Add(new Description(value));
             return this;
         }
 
         public PropertyGroup StartupObject(string value)
         {
-            if (!string.IsNullOrEmpty(value)) 
+            if (!string.IsNullOrEmpty(value))
                 Add(new StartupObject(value));
             return this;
         }
 
+        public PropertyGroup RepositoryUrl(string value)
+        {
+            return RepositoryUrl(new System.Uri(value));
+        }
+
         public PropertyGroup RepositoryUrl(Uri value)
         {
-            if (value != null) 
+            if (value != null)
                 Add(new RepositoryUrl(value.ToString()));
+
             return this;
+
         }
 
         public PropertyGroup SqlServerVersion(SqlServerVersion value)

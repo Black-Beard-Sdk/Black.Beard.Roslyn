@@ -9,7 +9,7 @@ namespace Bb.Build
     public static class MsProjectsForBuild
     {
 
-        public static MsProjectForBuild CreateCsProject
+        public static MsProjectForBuild CreateProject
             (
             string targetDirectory, 
             string name,

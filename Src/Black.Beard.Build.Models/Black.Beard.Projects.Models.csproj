@@ -1,16 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>Bb</RootNamespace>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RootNamespace>Bb</RootNamespace>
 
-  <ItemGroup>
-    <PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.1" />
-    <PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.1" />
-    <PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.1" />
-  </ItemGroup>
+		<Description>Helper for compile Csharp at runtime</Description>
+		<RepositoryUrl>https://github.com/Black-Beard-Sdk/Black.Beard.Roslyn</RepositoryUrl>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl></PackageProjectUrl>
+		<RootNamespace>Bb</RootNamespace>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.1" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.1" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.1" />
+	</ItemGroup>
 
 </Project>

@@ -7,7 +7,7 @@
 
 
 
-        public static MsProject CreateCsProject
+        public static MsProject CreateProject
             (
             string targetDirectory, 
             string name,
