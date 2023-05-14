@@ -3,7 +3,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/2r6ucvo29ywpvdc8?svg=true)](https://ci.appveyor.com/project/gaelgael5/black-beard-roslyn)
 
 Helpers for compile Csharp with Roslyn.
-The way use the tool installed on your machine. It does'nt work in dotnet is not installed.
+The way use the tool installed on your machine. It does'nt work if dotnet is not installed.
 
 
 Sample the use Black.Beard.Build for create a csproj
@@ -17,7 +17,6 @@ Sample the use Black.Beard.Build for create a csproj
     // create a folder for store the generated project file
     var name = "Black.Beard.tests";
     var dir = new DirectoryInfo(Path.Combine(this._baseDirectory.FullName, name));
-
 
     var project = new MsProject(name, dir)
         

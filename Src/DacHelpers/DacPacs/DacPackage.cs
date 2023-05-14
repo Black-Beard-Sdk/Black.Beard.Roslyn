@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Reflection;
 
 namespace Bb.DacPacs
 {
@@ -16,11 +17,21 @@ namespace Bb.DacPacs
 
         public DacDataSchemaModel Schema { get; }
 
-        public void Write(string filename)
+        public void Write(string filename, bool DeleteIfExists = false)
         {
 
+            var file = new FileInfo(filename);
+
+            if (DeleteIfExists)
+            {
+                if (file.Exists)
+                    file.Delete();
+            }
+            else
+                throw new IOException($" File {filename} allready exists. please delete before.");
+            
             if (string.IsNullOrEmpty(Name))
-                throw new ArgumentNullException("Name");
+                this.Name = Path.GetFileNameWithoutExtension(file.Name);
 
             try
             {
@@ -37,6 +48,18 @@ namespace Bb.DacPacs
             }
 
         }
+
+        //public void GenerateDotnetPublish(string filename, string server, string dbName, string userId, string password, string createNewDatabase)
+        //{
+
+        //    var file = new FileInfo(filename);
+
+        //    string dacpacPath = file.Directory.FullName;
+        //    string dacpacPattern = file.Directory.Name;
+
+        //    Bb.DotnetCommand.DacpacPublishWithCreateDatabase(dacpacPath, dacpacPattern, server, dbName, userId, password, createNewDatabase);
+
+        //}
 
         private void Write()
         {
@@ -108,7 +131,7 @@ namespace Bb.DacPacs
         private string _file_model;
         private string _file_origin;
         private DirectoryInfo _dir;
-    
+
     }
 
 }

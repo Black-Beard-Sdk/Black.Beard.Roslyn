@@ -19,6 +19,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Codings\CodeMarker.cs" />
+	  <Compile Remove="Codings\LevelBloc.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="..\..\README.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
@@ -29,7 +34,7 @@
 		<PackageReference Include="Black.Beard.ComponentModel" Version="1.0.37" />
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.1" />
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.1" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
 		<PackageReference Include="Ude.NetStandard" Version="1.2.0" />
 	</ItemGroup>
 

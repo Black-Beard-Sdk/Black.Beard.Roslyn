@@ -1,7 +1,5 @@
 using Bb.Build;
-using System;
 using System.IO;
-using System.Reflection;
 using Xunit;
 
 namespace Bb.Beard.Build.XTests
@@ -25,7 +23,7 @@ namespace Bb.Beard.Build.XTests
             var name = "Black.Beard.tests";
             var dir = new DirectoryInfo(Path.Combine(this._baseDirectory.FullName, name));
 
-            var project = new MsProject(name, dir)
+            var project = new MsProjectForBuild(name, dir)
             .Sdk(ProjectSdk.MSBuildSdkSqlProj110)
             .SetPropertyGroup(c =>
             {

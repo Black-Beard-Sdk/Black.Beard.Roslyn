@@ -21,8 +21,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="NJsonSchema" Version="10.7.0" />
-		<PackageReference Include="System.CodeDom" Version="6.0.0" />
+		<PackageReference Include="NJsonSchema" Version="10.8.0" />
+		<PackageReference Include="System.CodeDom" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

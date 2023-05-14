@@ -27,9 +27,9 @@ namespace Bb.Compilers
 
         public List<DiagnosticResult> Disgnostics { get; internal set; }
 
-        public IEnumerable<DiagnosticResult> Errors { get => Disgnostics.Where(c => c.IsWarningAsError); }
+        public IEnumerable<DiagnosticResult> Errors { get => Disgnostics.Where(c => c.Severity == "Error"); }
 
-        public IEnumerable<DiagnosticResult> Warnings { get => Disgnostics.Where(c => !c.IsWarningAsError); }
+        public IEnumerable<DiagnosticResult> Warnings { get => Disgnostics.Where(c => c.Severity == "Warning"); }
 
         public List<string> Documents { get; }
 

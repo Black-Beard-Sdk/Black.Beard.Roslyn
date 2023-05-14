@@ -16,11 +16,14 @@
         public static RelationshipNamePropertyValue ColumnSpecifications = new RelationshipNamePropertyValue("ColumnSpecifications");
         public static RelationshipNamePropertyValue DefaultFilegroup = new RelationshipNamePropertyValue("DefaultFilegroup");
         public static RelationshipNamePropertyValue DefiningTable = new RelationshipNamePropertyValue("DefiningTable");
+        public static RelationshipNamePropertyValue Filegroup = new RelationshipNamePropertyValue("Filegroup");
+        public static RelationshipNamePropertyValue IndexedObject = new RelationshipNamePropertyValue("IndexedObject");
         public static RelationshipNamePropertyValue ForeignTable = new RelationshipNamePropertyValue("ForeignTable");
         public static RelationshipNamePropertyValue TypeSpecifier = new RelationshipNamePropertyValue("TypeSpecifier");
         public static RelationshipNamePropertyValue Type = new RelationshipNamePropertyValue("Type");
         public static RelationshipNamePropertyValue Schema = new RelationshipNamePropertyValue("Schema");
         public static RelationshipNamePropertyValue Host = new RelationshipNamePropertyValue("Host");
+        public static RelationshipNamePropertyValue Authorizer = new RelationshipNamePropertyValue("Authorizer");
 
         
 

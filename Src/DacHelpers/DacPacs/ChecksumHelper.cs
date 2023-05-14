@@ -22,19 +22,24 @@ namespace Bb.DacPacs
 
             using HashAlgorithm hashGenerator = GetHashAlgorithm();
             return hashGenerator.ComputeHash(stream);
+
         }
 
         internal static byte[] CalculateChecksum(string filepath)
         {
             if (string.IsNullOrEmpty(filepath))
                 throw new ArgumentException(nameof(filepath));
+
             using FileStream stream = new FileStream(filepath, FileMode.Open);
             return CalculateChecksum(stream);
+
         }
 
         public static string ByteArrayToString(this byte[] bytes)
         {
-            return string.Concat(bytes.Select((byte b) => b.ToString("X2", System.Globalization.CultureInfo.InvariantCulture)));
+            return string.Concat(bytes.Select((byte b) 
+                => b.ToString("X2", System.Globalization.CultureInfo.InvariantCulture)));
+
         }
 
      

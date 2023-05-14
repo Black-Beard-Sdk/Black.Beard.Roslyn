@@ -1,4 +1,5 @@
 using Bb.Build;
+using Bb.Projects;
 using System;
 using System.IO;
 using System.Reflection;
@@ -25,7 +26,7 @@ namespace Bb.Beard.Build.XTests
             var name = "Black.Beard.tests";
             var dir = new DirectoryInfo(Path.Combine(this._baseDirectory.FullName, name));
 
-            var project = new MsProject(name, dir)
+            var project = new MsProjectForBuild(name, dir)
                 .Sdk(ProjectSdk.MicrosoftNETSdk)
                 .SetPropertyGroup(c =>
                 {
@@ -40,7 +41,6 @@ namespace Bb.Beard.Build.XTests
                     p.PackageReference("Black.Beard.ComponentModel", new Version("1.0.36"))
                      .PackageReference("Black.Beard.Helpers.ContentLoaders", new Version("1.0.8"))
                     ;
-
                 });
 
             var result = project.Build(inMemory: true, load: true);
@@ -57,10 +57,8 @@ namespace Bb.Beard.Build.XTests
             var name = "Black.Beard.tests";
             var dir = new DirectoryInfo(Path.Combine(this._baseDirectory.FullName, name));
 
-            var project = MsProjects.CreateCsProject(dir.FullName, name, 
-                TargetFramework.Net6, 
-                "Bb"                
-                )
+            var project = MsProjectsForBuild.CreateCsProject(dir.FullName, name, 
+                TargetFramework.Net6, "Bb")
                 .SetPropertyGroup(a =>
                 {
                     a.Description("MyDescription");

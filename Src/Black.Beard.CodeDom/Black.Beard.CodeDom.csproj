@@ -12,13 +12,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.CodeDom" Version="6.0.0" />
+		<PackageReference Include="System.CodeDom" Version="7.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Update="Generators\Csharp\LocalCSharpCodeProvider.cs">
-			<SubType>Component</SubType>
-		</Compile>
+		<Compile Update="Generators\Csharp\LocalCSharpCodeProvider.cs" />
 		<Compile Update="Generators\Csharp\ResourceString.Designer.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>

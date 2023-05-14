@@ -22,8 +22,9 @@ CREATE TABLE [LaPoste]
     [fields_caracteristique_du_site] VARCHAR, 
     [fields_lieu_dit] VARCHAR, 
     [geometry_type] VARCHAR, 
-    PRIMARY KEY CLUSTERED
+    PRIMARY KEY NONCLUSTERED
     (
         [_$id] ASC
-    )
+    ) ON [PRIMARY2]
+
 );

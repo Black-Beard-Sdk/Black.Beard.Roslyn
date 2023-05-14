@@ -46,9 +46,9 @@ namespace Bb.DacPacs
             return Column(@namespace, table, columnName, "varbinary", isNullable, 0, length, 0, action);
         }
 
-        public DacRelationship ColumnImage(string @namespace, string table, string columnName, bool isNullable, Action<DacSqlSimpleColumn> action = null)
+        public DacRelationship ColumnImage(string @namespace, string table, string columnName, bool isNullable, int length, Action<DacSqlSimpleColumn> action = null)
         {
-            return Column(@namespace, table, columnName, "image", isNullable, 0, 0, 0, action);
+            return Column(@namespace, table, columnName, "image", isNullable, 0, length, 0, action);
         }
 
         public DacRelationship ColumnBit(string @namespace, string table, string columnName, bool isNullable, Action<DacSqlSimpleColumn> action = null)
@@ -69,6 +69,11 @@ namespace Bb.DacPacs
         public DacRelationship ColumnTimestamp(string @namespace, string table, string columnName, bool isNullable, Action<DacSqlSimpleColumn> action = null)
         {
             return Column(@namespace, table, columnName, "timestamp", isNullable, 0, 0, 0, action);
+        }
+
+        public DacRelationship ColumnTime(string @namespace, string table, string columnName, bool isNullable, Action<DacSqlSimpleColumn> action = null)
+        {
+            return Column(@namespace, table, columnName, "time", isNullable, 0, 0, 0, action);
         }
 
         public DacRelationship ColumnSmallDatetime(string @namespace, string table, string columnName, bool isNullable, Action<DacSqlSimpleColumn> action = null)

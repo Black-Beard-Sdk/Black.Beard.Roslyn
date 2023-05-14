@@ -1,5 +1,6 @@
 ﻿
 using Bb.DacPacs;
+using Bb.StarteKit.Components.Sql;
 using System.Data;
 
 namespace Bb
@@ -41,7 +42,7 @@ namespace Bb
             if (table == null)
                 return;
 
-            _pack.Schema.Table(table.Namespace, table.TableName, t =>
+            _pack.Schema.Table(table.Namespace, table.TableName, "PRIMARY", t =>
              {
 
                  foreach (DataColumn item in table.Columns)
@@ -207,7 +208,7 @@ namespace Bb
 
         private void VisitKeys(DataTable table)
         {
-            _pack.Schema.PrimaryKey(table.Namespace, table.TableName, table.PrimaryKey.Select(c => c.ColumnName).ToArray());
+            _pack.Schema.PrimaryKey(table.Namespace, table.TableName, "PRIMARY", true, table.PrimaryKey.Select(c => (c.ColumnName, SortIndex.Ascending)).ToArray(), null);
         }
 
         private void Visit(DataRelation node)

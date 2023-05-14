@@ -7,4 +7,12 @@
     <RootNamespace>Bb</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Sql\CreateDatabase.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Black.Beard.Build\DotnetCommand.cs" Link="DotnetCommand.cs" />
+  </ItemGroup>
+
 </Project>

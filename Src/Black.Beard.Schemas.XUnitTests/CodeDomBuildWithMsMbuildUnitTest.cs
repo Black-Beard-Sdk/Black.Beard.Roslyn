@@ -29,7 +29,7 @@ namespace Bb.Beard.Jslt.Output.StoreSql.XUnitTests
         public void TestSample1()
         {
 
-            MsProject project = GetProject();
+            MsProjectForBuild project = GetProject();
 
             JsonSchema schema = JsonSchema.FromType(typeof(Sample1));
             var samples = "CodeDOMSample"
@@ -45,13 +45,13 @@ namespace Bb.Beard.Jslt.Output.StoreSql.XUnitTests
           
         }
 
-        private MsProject GetProject()
+        private MsProjectForBuild GetProject()
         {
 
             string name = GetAssemblyName();
             var dir = new DirectoryInfo(Path.Combine(this._dir.FullName, name));
 
-            var project = new MsProject(name, dir)
+            var project = new MsProjectForBuild(name, dir)
 
                 .Sdk(ProjectSdk.MicrosoftNETSdk)
 
@@ -68,7 +68,7 @@ namespace Bb.Beard.Jslt.Output.StoreSql.XUnitTests
 
                 ;
 
-            return project;
+            return (MsProjectForBuild)project;
         }
 
         private static string GetAssemblyName()

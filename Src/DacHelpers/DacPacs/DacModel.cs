@@ -92,7 +92,31 @@ namespace Bb.DacPacs
             action(item);
             return this;
         }
-       
+
+        public DacModel SqlIndex(Action<SqlIndex> action)
+        {
+            var item = new SqlIndex();
+            this.Add(item);
+            action(item);
+            return this;
+        }
+
+        public DacModel Filegroup(Action<SqlFilegroup> action)
+        {
+            var item = new SqlFilegroup();
+            this.Add(item);
+            action(item);
+            return this;
+        }
+
+        public DacModel Schema(Action<SqlSchema> action)
+        {
+            var item = new SqlSchema();
+            this.Add(item);
+            action(item);
+            return this;
+        }
+
         public override XElement Serialize()
         {
 
