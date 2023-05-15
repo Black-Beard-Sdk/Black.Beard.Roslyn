@@ -2,6 +2,7 @@ using Bb;
 using Bb.Build;
 using Bb.Builds;
 using Bb.Compilers;
+using Bb.Projects;
 using Microsoft.CodeAnalysis.CSharp;
 using NJsonSchema;
 using System;

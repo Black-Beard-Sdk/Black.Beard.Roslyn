@@ -21,4 +21,11 @@
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+
 </Project>

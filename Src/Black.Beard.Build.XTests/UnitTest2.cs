@@ -1,4 +1,5 @@
 using Bb.Build;
+using Bb.Projects;
 using System.IO;
 using Xunit;
 
