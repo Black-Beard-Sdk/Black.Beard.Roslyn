@@ -240,20 +240,19 @@ namespace Bb.Build
             return this;
         }
 
-        public new MsProjectForBuild DefaultTargets(DefaultTargets value)
+        public new MsProjectForBuild DefaultTargets(string value)
         {
-            base.DefaultTargets(value);
-            Add(value);
+            base.DefaultTargets(value);            
             return this;
         }
 
-        public new MsProjectForBuild InitialTargets(InitialTargets value)
+        public new MsProjectForBuild InitialTargets(string value)
         {
             base.InitialTargets(value);
             return this;
         }
 
-        public new MsProjectForBuild ToolsVersion(ToolsVersion value)
+        public new MsProjectForBuild ToolsVersion(Version value)
         {
             base.ToolsVersion(value);
             return this;

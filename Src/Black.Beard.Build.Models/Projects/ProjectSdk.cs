@@ -10,7 +10,7 @@ namespace Bb.Projects
 
         }
 
-        public static ProjectSdk Custom (string value) => new ProjectSdk(Value);
+        public static ProjectSdk Custom (string value) => new ProjectSdk(value);
 
         public static ProjectSdk MicrosoftNETSdkRazor { get; } = new ProjectSdk("Microsoft.NET.Sdk.Razor");
         public static ProjectSdk MicrosoftNETSdk { get; } = new ProjectSdk("Microsoft.NET.Sdk");
