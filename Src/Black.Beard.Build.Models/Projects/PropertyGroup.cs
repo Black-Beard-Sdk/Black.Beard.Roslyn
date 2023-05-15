@@ -18,19 +18,15 @@ namespace Bb.Projects
             return result;
         }
 
-        public PropertyGroup GenerateDocumentationFile(bool value)
+        public PropertyGroup GenerateDocumentationFile(bool value = true)
         {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
-            Add(new GenerateDocumentationFile(value));
+            Add("GenerateDocumentationFile", value);
             return this;
         }
 
-        public PropertyGroup AddRazorSupportForMvc(bool value)
+        public PropertyGroup AddRazorSupportForMvc(bool value = true)
         {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
-            Add(new AddRazorSupportForMvc(value));
+            Add("AddRazorSupportForMvc", value);
             return this;
         }
 
@@ -38,7 +34,7 @@ namespace Bb.Projects
         {
             if (value == null)
                 throw new ArgumentNullException(nameof(value));
-            Add(new RazorLangVersion(value));
+            Add("RazorLangVersion", value);
             return this;
         }
 
@@ -53,123 +49,109 @@ namespace Bb.Projects
         public PropertyGroup LangVersion(Version version)
         {
             if (version != null)
-                Add(new LangVersion(version));
+                Add("LangVersion", version);
             return this;
         }
-
 
         public PropertyGroup AssemblyVersion(Version version)
         {
             if (version != null)
-                Add(new AssemblyVersion(version));
+                Add("AssemblyVersion", version);
             return this;
         }
 
         public PropertyGroup FileVersion(Version version)
         {
             if (version != null)
-                Add(new FileVersion(version));
+                Add("FileVersion", version);
             return this;
         }
 
-        public PropertyGroup GeneratePackageOnBuild(bool packageOnBuild = true)
+        public PropertyGroup GeneratePackageOnBuild(bool value = true)
         {
-            if (packageOnBuild)
-                Add(Projects.GeneratePackageOnBuild.True);
-            else
-                Add(Projects.GeneratePackageOnBuild.False);
+            Add("GeneratePackageOnBuild", value);
             return this;
         }
 
-        public PropertyGroup Nullable(bool nullabble = true)
+        public PropertyGroup Nullable(bool value = true)
         {
-            if (nullabble)
-                Add(Projects.Nullable.True);
-            else
-                Add(Projects.Nullable.False);
+            Add("Nullable", value);
             return this;
         }
 
-        public PropertyGroup IsPackable(bool packable = true)
+        public PropertyGroup IsPackable(bool value = true)
         {
-            if (packable)
-                Add(Projects.IsPackable.True);
-            else
-                Add(Projects.IsPackable.False);
+            Add("IsPackable", value);
             return this;
         }
 
         public PropertyGroup ImplicitUsings(bool activated = true)
         {
             if (activated)
-                Add(Projects.ImplicitUsings.Enabled);
+                Add("ImplicitUsings", "Enabled");
             else
-                Add(Projects.ImplicitUsings.Disabled);
+                Add("ImplicitUsings", "Disabled");
             return this;
         }
 
-        public PropertyGroup UseWPF(bool activated = true)
+        public PropertyGroup UseWPF(bool value = true)
         {
-            if (activated)
-                Add(Projects.UseWPF.True);
-            else
-                Add(Projects.UseWPF.False);
+            Add("UseWPF", value);
             return this;
         }
 
-        public PropertyGroup UseWindowsForms(bool activated = true)
+        public PropertyGroup UseWindowsForms(bool value = true)
         {
-            if (activated)
-                Add(Projects.UseWindowsForms.True);
-            else
-                Add(Projects.UseWindowsForms.False);
+            Add("UseWindowsForms", value);
             return this;
         }
 
         public PropertyGroup RootNamespace(string value)
         {
             if (!string.IsNullOrEmpty(value))
-                Add(new Projects.RootNamespace(value));
+                Add("RootNamespace", value);
             return this;
         }
 
         public PropertyGroup PackageReadmeFile(string value)
         {
             if (!string.IsNullOrEmpty(value))
-                Add(new PackageReadmeFile(value));
+                Add("PackageReadmeFile", value);
             return this;
         }
 
         public PropertyGroup PackageProjectUrl(string value)
         {
             if (!string.IsNullOrEmpty(value))
-                Add(new PackageProjectUrl(value));
+                Add("PackageProjectUrl", value);
             return this;
         }
 
         public PropertyGroup Description(string value)
         {
             if (!string.IsNullOrEmpty(value))
-                Add(new Description(value));
+                Add("Description", value);
             return this;
         }
 
         public PropertyGroup StartupObject(string value)
         {
             if (!string.IsNullOrEmpty(value))
-                Add(new StartupObject(value));
+                Add("StartupObject", value);
             return this;
         }
 
         public PropertyGroup RepositoryUrl(string value)
         {
-            return RepositoryUrl(new System.Uri(value));
+            if (value != null)
+                Add("RepositoryUrl", value);
+            return this;
         }
 
         public PropertyGroup RepositoryUrl(Uri value)
         {
             if (value != null)
-                Add(new RepositoryUrl(value.ToString()));
+                Add("RepositoryUrl", value);
 
             return this;
 

@@ -51,21 +51,21 @@ namespace Bb.Projects
             return this;
         }
 
-        public MsProject DefaultTargets(DefaultTargets value)
+        public MsProject DefaultTargets(string value)
         {
-            Add(value);
+            Add("DefaultTargets", value);
             return this;
         }
 
-        public MsProject InitialTargets(InitialTargets value)
+        public MsProject InitialTargets(string value)
         {
-            Add(value);
+            Add("InitialTargets", value);
             return this;
         }
 
-        public MsProject ToolsVersion(ToolsVersion value)
+        public MsProject ToolsVersion(Version value)
         {
-            Add(value);
+            Add("ToolsVersion", value);
             return this;
         }
 

@@ -2,10 +2,10 @@
 
 namespace Bb.Projects
 {
-    public class GenerateDocumentationFile : PropertyKey
+    public class PropertyKeyBool : PropertyKey
     {
 
-        public GenerateDocumentationFile(bool value) : base("GenerateDocumentationFile", value ? "true" : "false")
+        public PropertyKeyBool(string key, bool value) : base(key, value ? "True" : "False")
         {
 
         }
@@ -16,5 +16,6 @@ namespace Bb.Projects
         }
 
     }
+
 
 }

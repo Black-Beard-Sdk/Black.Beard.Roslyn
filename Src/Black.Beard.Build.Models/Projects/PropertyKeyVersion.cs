@@ -2,10 +2,11 @@
 
 namespace Bb.Projects
 {
-    public class AddRazorSupportForMvc : PropertyKey
+    public class PropertyKeyVersion : PropertyKey
     {
 
-        public AddRazorSupportForMvc(bool value) : base("AddRazorSupportForMvc", value ? "true" : "false")
+        public PropertyKeyVersion(string key, Version value) 
+            : base(key, value.ToString())
         {
 
         }
