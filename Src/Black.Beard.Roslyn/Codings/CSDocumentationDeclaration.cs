@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
+using System.Security;
 using System.Text;
 
 namespace Bb.Codings
@@ -28,14 +29,38 @@ namespace Bb.Codings
         {
             Append(_returns, value);
         }
+        public void Parameter(string name, Func<string> value)
+        {
+            Append(_parameter, name, value);
+        }
 
-        private void Append(string key, Func<string> value)
+        private void Append(string key, Func<string> value1)
         {
 
             if (!_comments.TryGetValue(key, out DocumentationItem list))
                 _comments.Add(key, list = new DocumentationItem());
 
-            list.Add(value);
+            list.Add(value1);
+
+        }
+
+        private void Append(string key,string key1, Func<string> value2)
+        {
+
+            if (!_comments.TryGetValue(key, out DocumentationItem list))
+                _comments.Add(key, list = new DocumentationItem());
+
+            list.Add(key1, value2);
+
+        }
+
+        private void Append(string key, string key1, string key2, Func<string> value2)
+        {
+
+            if (!_comments.TryGetValue(key, out DocumentationItem list))
+                _comments.Add(key, list = new DocumentationItem());
+
+            list.Add(key1, key2, value2);
 
         }
 
@@ -44,25 +69,64 @@ namespace Bb.Codings
 
             foreach (var item in _comments)
             {
+            
 
-                var v = item.Value;
-
-                StringBuilder stringBuilder = new StringBuilder();
-                foreach (var item2 in v.Generate())
+                switch (item.Key)
                 {
-                    stringBuilder.AppendLine(item2);
+                    case _parameter:
+                        //foreach (var value in item.Value.Subs)
+                        //    node = node.WithDocumentationParameter(value.Key, BuildText(value).ToString());
+                        break;
+                    case _include:
+                        break;
+                    case _inheritdoc:
+                        break;
+                    case _permission:
+                        break;
+                    case _exception:
+                        break;
+                    case _completionlist:
+                        break;
+                    case _remarks:
+                        node = node.WithDocumentationRemarks(BuildText(item).ToString());
+                        break;
+                    case _example:
+                        node = node.WithDocumentationExample(BuildText(item).ToString());
+                        break;
+                    case _returns:
+                        node = node.WithDocumentationSummary(BuildText(item).ToString());
+                        break;
+                    case _summary:
+                    default:
+                        node = node.WithDocumentationSummary(BuildText(item).ToString());
+                        break;
+
                 }
 
-                node = node.WithDocumentationSummary(stringBuilder.ToString());
 
             }
-
 
             return node;
 
         }
 
+        private static StringBuilder BuildText(KeyValuePair<string, DocumentationItem> item)
+        {
+            var v = item.Value;
+            StringBuilder stringBuilder = new StringBuilder();
+            foreach (var item2 in v.Generate())
+                stringBuilder.AppendLine(item2);
+            return stringBuilder;
+        }
+
+        private const string _parameter = "parameter";
+        private const string _include = "include";
+        private const string _inheritdoc = "inheritdoc";
+        private const string _permission = "permission";
+        private const string _exception = "exception";
+        private const string _completionlist = "completionlist";
         private const string _summary = "summary";
+        private const string _example = "example";
         private const string _remarks = "remarks";
         private const string _returns = "returns";
 
@@ -76,66 +140,60 @@ namespace Bb.Codings
 
             public DocumentationItem()
             {
-                _list = new List<(Func<string>, Func<string>)>();
+                _list = new List<Func<string>>();
+                _list2 = new Dictionary<string, DocumentationItem>();
             }
 
-            internal void Add(Func<string> action1, Func<string> action2)
+            internal void Add(Func<string> action1)
             {
-                _list.Add((action1, action2));
+                _list.Add(action1);
             }
 
-            internal void Add(Func<string> action)
+            internal void Add(string key, Func<string> action)
             {
-                _list.Add((null, action));
+
+                if (!_list2.TryGetValue(key, out DocumentationItem list))
+                    _list2.Add(key, list = new DocumentationItem() { Key = key });
+                
+                list.Add(action);
+
             }
+
+            internal void Add(string key, string key2, Func<string> action)
+            {
+
+                if (!_list2.TryGetValue(key, out DocumentationItem list))
+                    _list2.Add(key, list = new DocumentationItem() { Key = key, Key2 = key2 });
+
+                list.Add(action);
+
+            }
+
+            public Dictionary<string, DocumentationItem> Subs => _list2;
+
+            public string Key2 { get; private set; }
+            public string Key { get; private set; }
 
             internal List<string> Generate()
             {
 
                 List<string> comments = new List<string>();
 
-                //if (string.IsNullOrEmpty(subKey))
-                //{
-
                 foreach (var comment in _list)
                 {
-                    var txt = comment.Item2();
+                    var txt = comment();
                     foreach (var item in txt.Split('\r'))
                         if (!string.IsNullOrEmpty(item.Trim()) && !string.IsNullOrEmpty(item.Trim()))
                             comments.Add(item);
                 }
-
-                //foreach (var item in comments)
-                //    if (!string.IsNullOrEmpty(item.Trim()) && !string.IsNullOrEmpty(item.Trim()))
-                //        comments.Add(item.Trim('\n'));
-
-                //}
-                //else
-                //{
-
-                //foreach (var comment in _list)
-                //{
-                //    List<string> comments = new List<string>();
-                //    var txt1 = comment.Item1();
-                //    var txt2 = comment.Item2();
-                //    foreach (var item in txt2.Split('\r'))
-                //        if (!string.IsNullOrEmpty(item.Trim()) && !string.IsNullOrEmpty(item.Trim()))
-                //            comments.Add(item);
-                //    member.Comments.Add(new CodeCommentStatement($"<{key} {subKey}=\"{txt1}\">", true));
-                //    foreach (var item in comments)
-                //        if (!string.IsNullOrEmpty(item.Trim()) && !string.IsNullOrEmpty(item.Trim()))
-                //            member.Comments.Add(new CodeCommentStatement(item.Trim('\n'), true));
-                //    member.Comments.Add(new CodeCommentStatement("</" + key + ">", true));
-                //}
-
-                //}
 
                 return comments;
 
 
             }
 
-            private readonly List<(Func<string>, Func<string>)> _list;
+            private readonly List<Func<string>> _list;
+            private readonly Dictionary<string, DocumentationItem> _list2;
 
         }
 

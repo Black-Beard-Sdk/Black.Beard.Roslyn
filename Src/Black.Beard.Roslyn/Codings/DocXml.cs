@@ -63,7 +63,7 @@ namespace Bb.Codings
 
 
         private static XmlNameSyntax XmlName(this string name) => SyntaxFactory.XmlName(SyntaxFactory.Identifier(name));
-     
+
 
         public static XmlEmptyElementSyntax XmlNode(this string name, params XmlAttributeSyntax[] attributes)
         {
@@ -82,10 +82,94 @@ namespace Bb.Codings
             return DocumentationElement("summary", summary);
         }
 
-        //public static XmlElementSyntax DocumentationParameter(string name, string text)
-        //{
-        //    return DocumentationElement("param ", text, new List<Tuple<string, string>> { new { "name", name } });
-        //}
+        public static XmlElementSyntax DocumentationRemarks(string remarks)
+        {
+            return DocumentationElement("remarks", remarks);
+        }
+
+        public static XmlElementSyntax DocumentationReturns(string returns)
+        {
+            return DocumentationElement("returns", returns);
+        }
+
+        public static XmlElementSyntax DocumentationExample(string example)
+        {
+            return DocumentationElement("example", example);
+        }
+
+        public static XmlElementSyntax DocumentationParameter(string name, string text)
+        {
+            if (name is null)
+                throw new ArgumentNullException(nameof(name));
+
+            return DocumentationElement("param ", text, new List<Tuple<string, string>>
+            {
+                new Tuple<string, string>("name", name)
+            });
+        }
+
+        public static XmlElementSyntax DocumentationInclude(string file, string path)
+        {
+            if (file is null)
+                throw new ArgumentNullException(nameof(file));
+
+            if (path is null)
+                throw new ArgumentNullException(nameof(path));
+
+            return DocumentationElement("include ", null, new List<Tuple<string, string>>
+            {
+                new Tuple<string, string>("file", file),
+                new Tuple<string, string>("path", $"[@name=\"{path}\"]")
+            });
+        }
+
+        public static XmlElementSyntax DocumentationInheritdoc(string cref)
+        {
+            if (cref is null)
+                throw new ArgumentNullException(nameof(cref));
+
+            return DocumentationElement("inheritdoc ", null, new List<Tuple<string, string>>
+            {
+                new Tuple<string, string>("cref", cref)
+            });
+        }
+
+        public static XmlElementSyntax DocumentationPermission(string cref, string text)
+        {
+
+            if (cref is null)
+                throw new ArgumentNullException(nameof(cref));
+
+            return DocumentationElement("permission ", text, new List<Tuple<string, string>>
+            {
+                new Tuple<string, string>("cref", cref),
+            });
+        }
+
+        public static XmlElementSyntax DocumentationException(string cref, string text)
+        {
+
+            if (cref is null)
+                throw new ArgumentNullException(nameof(cref));
+
+            return DocumentationElement("exception ", text, new List<Tuple<string, string>>
+            {
+                new Tuple<string, string>("cref", cref),
+            });
+        }
+
+        public static XmlElementSyntax DocumentationCompletionlist(string cref, string text)
+        {
+
+            if (cref is null)
+                throw new ArgumentNullException(nameof(cref));
+
+            return DocumentationElement("completionlist ", text, new List<Tuple<string, string>>
+            {
+                new Tuple<string, string>("cref", cref),
+            });
+        }
+
 
         private static SyntaxToken XmlTextNewLine()
         {
@@ -116,7 +200,7 @@ namespace Bb.Codings
 
         private static XmlElementSyntax DocumentationElement(string elementName, string text, IEnumerable<Tuple<string, string>> attributes = null)
         {
-            var nameSyntax = elementName.XmlName();
+
             var exteriorTrivia = SyntaxFactory.DocumentationCommentExterior("///");
 
             string[] lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -137,27 +221,32 @@ namespace Bb.Codings
 
             var attributeSyntaxes = new List<XmlAttributeSyntax>();
 
-            //if (attributes != null)
-            //    foreach (var attribute in attributes)
-            //    {
-            //        attributeSyntaxes.Add
-            //        (
-            //            SyntaxFactory.XmlNameAttribute
-            //            (
-            //                attribute.Item1.XmlName(), SyntaxFactory.Token(SyntaxKind.DoubleQuoteToken),
-            //                SyntaxFactory.TokenList(XmlText(attribute.Item2)), SyntaxFactory.Token(SyntaxKind.DoubleQuoteToken)
-            //            )
-            //       );            
-            //    }
+            if (attributes != null)
+                foreach (var attribute in attributes)
+                {
 
-            return SyntaxFactory.XmlElement(
-                SyntaxFactory.XmlElementStartTag(nameSyntax, attributeSyntaxes.ToSyntaxList())
+                    attributeSyntaxes.Add
+                    (
+                        SyntaxFactory.XmlNameAttribute
+                        (
+                            attribute.Item1.XmlName(),
+                            SyntaxFactory.Token(SyntaxKind.DoubleQuoteToken), SyntaxFactory.IdentifierName(attribute.Item2),
+                            SyntaxFactory.Token(SyntaxKind.DoubleQuoteToken)
+                        )
+                   );
+                }
+            
+            return SyntaxFactory.XmlElement
+            (
+                SyntaxFactory.XmlElementStartTag(elementName.XmlName(), attributeSyntaxes.ToSyntaxList())
                     .WithLeadingTrivia(exteriorTrivia),
                 new XmlNodeSyntax[]
                 {
                     SyntaxFactory.XmlText(SyntaxFactory.TokenList(tokens))
                 }.ToSyntaxList(),
-                SyntaxFactory.XmlElementEndTag(nameSyntax).WithLeadingTrivia(exteriorTrivia));
+                SyntaxFactory.XmlElementEndTag(elementName.XmlName()).WithLeadingTrivia(exteriorTrivia)
+            );
+
         }
 
         private static SyntaxToken XmlText(string text)
@@ -165,7 +254,7 @@ namespace Bb.Codings
             return SyntaxFactory.XmlTextLiteral(new SyntaxTriviaList(), text, text, new SyntaxTriviaList());
         }
 
-      
+
 
     }
 

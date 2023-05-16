@@ -232,6 +232,7 @@ namespace Bb.Codings
 
             #endregion members
 
+            classDeclaration = ApplyXmlDocumentation(classDeclaration);
 
             return classDeclaration;
 

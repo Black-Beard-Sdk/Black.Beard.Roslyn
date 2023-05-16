@@ -77,6 +77,8 @@ namespace Bb.Codings
 
             }
 
+            ns = ApplyXmlDocumentation(ns);
+
             return ns;
         }
 

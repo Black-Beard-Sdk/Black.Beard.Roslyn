@@ -171,6 +171,8 @@ namespace Bb.Codings
             if (BodyCode != null)
                 methodDeclaration = methodDeclaration.WithBody(BodyCode.Build());
 
+            methodDeclaration = ApplyXmlDocumentation(methodDeclaration);
+
             return methodDeclaration;
 
         }

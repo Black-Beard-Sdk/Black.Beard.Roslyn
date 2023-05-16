@@ -120,6 +120,7 @@ namespace Bb.Codings
 
             #endregion Modifiers
 
+            fieldDeclaration = ApplyXmlDocumentation(fieldDeclaration);
 
             return fieldDeclaration;
 

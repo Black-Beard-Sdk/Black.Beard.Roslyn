@@ -46,9 +46,75 @@ namespace Bb.Codings
                 nodesArray, Enumerable.Repeat(SyntaxFactory.Token(separator), Math.Max(nodesArray.Length - 1, 0)));
         }
 
-        public static TNode WithDocumentationSummary<TNode>(this TNode node, string summary) where TNode : SyntaxNode
+        public static TNode WithDocumentationSummary<TNode>(this TNode node, string valueText) where TNode : SyntaxNode
         {
-            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationSummary(summary))));
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationSummary(valueText))));
+        }
+
+        public static TNode WithDocumentationRemarks<TNode>(this TNode node, string valueText) where TNode : SyntaxNode
+        {
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationRemarks(valueText))));
+        }
+
+        public static TNode WithDocumentationReturns<TNode>(this TNode node, string valueText) where TNode : SyntaxNode
+        {
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationReturns(valueText))));
+        }
+
+        public static TNode WithDocumentationExample<TNode>(this TNode node, string valueText) where TNode : SyntaxNode
+        {
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationExample(valueText))));
+        }
+
+        public static TNode WithDocumentationParameter<TNode>(this TNode node, string parameterName, string valueText) where TNode : SyntaxNode
+        {
+            if (parameterName is null)
+                throw new ArgumentNullException(nameof(parameterName));
+
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationParameter(parameterName, valueText))));
+        }
+
+        public static TNode WithDocumentationInclude<TNode>(this TNode node, string file, string path) where TNode : SyntaxNode
+        {
+            if (file is null)
+                throw new ArgumentNullException(nameof(file));
+
+            if (path is null)            
+                throw new ArgumentNullException(nameof(path));
+
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationInclude(file, path))));
+        }
+
+        public static TNode WithDocumentationInheritdoc<TNode>(this TNode node, string cref) where TNode : SyntaxNode
+        {
+            if (cref is null)
+                throw new ArgumentNullException(nameof(cref));
+
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationInheritdoc(cref))));
+        }
+
+        public static TNode WithDocumentationPermission<TNode>(this TNode node, string cref, string textValue) where TNode : SyntaxNode
+        {
+            if (cref is null)
+                throw new ArgumentNullException(nameof(cref));
+
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationPermission(cref, textValue))));
+        }
+
+        public static TNode WithDocumentationException<TNode>(this TNode node, string cref, string textValue) where TNode : SyntaxNode
+        {
+            if (cref is null)
+                throw new ArgumentNullException(nameof(cref));
+
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationException(cref, textValue))));
+        }
+
+        public static TNode WithDocumentationCompletionlist<TNode>(this TNode node, string cref, string textValue) where TNode : SyntaxNode
+        {
+            if (cref is null)
+                throw new ArgumentNullException(nameof(cref));
+
+            return node.WithLeadingTrivia(SyntaxFactory.Trivia(DocXml.DocumentationComment(DocXml.DocumentationCompletionlist(cref, textValue))));
         }
 
         public static T SingleDescendant<T>(this SyntaxNode node) where T : SyntaxNode
