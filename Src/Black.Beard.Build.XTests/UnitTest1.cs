@@ -105,7 +105,7 @@ namespace Bb.Beard.Build.XTests
                         })
                         .ItemGroup( p =>
                         {
-                            p.None(n =>
+                            p.None("nuget.config", n =>
                             {
                                 n.Pack(true)
                                 .PackaPath(@"\")

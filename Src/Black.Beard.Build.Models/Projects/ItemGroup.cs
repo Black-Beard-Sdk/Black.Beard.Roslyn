@@ -17,10 +17,10 @@ namespace Bb.Projects
             return result;
         }
 
-        public new ItemGroup None(Action<None> initializer)
+        public new ItemGroup None(string filename, Action<None> initializer)
         {
             
-            var none = new None();
+            var none = new None(filename);
 
             if (initializer != null)
                 initializer(none);
