@@ -136,12 +136,12 @@ namespace Bb.Codings
         }
 
 
-        public new CsClassDeclaration Field(string methodName, string type, Action<CsFieldDeclaration> action)
+        public new CsClassDeclaration Field(string fieldName, string type, Action<CsFieldDeclaration> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            action(Field(methodName, type));
+            action(Field(fieldName, type));
             return this;
         }
 

@@ -92,6 +92,9 @@ namespace Bb.Codings
         }
 
 
+
+
+
         public CsParameterDeclaration Parameter(string name, string typeName)
         {
             return Add(new CsParameterDeclaration(name, typeName));
@@ -127,6 +130,8 @@ namespace Bb.Codings
             action(_body);
             return this;
         }
+
+
 
         internal override SyntaxNode Build()
         {

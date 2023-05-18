@@ -20,7 +20,6 @@
 
 	<ItemGroup>
 	  <Compile Remove="Codings\CodeMarker.cs" />
-	  <Compile Remove="Codings\LevelBloc.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

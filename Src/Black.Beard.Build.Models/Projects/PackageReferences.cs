@@ -53,6 +53,22 @@ namespace Bb.Projects
 
         }
 
+        public PackageReferences PackageReference(string packageName, Action<PackageReference> initializer = null)
+        {
+
+            if (string.IsNullOrEmpty(packageName))
+                throw new ArgumentNullException(nameof(packageName));
+
+            var package = new PackageReference(packageName, null);
+            if (initializer != null)
+                initializer(package);
+
+            Add(package);
+
+            return this;
+
+        }
+        
         public PackageReferences PackageReference(string packageName, Version version, Action<PackageReference> initializer = null)
         {
             
@@ -63,6 +79,25 @@ namespace Bb.Projects
                 throw new ArgumentNullException(nameof(version));
 
             var package = new PackageReference(packageName, version);
+            if (initializer != null)
+                initializer(package);
+
+            Add(package);
+
+            return this;
+
+        }
+
+        public PackageReferences PackageReference(string packageName, string version, Action<PackageReference> initializer = null)
+        {
+
+            if (string.IsNullOrEmpty(packageName))
+                throw new ArgumentNullException(nameof(packageName));
+
+            if (version == null)
+                throw new ArgumentNullException(nameof(version));
+
+            var package = new PackageReference(packageName, new Version(version));
             if (initializer != null)
                 initializer(package);
 

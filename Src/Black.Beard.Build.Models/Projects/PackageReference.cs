@@ -13,11 +13,11 @@ namespace Bb.Projects
 
         public override XObject Serialize()
         {
-            var result = new XElement(Name,
-                new XAttribute("Include", Value), 
-                new XAttribute("Version", _version)
-                );
 
+            XElement result = new XElement(Name, new XAttribute("Include", Value));
+
+            if (_version != null)
+                result.Add(new XAttribute("Version", _version));
 
             return result;
 

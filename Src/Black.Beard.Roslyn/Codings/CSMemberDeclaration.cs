@@ -198,6 +198,14 @@ namespace Bb.Codings
 
         }
 
+
+        public IEnumerable<T> Items<T>()
+            where T : CSMemberDeclaration
+        {
+            foreach (var item in Members.OfType<T>())
+                yield return item;
+        }
+
         protected IEnumerable<CSMemberDeclaration> Members => _members;
 
         private readonly List<CsAttributeDeclaration> _attributes;

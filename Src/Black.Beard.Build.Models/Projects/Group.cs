@@ -30,6 +30,12 @@ namespace Bb.Projects
             return this;
         }
 
+        public Group Add(string key, Guid value)
+        {
+            Add(new PropertyKeyGuid(key, value));
+            return this;
+        }
+
         public Group Add(string key, string value)
         {
             Add(new PropertyKey(key, value));

@@ -3,9 +3,11 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Schema;
@@ -36,27 +38,27 @@ namespace Bb.Codings
 
         #region MemberAccess
 
-        public static MemberAccessExpressionSyntax MemberAccess(string name, string memberName)
+        public static MemberAccessExpressionSyntax MemberAccess(this string name, string memberName)
         {
             return MemberAccess(SyntaxFactory.ParseExpression(name), memberName);
         }
 
-        public static MemberAccessExpressionSyntax MemberAccess(NamedNode namedNode, string memberName)
+        public static MemberAccessExpressionSyntax MemberAccess(this NamedNode namedNode, string memberName)
         {
             return MemberAccess((ExpressionSyntax)namedNode, memberName);
         }
 
-        public static MemberAccessExpressionSyntax MemberAccess(ExpressionSyntax expression, string memberName)
+        public static MemberAccessExpressionSyntax MemberAccess(this ExpressionSyntax expression, string memberName)
         {
             return MemberAccess(expression, (SimpleNameSyntax)SyntaxFactory.ParseName(memberName));
         }
 
-        public static MemberAccessExpressionSyntax MemberAccess(string name, SimpleNameSyntax memberName)
+        public static MemberAccessExpressionSyntax MemberAccess(this string name, SimpleNameSyntax memberName)
         {
             return MemberAccess(SyntaxFactory.ParseExpression(name), memberName);
         }
 
-        public static MemberAccessExpressionSyntax MemberAccess(ExpressionSyntax expression, SimpleNameSyntax memberName)
+        public static MemberAccessExpressionSyntax MemberAccess(this ExpressionSyntax expression, SimpleNameSyntax memberName)
         {
             return SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, expression, memberName);
         }
@@ -78,7 +80,7 @@ namespace Bb.Codings
         public static AssignmentExpressionSyntax Set(this ExpressionSyntax left, ExpressionSyntax right)
         {
             return SyntaxFactory.AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, left, right);
-          
+
         }
 
         #endregion Sets
@@ -86,35 +88,80 @@ namespace Bb.Codings
         public static ThrowStatementSyntax Thrown(this ExpressionSyntax exception)
         {
             // return SyntaxFactory.ThrowStatement(expression);
-            return SyntaxFactory.ThrowStatement(SyntaxKind.ThrowStatement.ToToken(), exception, SyntaxKind.SemicolonToken.ToToken());
+            return SyntaxFactory.ThrowStatement(exception);
         }
 
         #region calls
 
-        public static InvocationExpressionSyntax Call(ExpressionSyntax expression, params ExpressionSyntax[] arguments)
+        public static InvocationExpressionSyntax Call(this ExpressionSyntax target, string methodName, params ExpressionSyntax[] arguments)
         {
-            return Call(expression, (IEnumerable<ExpressionSyntax>)arguments);
+            return Call(target, methodName, (IEnumerable<ExpressionSyntax>)arguments);
         }
 
-        public static InvocationExpressionSyntax Call(
-            ExpressionSyntax expression, IEnumerable<ExpressionSyntax> arguments)
+        public static InvocationExpressionSyntax Call(this ExpressionSyntax target, string methodName, IEnumerable<ExpressionSyntax> arguments)
         {
-            return SyntaxFactory.InvocationExpression(
-                expression,
-                SyntaxFactory.ArgumentList(arguments.Select(SyntaxFactory.Argument).ToSeparatedList())
+
+
+            var invokation = SyntaxFactory.InvocationExpression
+            (
+                SyntaxFactory.MemberAccessExpression
+                (
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    target,
+                    SyntaxFactory.IdentifierName(methodName)
+                )
             );
+
+            if (arguments != null)
+                invokation = invokation.WithArgumentList(SyntaxFactory.ArgumentList(arguments.Select(SyntaxFactory.Argument).ToSeparatedList()));
+
+            return invokation;
+
         }
 
         #endregion calls
 
-        public static ReturnStatementSyntax Return(NamedNode namedNode)
+        public static ReturnStatementSyntax Return(this NamedNode namedNode)
         {
             return SyntaxFactory.ReturnStatement(namedNode);
         }
 
-        public static ReturnStatementSyntax Return(ExpressionSyntax expression)
+        public static ReturnStatementSyntax Return(this ExpressionSyntax expression)
         {
             return SyntaxFactory.ReturnStatement(expression);
+        }
+
+        public static BlockSyntax ToBlock(this StatementList self)
+        {
+            return SyntaxFactory.Block(self);
+        }
+
+        public static CatchClauseSyntax Catch(this TypeSyntax exceptionType, string exceptionVariableName, Action<StatementList> action)
+        {
+
+            var list = new StatementList();
+            action(list);
+
+            var c = SyntaxFactory.CatchClause().WithDeclaration
+            (
+
+                SyntaxFactory.CatchDeclaration(exceptionType)
+                    .WithIdentifier(SyntaxFactory.Identifier(exceptionVariableName))
+
+            ).WithBlock(list.ToBlock());
+
+            return c;
+
+        }
+
+        public static TryStatementSyntax TryCatchs(BlockSyntax @try, params CatchClauseSyntax[] catchs)
+        {
+            return SyntaxFactory.TryStatement(@try, catchs.ToSyntaxList(), null);
+        }
+
+        public static TryStatementSyntax TryCatchs(BlockSyntax @try, FinallyClauseSyntax @finally, params CatchClauseSyntax[] catchs)
+        {
+            return SyntaxFactory.TryStatement(@try, catchs.ToSyntaxList(), @finally);
         }
 
         public static IfStatementSyntax If(ExpressionSyntax condition, Func<StatementSyntax> _true, Func<StatementSyntax> _false = null)
@@ -393,35 +440,48 @@ namespace Bb.Codings
                 initializer);
         }
 
-        public static ObjectCreationExpressionSyntax NewObject(
-            string typeName, IEnumerable<ExpressionSyntax> arguments,
-            IEnumerable<IEnumerable<ExpressionSyntax>> initializers = null)
+        public static ObjectCreationExpressionSyntax NewObject
+        (
+            this string typeName,
+            IEnumerable<ExpressionSyntax> arguments,
+            IEnumerable<IEnumerable<ExpressionSyntax>> initializers = null
+            )
         {
             return NewObject(SyntaxFactory.ParseTypeName(typeName), arguments, initializers);
         }
 
-        public static ObjectCreationExpressionSyntax NewObject(
-            string typeName, params ExpressionSyntax[] arguments)
+        public static ObjectCreationExpressionSyntax NewObject
+        (
+            this string typeName,
+            params ExpressionSyntax[] arguments)
         {
             return NewObject(typeName, (IEnumerable<ExpressionSyntax>)arguments);
         }
 
-        public static ObjectCreationExpressionSyntax NewObject(
-            TypeSyntax type, params ExpressionSyntax[] arguments)
+        public static ObjectCreationExpressionSyntax NewObject
+        (
+            this TypeSyntax type,
+            params ExpressionSyntax[] arguments
+            )
         {
             return NewObject(type, (IEnumerable<ExpressionSyntax>)arguments);
         }
 
-        public static ObjectCreationExpressionSyntax NewObject(
-            TypeSyntax type, IEnumerable<ExpressionSyntax> arguments, IEnumerable<ExpressionSyntax> initializers)
+        public static ObjectCreationExpressionSyntax NewObject
+        (
+            this TypeSyntax type,
+            IEnumerable<ExpressionSyntax> arguments,
+            IEnumerable<ExpressionSyntax> initializers)
         {
             return NewObject(type, arguments, initializers.Select(i => new[] { i }));
         }
 
-        public static ObjectCreationExpressionSyntax NewObject(
+        public static ObjectCreationExpressionSyntax NewObject
+        (
             TypeSyntax type, IEnumerable<ExpressionSyntax> arguments,
             IEnumerable<IEnumerable<ExpressionSyntax>> initializers = null)
         {
+
             var argumentsArray = arguments == null ? new ExpressionSyntax[0] : arguments.ToArray();
             var argumentList =
                 argumentsArray.Length == 0
@@ -435,6 +495,7 @@ namespace Bb.Codings
                         SyntaxKind.CollectionInitializerExpression, initializers.Select(ToInitializer).ToSeparatedList());
 
             return SyntaxFactory.ObjectCreationExpression(type, argumentList, initializer);
+
         }
 
         private static ExpressionSyntax ToInitializer(IEnumerable<ExpressionSyntax> expressions)
@@ -457,7 +518,7 @@ namespace Bb.Codings
 
         #region Types
 
-        public static TypeSyntax AsType(this Type self, object[] genericArguments)
+        public static TypeSyntax AsType(this Type self, params object[] genericArguments)
         {
 
             if (self == typeof(int))
@@ -604,6 +665,8 @@ namespace Bb.Codings
             if (genericArguments != null && genericArguments.Length > 0)
             {
 
+                sb.Append("<");
+
                 var g = genericArguments[0];
                 if (g is string s1)
                     sb.Append(s1);
@@ -615,7 +678,6 @@ namespace Bb.Codings
 
                 }
 
-                sb.Append("<");
                 for (int i = 1; i < genericArguments.Length; i++)
                 {
                     sb.Append(", ");
@@ -638,13 +700,71 @@ namespace Bb.Codings
 
         #endregion Types
 
+        public static LocalDeclarationStatementSyntax DeclareLocalVar(this VariableDeclarationSyntax variableDeclaration)
+        {
+            var localDeclaration = SyntaxFactory.LocalDeclarationStatement(variableDeclaration);
+            return localDeclaration;
+        }
+
         public static VariableDeclarationSyntax DeclareVar(this string name, TypeSyntax type)
         {
 
             var variableDeclaration = SyntaxFactory.VariableDeclaration(type)
-              .AddVariables(SyntaxFactory.VariableDeclarator(name));
+                .WithVariables
+                (
+                    SyntaxFactory.SingletonSeparatedList(SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier(name)))
+                );
+
 
             return variableDeclaration;
+
+        }
+
+        public static VariableDeclarationSyntax DeclareVar(this string name, TypeSyntax type, ExpressionSyntax initializer)
+        {
+
+            var variableDeclaration = SyntaxFactory.VariableDeclaration(type)
+                .WithVariables
+                (
+                    SyntaxFactory.SingletonSeparatedList
+                    (
+                        SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier(name))
+                        .WithInitializer(SyntaxFactory.EqualsValueClause(initializer))
+                    )
+                );
+
+            return variableDeclaration;
+
+        }
+
+        public static LocalDeclarationStatementSyntax DeclareLocalVar(this string name, TypeSyntax type)
+        {
+
+            var variableDeclaration = SyntaxFactory.VariableDeclaration(type)
+                .WithVariables
+                (
+                    SyntaxFactory.SingletonSeparatedList(SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier(name)))
+                );
+
+
+            return SyntaxFactory.LocalDeclarationStatement(variableDeclaration);
+
+        }
+
+        public static LocalDeclarationStatementSyntax DeclareLocalVar(this string name, TypeSyntax type, ExpressionSyntax initializer)
+        {
+
+            var variableDeclaration = SyntaxFactory.VariableDeclaration(type)
+                .WithVariables
+                (
+                    SyntaxFactory.SingletonSeparatedList
+                    (
+                        SyntaxFactory.VariableDeclarator(SyntaxFactory.Identifier(name))
+                        .WithInitializer(SyntaxFactory.EqualsValueClause(initializer))
+                    )
+                );
+
+            return SyntaxFactory.LocalDeclarationStatement(variableDeclaration);
 
         }
 
@@ -691,7 +811,8 @@ namespace Bb.Codings
             return modifier == null ? SyntaxFactory.TokenList() : SyntaxFactory.TokenList(SyntaxFactory.Token(modifier.Value));
         }
 
-        public static ConstructorDeclarationSyntax ConstructorDeclaration(
+        public static ConstructorDeclarationSyntax ConstructorDeclaration
+        (
             IEnumerable<SyntaxKind> modifiers, string className, IEnumerable<ParameterSyntax> parameters = null,
             IEnumerable<StatementSyntax> statements = null, ConstructorInitializerSyntax constructorInitializer = null)
         {

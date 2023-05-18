@@ -2,6 +2,7 @@
 
 namespace Bb.Projects
 {
+
     public class PropertyKeyVersion : PropertyKey
     {
 

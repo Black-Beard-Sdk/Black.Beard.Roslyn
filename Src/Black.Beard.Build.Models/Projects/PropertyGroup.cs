@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System;
+using System.Xml.Linq;
 
 namespace Bb.Projects
 {
@@ -71,11 +72,29 @@ namespace Bb.Projects
         {
             Add("GeneratePackageOnBuild", value);
             return this;
+        }               
+
+        public PropertyGroup DockerDefaultTargetOS(DockerDefaultTargetOS value)
+        {
+            Add(value);
+            return this;
         }
 
-        public PropertyGroup Nullable(bool value = true)
+        public PropertyGroup UserSecretsId(Guid value)
         {
-            Add("Nullable", value);
+            Add("UserSecretsId", value);
+            return this;
+        }
+
+        public PropertyGroup UserSecretsId(string value)
+        {
+            Add("UserSecretsId", Guid.Parse(value));
+            return this;
+        }
+
+        public PropertyGroup UserSecretsId()
+        {
+            Add("UserSecretsId", Guid.NewGuid());
             return this;
         }
 
@@ -85,12 +104,21 @@ namespace Bb.Projects
             return this;
         }
 
+        public PropertyGroup Nullable(bool value = true)
+        {
+            if (value)
+                Add("Nullable", "enable");
+            else
+                Add("Nullable", "disable");
+            return this;
+        }
+
         public PropertyGroup ImplicitUsings(bool activated = true)
         {
             if (activated)
-                Add("ImplicitUsings", "Enabled");
+                Add("ImplicitUsings", "enable");
             else
-                Add("ImplicitUsings", "Disabled");
+                Add("ImplicitUsings", "disable");
             return this;
         }
 
