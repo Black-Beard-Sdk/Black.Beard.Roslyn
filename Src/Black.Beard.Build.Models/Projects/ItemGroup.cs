@@ -33,32 +33,4 @@ namespace Bb.Projects
 
     }
 
-    public class None : Group
-    {
-
-        public None(bool duplicateMode = true) : base(duplicateMode)
-        {
-        }
-
-        public None Pack(bool value = true)
-        {
-            Add("Pack", value);
-            return this;
-        }
-
-        public None PackaPath(string value)
-        {
-            Add("PackaPath", value);
-            return this;
-        }
-
-        public XElement Serialize()
-        {
-            var result = new XElement("None");
-            Serialize(result);
-            return result;
-        }
-
-    }
-
 }

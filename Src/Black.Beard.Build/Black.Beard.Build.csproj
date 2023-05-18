@@ -15,44 +15,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Build\AssemblyVersion.cs" />
-	  <Compile Remove="Build\DefaultTargets.cs" />
-	  <Compile Remove="Build\Description.cs" />
-	  <Compile Remove="Build\FileVersion.cs" />
-	  <Compile Remove="Build\GeneratePackageOnBuild.cs" />
-	  <Compile Remove="Build\Group.cs" />
-	  <Compile Remove="Build\ImplicitUsings.cs" />
-	  <Compile Remove="Build\InitialTargets.cs" />
-	  <Compile Remove="Build\IsPackable.cs" />
-	  <Compile Remove="Build\ItemGroup.cs" />
-	  <Compile Remove="Build\MsProjects.cs" />
-	  <Compile Remove="Build\Nullable.cs" />
-	  <Compile Remove="Build\PackageProjectUrl.cs" />
-	  <Compile Remove="Build\PackageReadmeFile.cs" />
-	  <Compile Remove="Build\PackageReference.cs" />
-	  <Compile Remove="Build\PackageReferences.cs" />
-	  <Compile Remove="Build\PostDeploy.cs" />
-	  <Compile Remove="Build\PreDeploy.cs" />
-	  <Compile Remove="Build\ProjectReference.cs" />
-	  <Compile Remove="Build\ProjectReferences.cs" />
-	  <Compile Remove="Build\ProjectSdk.cs" />
-	  <Compile Remove="Build\PropertyGroup.cs" />
-	  <Compile Remove="Build\PropertyKey.cs" />
-	  <Compile Remove="Build\Reference.cs" />
-	  <Compile Remove="Build\References.cs" />
-	  <Compile Remove="Build\RepositoryUrl.cs" />
-	  <Compile Remove="Build\RootNamespace.cs" />
-	  <Compile Remove="Build\SqlCmdVariable.cs" />
-	  <Compile Remove="Build\SqlCmdVariables.cs" />
-	  <Compile Remove="Build\SqlServerVersion.cs" />
-	  <Compile Remove="Build\StartupObject.cs" />
-	  <Compile Remove="Build\TargetFramework.cs" />
-	  <Compile Remove="Build\ToolsVersion.cs" />
-	  <Compile Remove="Build\UseWindowsForms.cs" />
-	  <Compile Remove="Build\UseWPF.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.1" />
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.1" />
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.1" />
@@ -68,6 +30,10 @@
 	<ItemGroup>
 		<None Update="nuget.config">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="README.md">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
 		</None>
 	</ItemGroup>
 
