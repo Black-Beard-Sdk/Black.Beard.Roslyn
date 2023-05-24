@@ -34,12 +34,21 @@ namespace Bb.Codings
         public CSDocumentationDeclaration Documentation => _doc ??= new CSDocumentationDeclaration();
 
 
+        #region attributes
+
+
+
         public CsAttributeDeclaration Attribute(Type type)
         {
             return Add(new CsAttributeDeclaration(type));
         }
 
-        #region attributes
+        public CsAttributeDeclaration Attribute(Type type, Action<CsAttributeDeclaration> action)
+        {
+            var attribute = new CsAttributeDeclaration(type);
+            action(attribute);
+            return Add(attribute);
+        }
 
         public CsAttributeDeclaration Attribute(string attributeName)
         {

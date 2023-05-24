@@ -238,6 +238,7 @@ namespace Bb.Codings
         {
             System.Diagnostics.Debugger.Break();
         }
+
         public StatementList Code { get; }
 
         public CodeLevelBlock Add(StatementSyntax statementSyntax)

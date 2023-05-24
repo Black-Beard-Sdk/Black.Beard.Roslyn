@@ -88,18 +88,28 @@ namespace Bb.Codings
         internal override SyntaxNode Build()
         {
 
-            var v = Name.DeclareVar(TypeReturn);
+            if (IsEnumMember)
+            {
 
-            FieldDeclarationSyntax fieldDeclaration = SyntaxFactory.FieldDeclaration(v);
+                EnumMemberDeclarationSyntax enumMemberDeclaration = SyntaxFactory.EnumMemberDeclaration(Name);
+                SetAttribute(enumMemberDeclaration);
+                enumMemberDeclaration = ApplyXmlDocumentation(enumMemberDeclaration);
 
-            #region attributes
+                if (this.InitialValue != null)
+                    enumMemberDeclaration = enumMemberDeclaration.WithEqualsValue(SyntaxFactory.EqualsValueClause(this.InitialValue));
 
-            var attr = GetAttributes();
-            foreach (var attribute in attr)
-                fieldDeclaration = fieldDeclaration.AddAttributeLists(attribute);
+                return enumMemberDeclaration;
 
-            #endregion attributes
+            }
 
+            VariableDeclarationSyntax variable;
+            if (this.InitialValue != null)
+                variable = Name.DeclareVar(TypeReturn, this.InitialValue);
+            else
+                variable = Name.DeclareVar(TypeReturn);
+
+            FieldDeclarationSyntax fieldDeclaration = SyntaxFactory.FieldDeclaration(variable);
+            SetAttribute(fieldDeclaration);
 
             #region Modifiers
 
@@ -126,7 +136,33 @@ namespace Bb.Codings
 
         }
 
+        private FieldDeclarationSyntax SetAttribute(FieldDeclarationSyntax declaration)
+        {
+            var attr = GetAttributes();
+            foreach (var attribute in attr)
+                declaration = declaration.AddAttributeLists(attribute);
+            return declaration;
+        }
+
+        private EnumMemberDeclarationSyntax SetAttribute(EnumMemberDeclarationSyntax declaration)
+        {
+            var attr = GetAttributes();
+            foreach (var attribute in attr)
+                declaration = declaration.AddAttributeLists(attribute);
+            return declaration;
+        }
+
+        public CsFieldDeclaration SetInitialValue(object value)
+        {
+            this.InitialValue = value.Literal();
+            return this;
+        }
+
+
         private TypeSyntax TypeReturn;
+
+        public bool IsEnumMember { get; set; }
+        public ExpressionSyntax InitialValue { get; private set; }
 
     }
 

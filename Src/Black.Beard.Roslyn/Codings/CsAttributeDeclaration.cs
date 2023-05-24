@@ -38,24 +38,28 @@ namespace Bb.Codings
 
         #region arguments
 
-        public CsAttributeParameterDeclaration Argument(string value)
+        public CsAttributeDeclaration Argument(string value)
         {
-            return Add(new CsAttributeParameterDeclaration(value));
+            Add(new CsAttributeParameterDeclaration(value));
+            return this;
         }
 
-        public CsAttributeParameterDeclaration Argument(ExpressionSyntax value)
+        public CsAttributeDeclaration Argument(ExpressionSyntax value)
         {
-            return Add(new CsAttributeParameterDeclaration(value));
+            Add(new CsAttributeParameterDeclaration(value));
+            return this;
         }
 
-        public CsAttributeParameterDeclaration Argument(string name, string value)
+        public CsAttributeDeclaration Argument(string name, string value)
         {
-            return Add(new CsAttributeParameterDeclaration(name, value));
+            Add(new CsAttributeParameterDeclaration(name, value));
+            return this;
         }
 
-        public CsAttributeParameterDeclaration Argument(string name, ExpressionSyntax value)
+        public CsAttributeDeclaration Argument(string name, ExpressionSyntax value)
         {
-            return Add(new CsAttributeParameterDeclaration(name, value));
+            Add(new CsAttributeParameterDeclaration(name, value));
+            return this;
         }
 
         public CsAttributeDeclaration Argument(string name, Action<CsAttributeParameterDeclaration> action)

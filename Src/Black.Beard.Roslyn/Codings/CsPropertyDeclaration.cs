@@ -115,10 +115,15 @@ namespace Bb.Codings
 
         #endregion Modifiers
 
-
         public new CsPropertyDeclaration Attribute(string attributeName, Action<CsAttributeDeclaration> action)
         {
             base.Attribute(attributeName, action);
+            return this;
+        }
+
+        public new CsPropertyDeclaration Attribute(Type attribute, Action<CsAttributeDeclaration> action)
+        {
+            base.Attribute(attribute, action);
             return this;
         }
 

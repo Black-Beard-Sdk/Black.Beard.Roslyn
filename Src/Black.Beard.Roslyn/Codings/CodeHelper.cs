@@ -222,6 +222,81 @@ namespace Bb.Codings
 
         #region literal
 
+
+        public static LiteralExpressionSyntax Literal(this object self)
+        {
+
+            if (self == null)
+                throw new ArgumentNullException(nameof(self));
+
+            if (self is int s1)
+                return s1.Literal();
+
+            if (self is string s2)
+                return s2.Literal();
+
+            if (self is uint s3)
+                return s3.Literal();
+
+            if (self is long s4)
+                return s4.Literal();
+
+            if (self is ulong s5)
+                return s5.Literal();
+
+            if (self is float s6)
+                return s6.Literal();
+
+            if (self is double s7)
+                return s7.Literal();
+
+            if (self is decimal s8)
+                return s8.Literal();
+
+            if (self is char s9)
+                return s9.Literal();
+
+            throw new NotImplementedException(self.ToString());
+
+        }
+
+        public static LiteralExpressionSyntax Literal(this string self, object value)
+        {
+
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            if (value is int s1)
+                return self.Literal(s1);
+
+            if (value is string s2)
+                return self.Literal(s2);
+
+            if (value is uint s3)
+                return self.Literal(s3);
+
+            if (value is long s4)
+                return self.Literal(s4);
+
+            if (value is ulong s5)
+                return self.Literal(s5);
+
+            if (value is float s6)
+                return self.Literal(s6);
+
+            if (value is double s7)
+                return self.Literal(s7);
+
+            if (value is decimal s8)
+                return self.Literal(s8);
+
+            if (value is char s9)
+                return self.Literal(s9);
+
+            throw new NotImplementedException(self.ToString());
+
+        }
+
         public static LiteralExpressionSyntax Literal(this int self)
         {
             return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
@@ -619,42 +694,6 @@ namespace Bb.Codings
                 sb.Append(self.Name);
             }
 
-            if (self.IsArray)
-            {
-
-            }
-
-            //if (genericArguments != null && genericArguments.Length > 0)
-            //{
-
-            //    var g = genericArguments[0];
-            //    if (g is string s1)
-            //        sb.Append(s1);
-            //    else
-            //        if (g is Type t1)
-            //        sb.Append(t1.Name);
-            //    else
-            //    {
-
-            //    }
-
-            //    sb.Append("<");
-            //    for (int i = 1; i < genericArguments.Length; i++)
-            //    {
-            //        sb.Append(", ");
-            //        g = genericArguments[i];
-            //        if (g is string s2)
-            //            sb.Append(s2);
-            //        else
-            //        if (g is Type t2)
-            //            sb.Append(t2.Name);
-            //        else
-            //        {
-
-            //        }
-            //    }
-            //    sb.Append(">");
-            //}
 
             return sb;
         }
@@ -697,6 +736,30 @@ namespace Bb.Codings
 
             return sb;
         }
+
+        public static StringBuilder BuildTypename(this string self, params string[] genericArguments)
+        {
+            StringBuilder sb = new StringBuilder(self);
+            if (genericArguments != null && genericArguments.Length > 0)
+            {
+
+                sb.Append("<");
+
+                var g = genericArguments[0];
+                sb.Append(g);
+
+                for (int i = 1; i < genericArguments.Length; i++)
+                {
+                    sb.Append(", ");
+                    g = genericArguments[i];
+                    sb.Append(g);
+                }
+                sb.Append(">");
+            }
+
+            return sb;
+        }
+
 
         #endregion Types
 

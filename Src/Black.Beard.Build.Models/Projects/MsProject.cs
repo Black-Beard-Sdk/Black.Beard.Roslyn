@@ -1,6 +1,7 @@
 ﻿using System.Xml.Linq;
 using System.Reflection;
 using System.Text;
+using System.IO;
 
 namespace Bb.Projects
 {
@@ -215,23 +216,11 @@ namespace Bb.Projects
         /// <returns></returns>
         public MsProject AppendDocument(string path, string filename, StringBuilder content)
         {
-
-            var targetDirectory = Path.Combine(this.Directory.FullName, path);
-            var dir = new DirectoryInfo(targetDirectory);
-
-            if (!dir.Exists)
-                dir.Create();
-
-            if (File.Exists(filename))
-                File.Delete(filename);
-
-            var file = Path.Combine(dir.FullName, filename);
-
+            var file = PrepareSave(path, filename);
             file.ToString().Save(content.ToString());
-
             return this;
-
         }
+
 
         /// <summary>
         /// Appends a new document in the project.
@@ -241,8 +230,44 @@ namespace Bb.Projects
         /// <returns></returns>
         public MsProject AppendDocument(string filename, StringBuilder content)
         {
+            var file = PrepareSave(null, filename);
+            file.ToString().Save(content.ToString());
+            return this;
+        }
 
+        /// <summary>
+        /// Appends a new document in the project.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public MsProject AppendDocument(string filename, string content)
+        {
+            var file = PrepareSave(null, filename);
+            file.ToString().Save(content);
+            return this;
+        }
+
+        /// <summary>
+        /// Appends a new document in the project.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="filename">The filename.</param>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public MsProject AppendDocument(string path, string filename, string content)
+        {
+            var file = PrepareSave(path, filename);
+            file.ToString().Save(content);
+            return this;
+        }
+
+
+        private string PrepareSave(string? path, string filename)
+        {
             var targetDirectory = this.Directory.FullName;
+            if (!string.IsNullOrEmpty(path))
+                targetDirectory = Path.Combine(this.Directory.FullName, path);
             var dir = new DirectoryInfo(targetDirectory);
 
             if (!dir.Exists)
@@ -253,11 +278,10 @@ namespace Bb.Projects
 
             var file = Path.Combine(dir.FullName, filename);
 
-            file.ToString().Save(content.ToString());
-
-            return this;
+            return file;
 
         }
+
 
         protected static bool IsRunningOnMono { get => Type.GetType("Mono.Runtime") != null; }
 

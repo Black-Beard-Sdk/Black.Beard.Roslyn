@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 namespace Bb.Codings
 {
+
+
     public class CsClassDeclaration : CsTypeDeclaration
     {
 

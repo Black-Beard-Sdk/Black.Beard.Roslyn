@@ -2,9 +2,9 @@
 
 namespace Bb.Codings
 {
+
     public class Data
     {
-
 
         public Data()
         {

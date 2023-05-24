@@ -20,35 +20,20 @@ namespace Bb.Codings
             _stack = new Stack<CodeLevelBlock>();
 
             _variables = new Dictionary<string, Variable>();
-            //_datas = new Dictionary<object, Data>();
-
+            _datas = new Dictionary<object, Data>();
+            this.DefaultData = new Data();
         }
 
 
-        //public Data GetDataFor(object key)
-        //{
+        public Data GetDataFor(object key)
+        {
 
-        //    if (!_datas.TryGetValue(key, out Data data))
-        //        _datas.Add(key, data = new Data());
+            if (!_datas.TryGetValue(key, out Data data))
+                _datas.Add(key, data = new Data());
 
-        //    return data;
+            return data;
 
-        //}
-
-
-        //public void Remove(LevelBloc levelBloc)
-        //{
-
-        //    var t = _stack.Pop();
-
-        //    if (t != levelBloc)
-        //        throw new InvalidOperationException();
-
-        //    if (_datas.ContainsKey(t._source))
-        //        _datas.Remove(t._source);
-
-        //}
-
+        }
 
         #region variables
 
@@ -175,6 +160,10 @@ namespace Bb.Codings
 
 
         internal Dictionary<string, Variable> _variables;
+        private readonly Dictionary<object, Data> _datas;
+
+        public Data DefaultData { get; }
+
         internal readonly Stack<CodeLevelBlock> _stack;
 
 
