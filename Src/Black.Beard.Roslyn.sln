@@ -35,7 +35,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Black.Beard.Dacpac.Tests", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Black.Beard.Projects.Models", "Black.Beard.Build.Models\Black.Beard.Projects.Models.csproj", "{07C981CE-14CD-49AE-81E6-3C0EED29AB7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Black.Beard.Process", "Black.Beard.Process\Black.Beard.Process.csproj", "{FAE2EDE0-7629-4CFD-9B40-794CA3CC4C6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Black.Beard.Process", "Black.Beard.Process\Black.Beard.Process.csproj", "{FAE2EDE0-7629-4CFD-9B40-794CA3CC4C6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Black.Beard.UnitTests", "Black.Beard.UnitTests\Black.Beard.UnitTests.csproj", "{71604BDB-7EDA-436D-84D6-95C466BDE77F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +99,10 @@ Global
 		{FAE2EDE0-7629-4CFD-9B40-794CA3CC4C6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAE2EDE0-7629-4CFD-9B40-794CA3CC4C6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAE2EDE0-7629-4CFD-9B40-794CA3CC4C6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71604BDB-7EDA-436D-84D6-95C466BDE77F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71604BDB-7EDA-436D-84D6-95C466BDE77F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71604BDB-7EDA-436D-84D6-95C466BDE77F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71604BDB-7EDA-436D-84D6-95C466BDE77F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
