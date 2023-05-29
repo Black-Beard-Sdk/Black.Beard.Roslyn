@@ -85,10 +85,53 @@ namespace Bb.Codings
 
         #endregion Sets
 
+
+        public static NamespaceDeclarationSyntax PragmaWarning(this NamespaceDeclarationSyntax self, bool restore, params string[] codes)
+        {
+
+            var t = SyntaxFactory.Token
+            (
+                SyntaxFactory.TriviaList(PragmaWarning(restore, codes)),
+                SyntaxKind.NamespaceKeyword,
+                SyntaxFactory.TriviaList()
+            );
+
+            return self.WithNamespaceKeyword(t);
+
+        }
+
+
+        public static SyntaxTrivia PragmaWarning(bool restore, params string[] codes)
+        {
+
+
+            List<ExpressionSyntax> errors = new List<ExpressionSyntax>();
+            foreach (var item in codes)
+                errors.Add(SyntaxFactory.IdentifierName(item));
+
+            var e = SyntaxFactory.SeparatedList<ExpressionSyntax>(errors);
+
+            SyntaxKind activation = restore ? SyntaxKind.RestoreKeyword : SyntaxKind.DisableKeyword;
+
+            SyntaxTrivia result = SyntaxFactory.Trivia
+            (
+                SyntaxFactory.PragmaWarningDirectiveTrivia(SyntaxFactory.Token(activation), true)
+                .WithErrorCodes(e)
+            );
+
+            return result;
+
+        }
+
+
         public static ThrowStatementSyntax Thrown(this ExpressionSyntax exception)
         {
-            // return SyntaxFactory.ThrowStatement(expression);
             return SyntaxFactory.ThrowStatement(exception);
+        }
+
+        public static ThrowStatementSyntax Thrown()
+        {
+            return SyntaxFactory.ThrowStatement();
         }
 
         #region calls

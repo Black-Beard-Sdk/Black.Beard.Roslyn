@@ -29,40 +29,6 @@ namespace Bb.Codings
             TypeReturn = "void" .AsType();
         }
 
-        #region Modifiers
-
-        public new CsMethodDeclaration IsStatic()
-        {
-            base.IsStatic();
-            return this;
-        }
-
-        public new CsMethodDeclaration IsPublic()
-        {
-            base.IsPublic();
-            return this;
-        }
-
-        public new CsMethodDeclaration IsPrivate()
-        {
-            base.IsPrivate();
-            return this;
-        }
-
-        public new CsMethodDeclaration IsInternal()
-        {
-            base.IsInternal();
-            return this;
-        }
-
-        public new CsMethodDeclaration IsProtected()
-        {
-            base.IsProtected();
-            return this;
-        }
-
-        #endregion Modifiers
-
         #region ReturnType
 
         public CsMethodDeclaration ReturnType(string type)
@@ -84,16 +50,6 @@ namespace Bb.Codings
         }
 
         #endregion ReturnType
-
-        public new CsMethodDeclaration Attribute(string attributeName, Action<CsAttributeDeclaration> action)
-        {
-            base.Attribute(attributeName, action);
-            return this;
-        }
-
-
-
-
 
         public CsParameterDeclaration Parameter(string name, string typeName)
         {

@@ -7,7 +7,7 @@ namespace Bb.Projects
     {
 
         public PropertyKeyVersion(string key, Version value) 
-            : base(key, value.ToString())
+            : base(key, value?.ToString())
         {
 
         }

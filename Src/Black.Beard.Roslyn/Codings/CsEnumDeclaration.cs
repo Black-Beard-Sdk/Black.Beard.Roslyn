@@ -5,7 +5,7 @@ using System;
 
 namespace Bb.Codings
 {
-    public class CsEnumDeclaration : CsTypeDeclaration
+    public class CsEnumDeclaration : CsBaseTypeDeclaration
     {
 
         public CsEnumDeclaration(string name)
@@ -13,62 +13,6 @@ namespace Bb.Codings
         {
             this.BaseType = typeof(Int32);
         }
-
-        ///// <summary>
-        ///// add Bases types
-        ///// </summary>
-        ///// <param name="baseNames">The base type names.</param>
-        ///// <returns></returns>
-        //public CsEnumDeclaration Base(params string[] baseNames)
-        //{
-        //    foreach (var baseName in baseNames)
-        //        _baseNames.Add(baseName);
-        //    return this;
-        //}
-
-        #region Modifiers
-
-        public new CsEnumDeclaration IsPublic()
-        {
-            base.IsPublic();
-            return this;
-        }
-
-        public new CsEnumDeclaration IsPrivate()
-        {
-            base.IsPrivate();
-            return this;
-        }
-
-        public new CsEnumDeclaration IsInternal()
-        {
-            base.IsInternal();
-            return this;
-        }
-
-        public new CsEnumDeclaration IsProtected()
-        {
-            base.IsProtected();
-            return this;
-        }
-
-        #endregion Modifiers
-
-        #region attributes
-
-        public new CsAttributeDeclaration Attribute(string attributeName)
-        {
-            return base.Attribute(attributeName);
-
-        }
-
-        public new CsEnumDeclaration Attribute(string attributeName, Action<CsAttributeDeclaration> action)
-        {
-            base.Attribute(attributeName, action);
-            return this;
-        }
-
-        #endregion attributes
 
         #region Members
 

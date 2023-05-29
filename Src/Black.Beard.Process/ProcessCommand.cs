@@ -40,13 +40,21 @@ namespace Bb.Process
 
         public ProcessCommand CommandBatch()
         {
-            
+
             return Command("cmd.exe");
         }
 
-        public ProcessCommand Command(string command)
+        public ProcessCommand Command(string command, string arguments = null)
         {
             this._processStartInfo.FileName = command;
+            if (!string.IsNullOrEmpty(arguments))
+                this._processStartInfo.Arguments = arguments;
+            return this;
+        }
+
+        public ProcessCommand Argument(string arguments)
+        {
+            this._processStartInfo.Arguments = arguments;
             return this;
         }
 
@@ -86,9 +94,15 @@ namespace Bb.Process
         public ProcessCommand Cancel(bool wait = false)
         {
 
+            if (_process != null)
+                _process.Kill();
+
             if (_cancellation != null && !_cancellation.IsCancellationRequested)
             {
-                _cancellation.Cancel();
+
+                _task?.Wait(50);
+
+                _cancellation?.Cancel();
                 Trace.WriteLine("Task was canceled.");
 
                 if (wait)
@@ -288,14 +302,17 @@ namespace Bb.Process
                 }
                 finally
                 {
+
+                    _process.OutputDataReceived -= new DataReceivedEventHandler(OutputDataReceived);
+                    _process.ErrorDataReceived -= new DataReceivedEventHandler(ErrorDataReceived);
+
                     if (listen)
                     {
+                        
                         _process.CancelOutputRead();     // then cancel asynchronously reading the output
                         _process.CancelErrorRead();
                     }
 
-                    _process.OutputDataReceived -= new DataReceivedEventHandler(OutputDataReceived);
-                    _process.ErrorDataReceived -= new DataReceivedEventHandler(ErrorDataReceived);
 
                 }
 
@@ -357,6 +374,12 @@ namespace Bb.Process
             ScreenEventHandler?.Invoke(this, arg);
             if (_outputs.Count > 1000)
                 _outputs.RemoveAt(0);
+        }
+
+        public ProcessCommand OutputOnTraces()
+        {
+            Output(c => Trace.WriteLine(c.Datas));
+            return this;
         }
 
         public ProcessCommand Output(Action<DataReceiverEventArgs> action)

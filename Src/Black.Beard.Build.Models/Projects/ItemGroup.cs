@@ -6,15 +6,8 @@ namespace Bb.Projects
     public class ItemGroup : Group
     {
 
-        public ItemGroup(bool duplicateMode = true) : base(duplicateMode)
+        public ItemGroup(bool duplicateMode = true) : base("ItemGroup", duplicateMode)
         {
-        }
-
-        public XElement Serialize()
-        {
-            var result = new XElement("ItemGroup");
-            Serialize(result);
-            return result;
         }
 
         public new ItemGroup None(string filename, Action<None> initializer)
@@ -26,6 +19,20 @@ namespace Bb.Projects
                 initializer(none);
 
             Add(none);
+
+            return this;
+
+        }
+
+        public ItemGroup Content(Action<Content> initializer)
+        {
+
+            var content = new Content();
+
+            if (initializer != null)
+                initializer(content);
+
+            Add(content);
 
             return this;
 

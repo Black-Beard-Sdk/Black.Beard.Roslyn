@@ -45,46 +45,6 @@ namespace Bb.Codings
 
         #endregion ReturnType
 
-        public new CsFieldDeclaration Attribute(string attributeName, Action<CsAttributeDeclaration> action)
-        {
-            base.Attribute(attributeName, action);
-            return this;
-        }
-
-        #region Modifiers
-
-        public new CsFieldDeclaration IsStatic()
-        {
-            base.IsStatic();
-            return this;
-        }
-
-        public new CsFieldDeclaration IsPublic()
-        {
-            base.IsPublic();
-            return this;
-        }
-
-        public new CsFieldDeclaration IsPrivate()
-        {
-            base.IsPrivate();
-            return this;
-        }
-
-        public new CsFieldDeclaration IsInternal()
-        {
-            base.IsInternal();
-            return this;
-        }
-
-        public new CsFieldDeclaration IsProtected()
-        {
-            base.IsProtected();
-            return this;
-        }
-
-        #endregion Modifiers
-
         internal override SyntaxNode Build()
         {
 

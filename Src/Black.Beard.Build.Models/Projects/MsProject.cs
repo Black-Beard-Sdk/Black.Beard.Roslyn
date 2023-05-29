@@ -9,12 +9,12 @@ namespace Bb.Projects
     public class MsProject : Group
     {
 
-        public MsProject(string name, DirectoryInfo dir)
-            : base(false)
+        public MsProject(string projectName, DirectoryInfo dir)
+            : base("Project", false)
         {
 
-            if (string.IsNullOrEmpty(name))
-                throw new ArgumentNullException(nameof(name));
+            if (string.IsNullOrEmpty(projectName))
+                throw new ArgumentNullException(nameof(projectName));
 
             if (dir == null)
                 throw new ArgumentNullException(nameof(dir));
@@ -22,10 +22,10 @@ namespace Bb.Projects
             if (!dir.Exists)
                 dir.Create();
 
-            this.Name = name;
+            this.ProjectName = projectName;
             this.Directory = dir;
 
-            this.ProjectFile = Path.Combine(this.Directory.FullName, $"{Name}.csproj");
+            this.ProjectFile = Path.Combine(this.Directory.FullName, $"{projectName}.csproj");
 
             this._itemGroups = new List<ItemGroup>();
             this.PropertyGroup = new PropertyGroup();
@@ -34,7 +34,7 @@ namespace Bb.Projects
 
         }
 
-        public string Name { get; }
+        public string ProjectName { get; }
 
         public DirectoryInfo Directory { get; }
 
@@ -216,8 +216,8 @@ namespace Bb.Projects
         /// <returns></returns>
         public MsProject AppendDocument(string path, string filename, StringBuilder content)
         {
-            var file = PrepareSave(path, filename);
-            file.ToString().Save(content.ToString());
+            var file = ComputeFullPath(path, filename);
+            file.Save(content.ToString());
             return this;
         }
 
@@ -230,8 +230,8 @@ namespace Bb.Projects
         /// <returns></returns>
         public MsProject AppendDocument(string filename, StringBuilder content)
         {
-            var file = PrepareSave(null, filename);
-            file.ToString().Save(content.ToString());
+            var file = ComputeFullPath(null, filename);
+            file.Save(content.ToString());
             return this;
         }
 
@@ -243,8 +243,8 @@ namespace Bb.Projects
         /// <returns></returns>
         public MsProject AppendDocument(string filename, string content)
         {
-            var file = PrepareSave(null, filename);
-            file.ToString().Save(content);
+            var file = ComputeFullPath(null, filename);
+            file.Save(content);
             return this;
         }
 
@@ -257,13 +257,31 @@ namespace Bb.Projects
         /// <returns></returns>
         public MsProject AppendDocument(string path, string filename, string content)
         {
-            var file = PrepareSave(path, filename);
-            file.ToString().Save(content);
+            var file = ComputeFullPath(path, filename);
+            file.Save(content);
             return this;
         }
 
+        /// <summary>
+        /// Computes the full path for the file you want to append to project.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="filename">The filename.</param>
+        /// <returns></returns>
+        public string ComputeFullPath(string? path, string filename)
+        {
+            var _path = ComputeFullPath(path);
+            var file = Path.Combine(_path, filename);
+            return file;
 
-        private string PrepareSave(string? path, string filename)
+        }
+
+        /// <summary>
+        /// Computes the full path for the file you want to append to project.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public string ComputeFullPath(string? path)
         {
             var targetDirectory = this.Directory.FullName;
             if (!string.IsNullOrEmpty(path))
@@ -273,12 +291,7 @@ namespace Bb.Projects
             if (!dir.Exists)
                 dir.Create();
 
-            if (File.Exists(filename))
-                File.Delete(filename);
-
-            var file = Path.Combine(dir.FullName, filename);
-
-            return file;
+            return dir.FullName;
 
         }
 
@@ -324,19 +337,15 @@ namespace Bb.Projects
             fileNuget.Save(datas.ToString());
         }
 
-        internal XElement Serialize()
+        public override XObject Serialize()
         {
 
-            var result = new XElement("Project");
-            Serialize(result);
+            var result = (XElement)base.Serialize();
 
-            result.Add(PropertyGroup.Serialize());
+            PropertyGroup.Serialize(result);
 
             foreach (ItemGroup group in ItemGroups)
-            {
-                var i = group.Serialize();
-                result.Add(i);
-            }
+                group.Serialize(result);
 
             return result;
 

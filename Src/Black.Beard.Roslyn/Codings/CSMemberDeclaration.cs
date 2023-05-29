@@ -36,32 +36,14 @@ namespace Bb.Codings
 
         #region attributes
 
-
-
         public CsAttributeDeclaration Attribute(Type type)
         {
             return Add(new CsAttributeDeclaration(type));
         }
 
-        public CsAttributeDeclaration Attribute(Type type, Action<CsAttributeDeclaration> action)
-        {
-            var attribute = new CsAttributeDeclaration(type);
-            action(attribute);
-            return Add(attribute);
-        }
-
         public CsAttributeDeclaration Attribute(string attributeName)
         {
             return Add(new CsAttributeDeclaration(attributeName));
-        }
-
-        public CSMemberDeclaration Attribute(string attributeName, Action<CsAttributeDeclaration> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            action(Attribute(attributeName));
-            return this;
         }
 
         protected List<AttributeListSyntax> GetAttributes()
@@ -93,48 +75,7 @@ namespace Bb.Codings
         #endregion attributes
 
         #region Modifiers
-
-        public CSMemberDeclaration IsStatic()
-        {
-            _isStatic = true;
-            return this;
-        }
-
-        public CSMemberDeclaration IsPublic()
-        {
-            _isPublic = true;
-            _isPrivate = false;
-            _isInternal = false;
-            _isProtected = false;
-            return this;
-        }
-
-        public CSMemberDeclaration IsPrivate()
-        {
-            _isPrivate = true;
-            _isPublic = false;
-            _isInternal = false;
-            _isProtected = false;
-            return this;
-        }
-
-        public CSMemberDeclaration IsInternal()
-        {
-            _isInternal = true;
-            _isPublic = false;
-            _isPrivate = false;
-            return this;
-        }
-
-        public CSMemberDeclaration IsProtected()
-        {
-            _isProtected = true;
-            _isPublic = false;
-            _isPrivate = false;
-            return this;
-        }
-
-
+               
         protected List<SyntaxNodeOrToken> GetParameters()
         {
 
@@ -161,11 +102,11 @@ namespace Bb.Codings
             return lst;
         }
 
-        protected bool _isStatic;
-        protected bool _isPublic;
-        protected bool _isPrivate;
-        protected bool _isInternal;
-        protected bool _isProtected;
+        internal bool _isStatic;
+        internal bool _isPublic;
+        internal bool _isPrivate;
+        internal bool _isInternal;
+        internal bool _isProtected;
 
         #endregion Modifiers
 
@@ -195,8 +136,7 @@ namespace Bb.Codings
         public CsFieldDeclaration Field(string fieldName, string type)
         {
             return Add(new CsFieldDeclaration(fieldName, type));
-        }
-
+        }        
 
         protected T ApplyXmlDocumentation<T>(T node) where T : SyntaxNode
         {
@@ -220,6 +160,7 @@ namespace Bb.Codings
         private readonly List<CsAttributeDeclaration> _attributes;
         private List<CSMemberDeclaration> _members;
         private CSDocumentationDeclaration _doc;
+        internal HashSet<string> _warnings = new HashSet<string>();
 
 
     }

@@ -8,15 +8,8 @@ namespace Bb.Projects
     {
 
         public PropertyGroup()
-            : base(false)
+            : base("PropertyGroup", false)
         {
-        }
-
-        public XElement Serialize()
-        {
-            var result = new XElement("PropertyGroup");
-            Serialize(result);
-            return result;
         }
 
         public PropertyGroup GenerateDocumentationFile(bool value = true)

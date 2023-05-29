@@ -7,7 +7,7 @@ namespace Bb.Projects
 
         public ProjectSdk(string value) : base("Sdk", value)
         {
-
+            Kind = PropertyKeyKind.XAttribute;
         }
 
         public static ProjectSdk Custom (string value) => new ProjectSdk(value);

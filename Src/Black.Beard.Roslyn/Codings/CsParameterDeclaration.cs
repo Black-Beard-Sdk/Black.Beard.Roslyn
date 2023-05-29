@@ -53,16 +53,6 @@ namespace Bb.Codings
 
         #endregion ReturnType
 
-        #region attributes
-
-        public new CsParameterDeclaration Attribute(string attributeName, Action<CsAttributeDeclaration> action)
-        {
-            base.Attribute(attributeName, action);
-            return this;
-        }
-
-        #endregion attributes
-
         internal override SyntaxNode Build()
         {
 

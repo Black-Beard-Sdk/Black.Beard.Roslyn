@@ -2,12 +2,13 @@
 
 namespace Bb.Projects
 {
+
     public class None : Group
     {
 
-        public None(string filename) : base(true)
+        public None(string filename) : base("None", true)
         {
-            this.Update = filename;
+            Add("Update", filename);
         }
 
         public string Update { get; }
@@ -22,14 +23,6 @@ namespace Bb.Projects
         {
             Add("PackaPath", value);
             return this;
-        }
-
-        public XElement Serialize()
-        {
-            var result = new XElement("None");
-            result.Add(new XAttribute("Update", this.Update));
-            Serialize(result);
-            return result;
         }
 
     }

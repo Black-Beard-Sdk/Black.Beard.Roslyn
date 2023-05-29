@@ -29,67 +29,6 @@ namespace Bb.Codings
             return this;
         }
 
-        #region Modifiers
-
-        public new CsClassDeclaration IsStatic()
-        {
-            base.IsStatic();
-            return this;
-        }
-
-        public CsClassDeclaration IsSealed()
-        {
-            _isSealed = true;
-            return this;
-        }
-
-        public CsClassDeclaration IsPartial()
-        {
-            _isPartial = true;
-            return this;
-        }
-
-        public new CsClassDeclaration IsPublic()
-        {
-            base.IsPublic();
-            return this;
-        }
-
-        public new CsClassDeclaration IsPrivate()
-        {
-            base.IsPrivate();
-            return this;
-        }
-
-        public new CsClassDeclaration IsInternal()
-        {
-            base.IsInternal();
-            return this;
-        }
-
-        public new CsClassDeclaration IsProtected()
-        {
-            base.IsProtected();
-            return this;
-        }
-
-        #endregion Modifiers
-
-        #region attributes
-
-        public new CsAttributeDeclaration Attribute(string attributeName)
-        {
-            return base.Attribute(attributeName);
-
-        }
-
-        public new CsClassDeclaration Attribute(string attributeName, Action<CsAttributeDeclaration> action)
-        {
-            base.Attribute(attributeName, action);
-            return this;
-        }
-
-        #endregion attributes
 
         #region Members
 
@@ -108,10 +47,7 @@ namespace Bb.Codings
         }
 
 
-        public CsMethodDeclaration Method(string methodName)
-        {
-            return Add(new CsMethodDeclaration(methodName));
-        }
+        
 
         public CsClassDeclaration Method(string methodName, Action<CsMethodDeclaration> action)
         {
@@ -241,8 +177,7 @@ namespace Bb.Codings
         }
 
         private readonly HashSet<string> _baseNames;
-        private bool _isPartial;
-        private bool _isSealed;
+
     }
 
 }

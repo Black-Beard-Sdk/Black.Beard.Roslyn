@@ -2,24 +2,25 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Bb.Codings
 {
+
     public class CSNamespace : CSMemberDeclaration
     {
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CSNamespace"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
         public CSNamespace(string name)
             : base(name)
         {
 
         }
-
-
-        public new CSNamespace Attribute(string attributeName, Action<CsAttributeDeclaration> action)
-        {
-            base.Attribute(attributeName, action);
-            return this;
-        }
+       
 
         /// <summary>
         /// create a class with specified name.
@@ -45,12 +46,13 @@ namespace Bb.Codings
             return Add(new CsClassDeclaration(name));
         }
 
-
         internal override SyntaxNode Build()
         {
 
-            var ns = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(Name))
-                .NormalizeWhitespace();
+            NamespaceDeclarationSyntax ns = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(Name));
+
+            if (_warnings.Count > 0)
+            ns = ns.PragmaWarning(false, _warnings.ToArray());
 
             #region attributes
 
@@ -79,10 +81,8 @@ namespace Bb.Codings
 
             ns = ApplyXmlDocumentation(ns);
 
-            return ns;
+            return ns.NormalizeWhitespace();
         }
-
-
 
     }
 

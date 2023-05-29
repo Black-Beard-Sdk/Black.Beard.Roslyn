@@ -5,11 +5,19 @@ namespace Bb.Projects
     public class Group
     {
 
-        public Group(bool duplicateMode)
+        public Group(string name, bool duplicateMode)
         {
+            this.Name = name;
             this._duplicateMode = duplicateMode;
             this._keys = new List<PropertyKey>();
             this._subs = new List<Group>();
+            this._attributes = new Dictionary<string, XAttribute>();
+        }
+
+        public Group Add(XAttribute value)
+        {
+            this._attributes.Add(value.Name.LocalName, value);
+            return this;
         }
 
         public Group Add(PropertyKey value)
@@ -33,6 +41,12 @@ namespace Bb.Projects
         public Group Add(string key, Guid value)
         {
             Add(new PropertyKeyGuid(key, value));
+            return this;
+        }
+
+        public Group AddAttribute(string key, string value)
+        {
+            Add(new XAttribute(key, value));
             return this;
         }
 
@@ -66,25 +80,38 @@ namespace Bb.Projects
             return this;
         }
 
+        public virtual XObject Serialize()
+        {
+            var child = new XElement(Name);
+            Map(child);
+            return child;
+        }
+
         public virtual void Serialize(XElement parent)
         {
+            var child = new XElement(Name);
+            Map(child);
+            parent.Add(child);
+        }
+
+        protected void Map(XElement parent)
+        {
+
+            foreach (var child in this._attributes)
+                parent.Add(child.Value);
 
             foreach (var item in _keys)
-            {
-                var xml = item.Serialize();
-                parent.Add(xml);
-            }
+                item.Serialize(parent);
 
-            foreach (var item in _subs)
-            {
-                var xml = item.Serialize();
-                parent.Add(xml);
-            }
+            foreach (Group group in _subs)
+                group.Serialize(parent);
 
         }
 
+        public string Name { get; }
         public bool _duplicateMode { get; }
 
+        private readonly Dictionary<string, XAttribute> _attributes;
         private readonly List<PropertyKey> _keys;
         private readonly List<Group> _subs;
 

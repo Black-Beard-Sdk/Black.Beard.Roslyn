@@ -49,6 +49,7 @@ namespace Bb.Codings
             Code = collection ?? new StatementList();
             _root = root;
             _parent = parent;
+            this.Datas = new Data();
         }
 
         public CodeLevelBlock CurrentBlock
@@ -255,6 +256,9 @@ namespace Bb.Codings
 
         protected CodeBlock _root;
         protected CodeLevelBlock _parent;
+
+        public Data Datas { get; }
+
         private HashSet<string> _variables = new HashSet<string>();
 
     }

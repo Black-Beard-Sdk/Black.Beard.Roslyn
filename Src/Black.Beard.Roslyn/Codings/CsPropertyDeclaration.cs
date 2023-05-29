@@ -5,6 +5,7 @@ using System;
 
 namespace Bb.Codings
 {
+
     public class CsPropertyDeclaration : CSMemberDeclaration
     {
 
@@ -80,53 +81,7 @@ namespace Bb.Codings
             _autoGet = true;
             return this;
         }
-
-        #region Modifiers
-
-        public new CsPropertyDeclaration IsStatic()
-        {
-            base.IsStatic();
-            return this;
-        }
-
-        public new CsPropertyDeclaration IsPublic()
-        {
-            base.IsPublic();
-            return this;
-        }
-
-        public new CsPropertyDeclaration IsPrivate()
-        {
-            base.IsPrivate();
-            return this;
-        }
-
-        public new CsPropertyDeclaration IsInternal()
-        {
-            base.IsInternal();
-            return this;
-        }
-
-        public new CsPropertyDeclaration IsProtected()
-        {
-            base.IsProtected();
-            return this;
-        }
-
-        #endregion Modifiers
-
-        public new CsPropertyDeclaration Attribute(string attributeName, Action<CsAttributeDeclaration> action)
-        {
-            base.Attribute(attributeName, action);
-            return this;
-        }
-
-        public new CsPropertyDeclaration Attribute(Type attribute, Action<CsAttributeDeclaration> action)
-        {
-            base.Attribute(attribute, action);
-            return this;
-        }
-
+      
         internal override SyntaxNode Build()
         {
 
@@ -194,6 +149,7 @@ namespace Bb.Codings
         private bool _autoGet;
         private CodeBlock _bodySet;
         private CodeBlock _bodyGet;
+
     }
 
 

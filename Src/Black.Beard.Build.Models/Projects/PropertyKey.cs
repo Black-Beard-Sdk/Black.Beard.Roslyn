@@ -3,23 +3,26 @@
 namespace Bb.Projects
 {
 
-    public class PropertyKey
+    public class PropertyKey : Group
     {
 
-        public PropertyKey(string key, string value)
+        public PropertyKey(string name, string value) 
+            : base (name, true)
         {
-            this.Name = key;
             this.Value = value;
         }
 
-        public string Name { get; }
+        public PropertyKeyKind Kind { get; protected set; }
 
         public string Value { get; }
 
 
-        public virtual XObject Serialize()
+        public override void Serialize(XElement parent)
         {
-            return new XElement(Name, Value);
+            if (Kind == PropertyKeyKind.XElement)
+                parent.Add(new XElement(Name, Value));
+            else
+                parent.Add(new XAttribute(Name, Value));
         }
 
         public override string ToString()
@@ -29,5 +32,10 @@ namespace Bb.Projects
 
     }
 
+    public enum PropertyKeyKind
+    {
+        XElement,
+        XAttribute
+    }
 
 }

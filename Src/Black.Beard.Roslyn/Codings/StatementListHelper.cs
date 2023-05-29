@@ -17,7 +17,13 @@ namespace Bb.Codings
         {
             self.Add(exception.Thrown());
             return self;
-        }    
+        }
+
+        public static StatementList Thrown(this StatementList self)
+        {
+            self.Add(CodeHelper.Thrown());
+            return self;
+        }
 
         public static StatementList DeclareLocalVar(this StatementList self, TypeSyntax type, string variableName, ExpressionSyntax initializer)
         {

@@ -21,6 +21,16 @@ namespace Bb.Codings
 
         }
 
+        public T GetData<T>(string key)
+        {
+
+            if (_datas.TryGetValue(key, out var data))
+                return (T)data;
+
+            return default;
+
+        }
+
         public void SetData(string key, object value)
         {
             if (_datas.ContainsKey(key))

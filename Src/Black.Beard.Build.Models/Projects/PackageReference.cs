@@ -1,29 +1,17 @@
-﻿using System.Xml.Linq;
-
+﻿
 namespace Bb.Projects
 {
 
-    public class PackageReference : PropertyKey
+    public class PackageReference : Group
     {
 
-        public PackageReference(string value, Version version) : base("PackageReference", value)
-        {
-            this._version = version;
-        }
-
-        public override XObject Serialize()
+        public PackageReference(string value, Version version) : base("PackageReference", true)
         {
 
-            XElement result = new XElement(Name, new XAttribute("Include", Value));
-
-            if (_version != null)
-                result.Add(new XAttribute("Version", _version));
-
-            return result;
-
+            AddAttribute("Include", value);
+            if (version != null )
+                AddAttribute("Version", version.ToString());
         }
-
-        private readonly Version _version;
 
     }
 

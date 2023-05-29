@@ -15,21 +15,6 @@ namespace Bb.Codings
             _callBase = new List<SyntaxNode>();
         }
 
-
-        public new CsCtorDeclaration Attribute(string attributeName, Action<CsAttributeDeclaration> action)
-        {
-            base.Attribute(attributeName, action);
-            return this;
-        }
-
-        public new CsCtorDeclaration Parameter(string name, string typeName, Action<CsParameterDeclaration> action)
-        {
-
-
-            base.Parameter(name, typeName, action);
-            return this;
-        }
-
         public new CsCtorDeclaration Parameter(string name, Type type, Action<CsParameterDeclaration> action)
         {
             base.Parameter(name, type, action);
