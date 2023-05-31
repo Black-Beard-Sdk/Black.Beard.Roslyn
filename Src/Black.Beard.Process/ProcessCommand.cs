@@ -1,16 +1,34 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Bb.Process
 {
 
+
+
+    /// <summary>
+    /// class for manage lifecycle of the <see cref="Task" /> what wraps external process
+    /// </summary>
+    /// <seealso cref="System.IDisposable" />
     public class ProcessCommand : IDisposable
     {
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessCommand"/> class.
+        /// </summary>
+        /// <param name="tag">The tag.</param>
+        public ProcessCommand(object tag) : this()
+        {
+            this.Tag = tag;
+        }
+
         public ProcessCommand()
         {
+
+            this.Id = Guid.NewGuid();
 
             this._processStartInfo = new ProcessStartInfo()
             {
@@ -40,7 +58,6 @@ namespace Bb.Process
 
         public ProcessCommand CommandBatch()
         {
-
             return Command("cmd.exe");
         }
 
@@ -52,7 +69,15 @@ namespace Bb.Process
             return this;
         }
 
-        public ProcessCommand Argument(string arguments)
+        public ProcessCommand CommandWithArgumentList(string command, params string[] arguments)
+        {
+            this._processStartInfo.FileName = command;
+            if (arguments.Length > 0)
+                ArgumentList(arguments);
+            return this;
+        }
+
+        public ProcessCommand Arguments(string arguments)
         {
             this._processStartInfo.Arguments = arguments;
             return this;
@@ -64,7 +89,7 @@ namespace Bb.Process
             return this;
         }
 
-        public ProcessCommand AddArgument(params string[] args)
+        public ProcessCommand ArgumentList(params string[] args)
         {
             foreach (string arg in args)
                 _processStartInfo.ArgumentList.Add(arg);
@@ -93,6 +118,11 @@ namespace Bb.Process
         /// <returns></returns>
         public ProcessCommand Cancel(bool wait = false)
         {
+
+            if (this.Cancelling)
+                return this;
+
+            this.Cancelling = true;
 
             if (_process != null)
                 _process.Kill();
@@ -131,6 +161,10 @@ namespace Bb.Process
             return this;
         }
 
+        /// <summary>
+        /// Waits the task finish
+        /// </summary>
+        /// <returns></returns>
         public ProcessCommand Wait()
         {
             if (_task != null)
@@ -245,22 +279,27 @@ namespace Bb.Process
 
             this._task = Task.Run(() =>
             {
-
+                Task? t = default;
                 try
                 {
-                    var t = Start();
+                    t = Start();
+                    this.PushTaskEvent(t, TaskEventEnum.Started);
                     t.Wait();
+                    this.PushTaskEvent(t, TaskEventEnum.Completed);
                 }
-                //catch (Exception ex)
-                //{
-
-                //}
+                catch (Exception ex)
+                {
+                    if (t != null)
+                        this.PushTaskEvent(t, TaskEventEnum.CompletedWithException);
+                }
                 finally
                 {
                     this._cancellation = null;
                     this._task = null;
                 }
+
             });
+
         }
 
         private async Task Start()
@@ -308,7 +347,7 @@ namespace Bb.Process
 
                     if (listen)
                     {
-                        
+
                         _process.CancelOutputRead();     // then cancel asynchronously reading the output
                         _process.CancelErrorRead();
                     }
@@ -359,21 +398,27 @@ namespace Bb.Process
             }
             else
             {
-                var arg = new DataReceiverEventArgs("output", e);
-                this._outputs.Add(arg);
-                ScreenEventHandler?.Invoke(this, arg);
-                if (_outputs.Count > 1000)
-                    _outputs.RemoveAt(0);
+                if (ScreenEventHandler != null)
+                {
+                    var arg = new DataReceiverEventArgs("output", this, e, sender);
+                    this._outputs.Add(arg);
+                    ScreenEventHandler?.Invoke(this, arg);
+                    if (_outputs.Count > 1000)
+                        _outputs.RemoveAt(0);
+                }
             }
         }
 
         private void ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            var arg = new DataReceiverEventArgs("error", e);
-            this._outputs.Add(arg);
-            ScreenEventHandler?.Invoke(this, arg);
-            if (_outputs.Count > 1000)
-                _outputs.RemoveAt(0);
+            if (ScreenEventHandler != null)
+            {
+                var arg = new DataReceiverEventArgs("error", this, e, sender);
+                this._outputs.Add(arg);
+                ScreenEventHandler?.Invoke(this, arg);
+                if (_outputs.Count > 1000)
+                    _outputs.RemoveAt(0);
+            }
         }
 
         public ProcessCommand OutputOnTraces()
@@ -384,19 +429,73 @@ namespace Bb.Process
 
         public ProcessCommand Output(Action<DataReceiverEventArgs> action)
         {
-            if (this._action == null)
+            if (this._actionScreen == null)
                 ScreenEventHandler += ProcessCommand_ScreenEventHandler;
-            this._action = action;
+            
+            if (this._actionScreen == null)
+                this._actionScreen = new TraceContainer( action);
+
+            else
+                this._actionScreen.Append(action);
+
+            return this;
+        }
+
+        public ProcessCommand Output(TraceContainer action)
+        {
+            if (this._actionScreen == null)
+                ScreenEventHandler += ProcessCommand_ScreenEventHandler;
+
+            if (this._actionScreen == null)
+                this._actionScreen = action;
+
+            else
+                this._actionScreen.Append(action);
+
             return this;
         }
 
         private void ProcessCommand_ScreenEventHandler(object sender, DataReceiverEventArgs e)
         {
-            this._action(e);
+            this._actionScreen.Output(e);
         }
 
+        public ProcessCommand TaskEvent(Action<TaskEventArgs> action)
+        {
+            if (this._actionTask == null)
+                TaskEventHandler += ProcessCommand_TaskEventHandler;
+            
+            if (this._actionTask == null)
+                this._actionTask = action;
+
+            else
+            {
+                this._actionTask = c =>
+                {
+                    this._actionTask(c);
+                    action(c);
+                };
+            }
+
+            return this;
+        }
+
+        public void PushTaskEvent(Task task, TaskEventEnum status)
+        {
+            if (TaskEventHandler != null)
+            {
+                var arg = new TaskEventArgs(this, status);
+                TaskEventHandler?.Invoke(this, arg);
+            }
+        }
+
+        private void ProcessCommand_TaskEventHandler(object sender, TaskEventArgs e)
+        {
+            this._actionTask(e);
+        }
 
         public event ScreenEventHandler ScreenEventHandler;
+        public event TaskEventHandler TaskEventHandler;
 
         #endregion Output
 
@@ -409,9 +508,8 @@ namespace Bb.Process
                 if (disposing)
                 {
                     // TODO: supprimer l'état managé (objets managés)
-                    if (this._action != null)
+                    if (this._actionScreen != null)
                         ScreenEventHandler -= ProcessCommand_ScreenEventHandler;
-
                 }
 
                 // TODO: libérer les ressources non managées (objets non managés) et substituer le finaliseur
@@ -428,6 +526,9 @@ namespace Bb.Process
         //     Dispose(disposing: false);
         // }
 
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             // Ne changez pas ce code. Placez le code de nettoyage dans la méthode 'Dispose(bool disposing)'
@@ -440,16 +541,21 @@ namespace Bb.Process
 
 
         private List<DataReceiverEventArgs> _outputs = new List<DataReceiverEventArgs>();
+
+        public Guid Id { get; }
+        public object Tag { get; }
+        public bool Cancelling { get; private set; }
+
         private ProcessStartInfo _processStartInfo;
         private System.Diagnostics.Process _process;
         private CancellationTokenSource _cancellation;
-        private Action<DataReceiverEventArgs> _action;
+        private TraceContainer _actionScreen;
+        private Action<TaskEventArgs> _actionTask;
         private Task _task;
         private bool disposedValue;
         private string delimiterString = "--> waiting";
         private bool _waitingInPrompt;
         private bool _waitingOutOfPrompt;
     }
-
 
 }
