@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,6 +16,13 @@ namespace Bb.Process
     /// <seealso cref="System.IDisposable" />
     public class ProcessCommand : IDisposable
     {
+
+        static ProcessCommand()
+        {
+
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessCommand"/> class.
@@ -40,6 +48,10 @@ namespace Bb.Process
 
         private void CreateProcessInfo()
         {
+
+            var codePage = CultureInfo.CurrentCulture.TextInfo.OEMCodePage;
+            var encoding = Encoding.GetEncoding(codePage);
+
             this._processStartInfo = new ProcessStartInfo()
             {
 
@@ -50,9 +62,10 @@ namespace Bb.Process
 
                 //ErrorDialog = true,
                 //ErrorDialogParentHandle = IntPtr.Zero,
-                //StandardErrorEncoding = null,
+                StandardOutputEncoding = encoding,
+                StandardErrorEncoding = encoding,
+
                 //StandardInputEncoding = null,
-                //StandardOutputEncoding = null,
 
                 //UseShellExecute = true,
                 //CreateNoWindow = true,
@@ -391,7 +404,7 @@ namespace Bb.Process
 
         private void OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (e.Data != null)
+            if (!string.IsNullOrEmpty(e.Data))
             {
                 if (e.Data == @"""--> waiting""")
                 {
@@ -415,7 +428,7 @@ namespace Bb.Process
 
         private void ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (TaskEventHandler != null)
+            if (!string.IsNullOrEmpty(e.Data) && TaskEventHandler != null)
                 TaskEventHandler?.Invoke(sender, new TaskEventArgs(this, TaskEventEnum.ErrorReceived, e));
         }    
 
