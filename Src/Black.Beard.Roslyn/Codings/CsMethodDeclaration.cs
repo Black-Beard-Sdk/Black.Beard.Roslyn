@@ -17,6 +17,12 @@ namespace Bb.Codings
             TypeReturn = type;
         }
 
+        public CsMethodDeclaration(string name, Type type)
+            : base(name)
+        {
+            TypeReturn = type.AsType();
+        }
+
         public CsMethodDeclaration(string name, string typeName = "void")
             : base(name)
         {
@@ -78,7 +84,6 @@ namespace Bb.Codings
             action(Parameter(name, type));
             return this;
         }
-
 
         public CsMethodDeclaration Body(Action<CodeBlock> action)
         {

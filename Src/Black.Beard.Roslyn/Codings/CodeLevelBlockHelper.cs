@@ -28,7 +28,6 @@ namespace Bb.Codings
             return self.Add(t);
         }
 
-
         public static CodeLevelBlock TryCatchs(this CodeLevelBlock self, Action<CodeLevelBlock> tryAction, params CatchClauseSyntax[] catchs)
         {
 

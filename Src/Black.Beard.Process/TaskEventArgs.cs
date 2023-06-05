@@ -1,4 +1,6 @@
-﻿namespace Bb.Process
+﻿using System.Diagnostics;
+
+namespace Bb.Process
 {
 
     /// <summary>
@@ -20,11 +22,12 @@
         /// </summary>
         /// <param name="process">The process.</param>
         /// <param name="status">The status.</param>
-        public TaskEventArgs(ProcessCommand process, TaskEventEnum status)
+        public TaskEventArgs(ProcessCommand process, TaskEventEnum status, DataReceivedEventArgs datas)
         {
             this.ReceivedDtm = DateTime.Now;
             this.Status = status;
             this.Process  = process;
+            this.DateReceived = datas;
         }
 
         /// <summary>
@@ -59,7 +62,13 @@
         /// </value>
         public ProcessCommand Process { get ; }
 
-
+        /// <summary>
+        /// Gets the date received.
+        /// </summary>
+        /// <value>
+        /// The date received.
+        /// </value>
+        public DataReceivedEventArgs DateReceived { get; }
     }
 
     /// <summary>
@@ -68,6 +77,8 @@
     public enum TaskEventEnum
     {
         Started,
+        ErrorReceived,
+        DataReceived,
         Completed,
         CompletedWithException,
     }

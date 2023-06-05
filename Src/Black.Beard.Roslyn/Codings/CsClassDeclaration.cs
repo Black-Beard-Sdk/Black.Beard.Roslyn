@@ -34,7 +34,7 @@ namespace Bb.Codings
 
         public CsCtorDeclaration Ctor()
         {
-            return Add( new CsCtorDeclaration(Name));
+            return Add(new CsCtorDeclaration(Name));
         }
 
         public CsClassDeclaration Ctor(Action<CsCtorDeclaration> action)
@@ -43,35 +43,10 @@ namespace Bb.Codings
                 throw new ArgumentNullException(nameof(action));
 
             action(Ctor());
+
             return this;
         }
 
-
-        
-
-        public CsClassDeclaration Method(string methodName, Action<CsMethodDeclaration> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            action(Method(methodName));
-            return this;
-        }
-
-
-        public CsClassDeclaration Method(string methodName, string type, Action<CsMethodDeclaration> action)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            action(Method(methodName, type));
-            return this;
-        }
-
-        public CsMethodDeclaration Method(string methodName, string type)
-        {
-            return Add(new CsMethodDeclaration(methodName, type));
-        }
 
 
         public new CsClassDeclaration Field(string fieldName, string type, Action<CsFieldDeclaration> action)

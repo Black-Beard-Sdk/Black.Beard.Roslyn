@@ -15,9 +15,10 @@ namespace Bb.Codings
     public class CSharpArtifact : CSMemberDeclaration
     {
 
-        public CSharpArtifact(string name) 
+        public CSharpArtifact(string name, string projectPath = null) 
             : base(name)
         {
+            this.ProjectPath = projectPath;
             _usings = new HashSet<string>();
         }
 
@@ -46,6 +47,7 @@ namespace Bb.Codings
         {
             return Add( new CSNamespace(@namespace));
         }
+
 
         public CSharpArtifact Namespace(string @namespace, Action<CSNamespace> action)
         {
@@ -102,6 +104,8 @@ namespace Bb.Codings
             return syntaxFactory;
 
         }
+
+        public string ProjectPath { get; }
 
         private readonly HashSet<string> _usings;
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 
 namespace Bb.Codings
@@ -25,6 +26,7 @@ namespace Bb.Codings
 
         }
 
+        #region attributes
 
         /// <summary>
         /// Add custom Attribute with the specified attribute type.
@@ -68,8 +70,22 @@ namespace Bb.Codings
 
         }
 
-        public static T  Method<T>(this T self, string methodName, Action<CsMethodDeclaration> action) where T : CsTypeDeclaration
+        #endregion attributes
+
+        #region methods 
+
+        /// <summary>
+        /// Declare a new methods the specified method name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="self">The self.</param>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
+        public static T Method<T>(this T self, string methodName, Action<CsMethodDeclaration> action) where T : CsTypeDeclaration
         {
+
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
@@ -81,6 +97,81 @@ namespace Bb.Codings
 
         }
 
+        /// <summary>
+        /// Declare a new methods the specified method name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="self">The self.</param>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
+        public static T Method<T>(this T self, string methodName, string type, Action<CsMethodDeclaration> action) where T : CsTypeDeclaration
+        {
+
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var method = self.Method(methodName, type);
+
+            action(method);
+
+            return self;
+
+        }
+
+        /// <summary>
+        /// Declare a new methods the specified method name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="self">The self.</param>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
+        public static T Method<T>(this T self, string methodName, Type type, Action<CsMethodDeclaration> action) where T : CsTypeDeclaration
+        {
+
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var method = self.Method(methodName, type);
+
+            action(method);
+
+            return self;
+
+        }
+
+        /// <summary>
+        /// Declare a new methods the specified method name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="self">The self.</param>
+        /// <param name="methodName">Name of the method.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
+        public static T Method<T>(this T self, string methodName, TypeSyntax type, Action<CsMethodDeclaration> action) where T : CsTypeDeclaration
+        {
+
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var method = self.Method(methodName, type);
+
+            action(method);
+
+            return self;
+
+        }
+
+        #endregion methods 
+
+        #region modifiers
 
         public static T IsStatic<T>(this T self) where T : CSMemberDeclaration
         {
@@ -133,6 +224,8 @@ namespace Bb.Codings
             self._isPrivate = false;
             return self;
         }
+
+        #endregion modifiers
 
 
     }

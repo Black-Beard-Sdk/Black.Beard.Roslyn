@@ -18,25 +18,9 @@ namespace Bb.Process
         {
             this._index = new Dictionary<Guid, ProcessCommand>();
             this._items = new List<ProcessCommand>();
+            this._indexPrepare = new Dictionary<Guid, List<TaskEventHandler>>();
         }
-
-        /// <summary>
-        /// add a new action to execute when an output is detected.
-        /// </summary>
-        /// <param name="configureOutput">The configure output.</param>
-        /// <returns></returns>
-        public ProcessCommandService Output(Action<DataReceiverEventArgs> configureOutput)
-        {
-
-            if (this._actionScreen == null)
-                this._actionScreen = new TraceContainer(configureOutput);
-
-            else
-                this._actionScreen.Append(configureOutput);
-
-            return this;
-        }
-
+              
         /// <summary>
         /// Create and Runs a command. Method fluent
         /// </summary>
@@ -60,11 +44,28 @@ namespace Bb.Process
                     .Configure(actionToConfigure)
                     ;
 
+            AppendIntercept(cmd, Guid.Empty);
+            AppendIntercept(cmd, cmd.Id);
+
             Add(cmd)
                 .Run();
 
             return cmd;
 
+        }
+
+        private void AppendIntercept(ProcessCommand cmd, Guid id)
+        {
+            if (_indexPrepare.TryGetValue(id, out var list))
+            {
+
+                foreach (var item in list)
+                    cmd.Intercept(item);
+
+                if (id != Guid.Empty)
+                    _indexPrepare.Remove(id);
+
+            }
         }
 
         /// <summary>
@@ -73,9 +74,9 @@ namespace Bb.Process
         /// <param name="tag">The tag.</param>
         /// <param name="actionToConfigure">The action to configure.</param>
         /// <returns></returns>
-        public ProcessCommandService Run(object tag, Action<ProcessCommand> actionToConfigure)
+        public ProcessCommandService Run(Guid id, Action<ProcessCommand> actionToConfigure, object tag = null)
         {
-            RunAndGet(tag, actionToConfigure);
+            RunAndGet(id, actionToConfigure, tag);
             return this;
         }
 
@@ -85,12 +86,15 @@ namespace Bb.Process
         /// <param name="tag">The tag. for identified the process.</param>
         /// <param name="actionToConfigure">The action to configure the command process.</param>
         /// <returns></returns>
-        public ProcessCommand RunAndGet(object tag, Action<ProcessCommand> actionToConfigure)
+        public ProcessCommand RunAndGet(Guid id, Action<ProcessCommand> actionToConfigure, object tag = null)
         {
 
-            var cmd = new ProcessCommand(tag)
-                    .Configure(actionToConfigure)
+            var cmd = new ProcessCommand(id, tag)
+                    .Configure(actionToConfigure)                    
                     ;
+
+            AppendIntercept(cmd, Guid.Empty);
+            AppendIntercept(cmd, cmd.Id);
 
             Add(cmd)
                 .Run();
@@ -107,9 +111,13 @@ namespace Bb.Process
         public ProcessCommand Add(ProcessCommand cmd)
         {
 
-            TraceContainer output = this._actionScreen ?? new TraceContainer(c => Trace.WriteLine(c.Datas));
+            //TaskIntercptorContainer output = this._actionScreen ?? new TaskIntercptorContainer(c =>
+            //{
+            //    if (c.DateReceived != null)
+            //        Trace.WriteLine(c.DateReceived.Data);
+            //    });
 
-            cmd.Output(output);
+            //cmd.Output(output);
 
             lock (_lock)
             {
@@ -118,13 +126,13 @@ namespace Bb.Process
                 this._indexByTag = null;
             }
 
-            cmd.TaskEvent(c =>
+            cmd.Intercept((c, d) =>
             {
-                if (c.Closing)
+                if (d.Closing)
                     lock (_lock)
                     {
-                        this._items.Remove(c.Process);
-                        this._index.Remove(c.Process.Id);
+                        this._items.Remove(d.Process);
+                        this._index.Remove(d.Process.Id);
                         this._indexByTag = null;
                     }
             });
@@ -259,6 +267,31 @@ namespace Bb.Process
             GC.SuppressFinalize(this);
         }
 
+        public ProcessCommandService Intercept(Guid id, TaskEventHandler action)
+        {
+            if (!_indexPrepare.TryGetValue(id, out var list))
+                _indexPrepare.Add(id, list = new List<TaskEventHandler>());
+            if (!list.Contains(action))
+                list.Add(action);
+            return this;
+        }
+
+        public ProcessCommandService Intercept(TaskEventHandler action)
+        {
+            Intercept(Guid.Empty, action);
+            return this;
+        }
+
+        /// <summary>
+        /// Waits the specified test return true.
+        /// </summary>
+        /// <param name="test">The test.</param>
+        public ProcessCommandService Wait(Action<ProcessCommandService> test)
+        {
+            test(this);
+            return this;
+        }
+
         #endregion IDisposable
 
         private bool disposedValue;
@@ -266,8 +299,7 @@ namespace Bb.Process
         private volatile object _lock = new object();
         private List<ProcessCommand> _items;
         private Dictionary<Guid, ProcessCommand> _index;
-        private TraceContainer _actionScreen;
-
+        private Dictionary<Guid, List<TaskEventHandler>> _indexPrepare;
 
     }
 

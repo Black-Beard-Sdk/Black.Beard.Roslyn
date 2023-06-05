@@ -20,16 +20,26 @@ namespace Bb.Process
         /// Initializes a new instance of the <see cref="ProcessCommand"/> class.
         /// </summary>
         /// <param name="tag">The tag.</param>
-        public ProcessCommand(object tag) : this()
+        public ProcessCommand(Guid id, object tag) : this()
         {
+            this.Id = id;
             this.Tag = tag;
+            this._interceptors = new List<TaskEventHandler>();
+            CreateProcessInfo();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessCommand"/> class.
+        /// </summary>
         public ProcessCommand()
         {
-
             this.Id = Guid.NewGuid();
+            this._interceptors = new List<TaskEventHandler>();
+            CreateProcessInfo();
+        }
 
+        private void CreateProcessInfo()
+        {
             this._processStartInfo = new ProcessStartInfo()
             {
 
@@ -51,7 +61,6 @@ namespace Bb.Process
                 //WindowStyle = ProcessWindowStyle.Normal
 
             };
-
         }
 
         #region parameters
@@ -184,34 +193,32 @@ namespace Bb.Process
             return this;
         }
 
-        /// <summary>
-        /// Waits the specified output line.
-        /// </summary>
-        /// <param name="output">The output.</param>
-        /// <returns></returns>
-        public ProcessCommand Wait(string output)
-        {
-            if (_task != null)
-            {
-                int last = 0;
-                while (true)
-                {
-                    for (int i = last; i < _outputs.Count; i++)
-                    {
-                        if (output.Equals(_outputs[i].Datas))
-                            return this;
-                        last = i;
-                    }
-                    if (_task != null)
-                        _task.Wait(500);
-                    else
-                        return this;
-                }
-            }
-
-            return this;
-
-        }
+        ///// <summary>
+        ///// Waits the specified output line.
+        ///// </summary>
+        ///// <param name="output">The output.</param>
+        ///// <returns></returns>
+        //public ProcessCommand Wait(string output)
+        //{
+        //    if (_task != null)
+        //    {
+        //        int last = 0;
+        //        while (true)
+        //        {
+        //            for (int i = last; i < _outputs.Count; i++)
+        //            {
+        //                if (output.Equals(_outputs[i].Datas))
+        //                    return this;
+        //                last = i;
+        //            }
+        //            if (_task != null)
+        //                _task.Wait(500);
+        //            else
+        //                return this;
+        //        }
+        //    }
+        //    return this;
+        //}
 
         #region Process
 
@@ -384,118 +391,48 @@ namespace Bb.Process
 
         private void OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (e.Data == @"""--> waiting""")
+            if (e.Data != null)
             {
-
-                this._waitingOutOfPrompt = true;
-
-                if (_waitingInPrompt)
-                    _waitingInPrompt = false;
-
-                while (_waitingOutOfPrompt)
-                    _task?.Wait(1);
-
-            }
-            else
-            {
-                if (ScreenEventHandler != null)
+                if (e.Data == @"""--> waiting""")
                 {
-                    var arg = new DataReceiverEventArgs("output", this, e, sender);
-                    this._outputs.Add(arg);
-                    ScreenEventHandler?.Invoke(this, arg);
-                    if (_outputs.Count > 1000)
-                        _outputs.RemoveAt(0);
+
+                    this._waitingOutOfPrompt = true;
+
+                    if (_waitingInPrompt)
+                        _waitingInPrompt = false;
+
+                    while (_waitingOutOfPrompt)
+                        _task?.Wait(1);
+
+                }
+                else
+                {
+                    if (TaskEventHandler != null)
+                        TaskEventHandler?.Invoke(sender, new TaskEventArgs(this, TaskEventEnum.DataReceived, e));
                 }
             }
         }
 
         private void ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            if (ScreenEventHandler != null)
-            {
-                var arg = new DataReceiverEventArgs("error", this, e, sender);
-                this._outputs.Add(arg);
-                ScreenEventHandler?.Invoke(this, arg);
-                if (_outputs.Count > 1000)
-                    _outputs.RemoveAt(0);
-            }
-        }
-
-        public ProcessCommand OutputOnTraces()
-        {
-            Output(c => Trace.WriteLine(c.Datas));
-            return this;
-        }
-
-        public ProcessCommand Output(Action<DataReceiverEventArgs> action)
-        {
-            if (this._actionScreen == null)
-                ScreenEventHandler += ProcessCommand_ScreenEventHandler;
-            
-            if (this._actionScreen == null)
-                this._actionScreen = new TraceContainer( action);
-
-            else
-                this._actionScreen.Append(action);
-
-            return this;
-        }
-
-        public ProcessCommand Output(TraceContainer action)
-        {
-            if (this._actionScreen == null)
-                ScreenEventHandler += ProcessCommand_ScreenEventHandler;
-
-            if (this._actionScreen == null)
-                this._actionScreen = action;
-
-            else
-                this._actionScreen.Append(action);
-
-            return this;
-        }
-
-        private void ProcessCommand_ScreenEventHandler(object sender, DataReceiverEventArgs e)
-        {
-            this._actionScreen.Output(e);
-        }
-
-        public ProcessCommand TaskEvent(Action<TaskEventArgs> action)
-        {
-            if (this._actionTask == null)
-                TaskEventHandler += ProcessCommand_TaskEventHandler;
-            
-            if (this._actionTask == null)
-                this._actionTask = action;
-
-            else
-            {
-                this._actionTask = c =>
-                {
-                    this._actionTask(c);
-                    action(c);
-                };
-            }
-
-            return this;
-        }
+            if (TaskEventHandler != null)
+                TaskEventHandler?.Invoke(sender, new TaskEventArgs(this, TaskEventEnum.ErrorReceived, e));
+        }    
 
         public void PushTaskEvent(Task task, TaskEventEnum status)
         {
             if (TaskEventHandler != null)
-            {
-                var arg = new TaskEventArgs(this, status);
-                TaskEventHandler?.Invoke(this, arg);
-            }
+                TaskEventHandler?.Invoke(task, new TaskEventArgs(this, status, null));
         }
-
-        private void ProcessCommand_TaskEventHandler(object sender, TaskEventArgs e)
+       
+        public ProcessCommand Intercept(TaskEventHandler append)
         {
-            this._actionTask(e);
+            this._interceptors.Add(append);
+            TaskEventHandler += append;
+            return this;
         }
 
-        public event ScreenEventHandler ScreenEventHandler;
-        public event TaskEventHandler TaskEventHandler;
+        private event TaskEventHandler TaskEventHandler;
 
         #endregion Output
 
@@ -507,9 +444,12 @@ namespace Bb.Process
             {
                 if (disposing)
                 {
-                    // TODO: supprimer l'état managé (objets managés)
-                    if (this._actionScreen != null)
-                        ScreenEventHandler -= ProcessCommand_ScreenEventHandler;
+
+                    foreach (var append in _interceptors)
+                        TaskEventHandler -= append;
+
+
+
                 }
 
                 // TODO: libérer les ressources non managées (objets non managés) et substituer le finaliseur
@@ -539,9 +479,6 @@ namespace Bb.Process
         #endregion IDisposable
 
 
-
-        private List<DataReceiverEventArgs> _outputs = new List<DataReceiverEventArgs>();
-
         public Guid Id { get; }
         public object Tag { get; }
         public bool Cancelling { get; private set; }
@@ -549,13 +486,12 @@ namespace Bb.Process
         private ProcessStartInfo _processStartInfo;
         private System.Diagnostics.Process _process;
         private CancellationTokenSource _cancellation;
-        private TraceContainer _actionScreen;
-        private Action<TaskEventArgs> _actionTask;
         private Task _task;
         private bool disposedValue;
         private string delimiterString = "--> waiting";
         private bool _waitingInPrompt;
         private bool _waitingOutOfPrompt;
+        private List<TaskEventHandler> _interceptors;
     }
 
 }

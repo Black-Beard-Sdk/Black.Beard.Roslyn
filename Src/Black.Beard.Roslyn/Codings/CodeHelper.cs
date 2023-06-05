@@ -427,7 +427,7 @@ namespace Bb.Codings
 
         public static ThisExpressionSyntax This()
         {
-            return SyntaxFactory.ThisExpression(SyntaxKind.ThisExpression.ToToken());
+            return SyntaxFactory.ThisExpression();
         }
 
         public static LiteralExpressionSyntax Literal(this bool value)
