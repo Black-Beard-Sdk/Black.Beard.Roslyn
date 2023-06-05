@@ -55,7 +55,7 @@ namespace Bb.Codings
             return this;
         }
 
-        #endregion ReturnType
+        #endregion ReturnType    
 
         public CsParameterDeclaration Parameter(string name, string typeName)
         {

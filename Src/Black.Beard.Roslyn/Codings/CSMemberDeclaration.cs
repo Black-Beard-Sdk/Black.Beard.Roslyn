@@ -83,20 +83,26 @@ namespace Bb.Codings
 
             var lst = new List<SyntaxNodeOrToken>(m.Count);
 
-            var p = m[0];
-            var p2 = (ParameterSyntax)p.Build();
-            if (p2 != null)
-                lst.Add(p2);
-
-            for (int i = 1; i < m.Count; i++)
+            if (m.Count > 0)
             {
-                var p3 = m[i];
-                var p4 = (ParameterSyntax)p3.Build();
-                if (p4 != null)
+
+                var p = m[0];
+
+                var p2 = (ParameterSyntax)p.Build();
+                if (p2 != null)
+                    lst.Add(p2);
+
+                for (int i = 1; i < m.Count; i++)
                 {
-                    lst.Add(SyntaxFactory.Token(SyntaxKind.CommaToken));
-                    lst.Add(p4);
+                    var p3 = m[i];
+                    var p4 = (ParameterSyntax)p3.Build();
+                    if (p4 != null)
+                    {
+                        lst.Add(SyntaxFactory.Token(SyntaxKind.CommaToken));
+                        lst.Add(p4);
+                    }
                 }
+
             }
 
             return lst;

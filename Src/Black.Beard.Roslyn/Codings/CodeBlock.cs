@@ -35,6 +35,7 @@ namespace Bb.Codings
 
         }
 
+
         #region variables
 
         public override Variable GetVariable(string name)
@@ -154,7 +155,7 @@ namespace Bb.Codings
 
         public new CodeBlock Add(ExpressionSyntax statementSyntax)
         {
-            base.Add(statementSyntax); base.Add(statementSyntax);
+            base.Add(statementSyntax);
             return this;
         }
 
