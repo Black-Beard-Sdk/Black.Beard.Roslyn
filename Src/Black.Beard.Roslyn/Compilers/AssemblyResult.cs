@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace Bb.Compilers
@@ -24,11 +26,18 @@ namespace Bb.Compilers
         public string AssemblyFilePdb { get; internal set; }
 
         public List<DiagnosticResult> Disgnostics { get; internal set; }
+
+        public IEnumerable<DiagnosticResult> Errors { get => Disgnostics.Where(c => c.Severity == "Error"); }
+
+        public IEnumerable<DiagnosticResult> Warnings { get => Disgnostics.Where(c => c.Severity == "Warning"); }
+
         public List<string> Documents { get; }
 
         public bool Success { get; internal set; }
 
         public Exception Exception { get; internal set; }
+
+        public SyntaxTree[] Codes { get; internal set; }
 
         public Assembly LoadAssembly()
         {

@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>disabled</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<Description>Helper for compile Csharp at runtime</Description>
+		<RepositoryUrl>https://github.com/Black-Beard-Sdk/Black.Beard.Roslyn</RepositoryUrl>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl></PackageProjectUrl>
+		<RootNamespace>Bb</RootNamespace>
+		
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.1" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.1" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.1" />
+		<PackageReference Include="Microsoft.Build.Locator" Version="1.5.5" />
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.4.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.4.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Black.Beard.Build.Models\Black.Beard.Projects.Models.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="nuget.config">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="README.md">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+</Project>

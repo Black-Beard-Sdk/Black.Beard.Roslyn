@@ -1,33 +1,40 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="" InitialTargets="" ToolsVersion="">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <RootNamespace>Bb</RootNamespace>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl></PackageProjectUrl>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Description>Helper for compile Csharp at runtime</Description>
-    <RepositoryUrl>https://github.com/Black-Beard-Sdk/Black.Beard.Roslyn</RepositoryUrl>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<RootNamespace>Bb</RootNamespace>
+		
+		<Description>Helper for compile Csharp at runtime</Description>
+		<RepositoryUrl>https://github.com/Black-Beard-Sdk/Black.Beard.Roslyn</RepositoryUrl>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl></PackageProjectUrl>
 
-  <ItemGroup>
-    <Compile Remove="ComponentModel\**" />
-    <EmbeddedResource Remove="ComponentModel\**" />
-    <None Remove="ComponentModel\**" />
-  </ItemGroup>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>		
+		<Compile Remove="ComponentModel\**" />
+		<EmbeddedResource Remove="ComponentModel\**" />
+		<None Remove="ComponentModel\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Black.Beard.ComponentModel" Version="1.0.5" />
-    <PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="1.0.4" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.9.0" />
-    <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
-  </ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="Codings\CodeMarker.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Black.Beard.ComponentModel" Version="1.0.37" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.1" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.1" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
+		<PackageReference Include="Ude.NetStandard" Version="1.2.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
 
 </Project>

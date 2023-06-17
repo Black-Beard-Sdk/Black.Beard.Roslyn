@@ -1,17 +1,16 @@
 ﻿using Bb.ComponentModel;
+using Bb.Builds;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CSharp;
 using System;
-using System.CodeDom;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Collections.Immutable;
 
 namespace Bb.Compilers
 {
@@ -19,12 +18,10 @@ namespace Bb.Compilers
     public class RoslynCompiler
     {
 
-
-        public RoslynCompiler(HashSet<Assembly> assemblies)
+        public RoslynCompiler(AssemblyReferences assemblies)
         {
 
-            assemblies.Add(typeof(System.Object).Assembly);
-            assemblies.Add(typeof(System.ComponentModel.DescriptionAttribute).Assembly);
+            this.LanguageVersion = LanguageVersion.CSharp6;
 
             var ass = new string[] { "netstandard", "mscorlib", "System.Runtime" };
 
@@ -36,41 +33,25 @@ namespace Bb.Compilers
             }
 
             _defaultReferences = new List<MetadataReference>();
-            foreach (Assembly assembly in assemblies)
-                AddReference(assembly);
+            foreach (PortableExecutableReference assembly in assemblies)
+                _defaultReferences.Add(assembly);
 
         }
+
+        public string KeyFile {get;set;}
+
+        public bool DelaySign { get; set;}
+
+        public ImmutableArray<byte> StrongNameKey { get; set; } = ImmutableArray<byte>.Empty;
+
+        public DocumentationMode DocumentationMode { get; set; } = DocumentationMode.Parse;
 
         #region Methods
 
         public RoslynCompiler AddCodeSource(string source, string path = null)
         {
             this._sources.Add(new FileCode() { Content = source, Filepath = path ?? string.Empty });
-            this._hash ^= Crc32.Calculate(source);
-            return this;
-        }
-
-        public RoslynCompiler AddReference(string location)
-        {
-            PortableExecutableReference newReference = AssemblyMetadata.CreateFromFile(location).GetReference();
-            if (_assemblies.Add(newReference.FilePath))
-                _defaultReferences.Add(newReference);
-            return this;
-        }
-
-        public RoslynCompiler AddReference(Type type)
-        {
-            if (!string.IsNullOrEmpty(type.Namespace))
-                _namespaces.Add(type.Namespace);
-            AddReference(type.Assembly);
-            return this;
-        }
-
-        public RoslynCompiler AddReference(Assembly assembly)
-        {
-            var newReference = AssemblyMetadata.CreateFromFile(assembly.Location).GetReference();
-            if (_assemblies.Add(assembly.Location))
-                _defaultReferences.Add(newReference);
+            this._hash ^= source.CalculateCrc32();
             return this;
         }
 
@@ -80,11 +61,19 @@ namespace Bb.Compilers
             return this;
         }
 
-        public AssemblyResult Generate()
+        public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
+
+        public LanguageVersion LanguageVersion { get; set; }
+
+        public bool ResolveObjects { get; set; }
+
+        public bool Debug { get; set; }
+
+        public AssemblyResult Generate(string? assemblyName = null)
         {
 
             var date = DateTime.Now;
-            this._assemblyName = $"assembly_{this._hash}_{date.Year}{date.Month}{date.Day}_{date.Hour}{date.Minute}{date.Second}";
+            this._assemblyName = assemblyName ?? $"assembly_{this._hash}_{date.Year}{date.Month}{date.Day}_{date.Hour}{date.Minute}{date.Second}{date.Millisecond}";
 
             AssemblyResult result = GetAssemblyResult();
 
@@ -98,28 +87,44 @@ namespace Bb.Compilers
 
             var _references = ResolveAsemblies(usings);
 
-            CSharpCompilationOptions DefaultCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                    .WithOverflowChecks(true)
+            CSharpCompilationOptions compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
 
-                    .WithOptimizationLevel(System.Diagnostics.Debugger.IsAttached
-                        ? Microsoft.CodeAnalysis.OptimizationLevel.Debug
-                        : Microsoft.CodeAnalysis.OptimizationLevel.Release)
+                .WithModuleName($"{_assemblyName}.dll")
 
-                    .WithPlatform(Platform.AnyCpu)
+                .WithOverflowChecks(true)
 
-                    .WithModuleName($"{_assemblyName}.dll")
+                .WithOptimizationLevel(this.Debug
+                    ? OptimizationLevel.Debug
+                    : OptimizationLevel.Release)
 
-                    //.WithUsings(repository.Usings)
+                .WithPlatform(Platform.AnyCpu)
 
-                    ;
+            //.WithUsings(repository.Usings)
+            ;
+
+            if (this.KeyFile != null)
+            {
+
+                if (File.Exists(this.KeyFile))
+                {
+
+                    compilationOptions.WithCryptoKeyFile(this.KeyFile)
+                                      .WithDelaySign(this.DelaySign)
+                                      .WithCryptoPublicKey(StrongNameKey);
+                }
+            }
+
+            if (ConfigureCompilation != null)
+                ConfigureCompilation(compilationOptions);
+
 
             var compilation = CSharpCompilation.Create
-                (
-                    result.AssemblyName,
-                     parsedSyntaxTree,
-                    _references,
-                    DefaultCompilationOptions
-                );
+            (
+                result.AssemblyName,
+                 parsedSyntaxTree,
+                _references,
+                compilationOptions
+            );
 
             try
             {
@@ -134,7 +139,7 @@ namespace Bb.Compilers
 
                     EmitResult resultEmit = compilation.Emit(peStream, pdbStream);
                     var diags = resultEmit.Diagnostics.ToList().Select(c => c.ToString()).ToArray();
-                    
+
                     Trace.WriteLine(
                         new
                         {
@@ -162,6 +167,19 @@ namespace Bb.Compilers
                 Trace.WriteLine(new { Message = $"Compilation of {result.AssemblyName} return : ", Exception = ex });
 
             }
+
+
+            result.Codes = parsedSyntaxTree;
+
+
+            List<CodeObject> objects = new List<CodeObject>();
+            if (this.ResolveObjects)
+                foreach (var item in parsedSyntaxTree)
+                {
+                    var o = ObjectResolverVisitor.GetObjects(item);
+                    objects.AddRange(o);
+                }
+
 
             return result;
 
@@ -220,16 +238,20 @@ namespace Bb.Compilers
                 File.Delete(result.AssemblyFilePdb);
         }
 
-        private Microsoft.CodeAnalysis.SyntaxTree[] Parse(AssemblyResult result)
+        private SyntaxTree[] Parse(AssemblyResult result)
         {
 
-            List<Microsoft.CodeAnalysis.SyntaxTree> _sources = new List<SyntaxTree>();
+            List<SyntaxTree> _sources = new List<SyntaxTree>();
             foreach (var item in this._sources)
             {
 
                 result.Documents.Add(item.Filepath);
 
-                CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp6);
+                CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(this.LanguageVersion);
+
+                if (this.DocumentationMode != options.DocumentationMode)
+                    options.WithDocumentationMode(this.DocumentationMode);
+
                 var stringText = Microsoft.CodeAnalysis.Text.SourceText.From(item.Content, Encoding.UTF8);
                 var tree = SyntaxFactory.ParseSyntaxTree(stringText, options, item.Filepath);
                 _sources.Add(tree);
@@ -242,7 +264,6 @@ namespace Bb.Compilers
 
         // private static readonly string runtimePath = Path.Combine(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory(), "{0}.dll");
         private readonly List<MetadataReference> _defaultReferences;
-        private HashSet<string> _namespaces = new HashSet<string>();
         private HashSet<string> _assemblies = new HashSet<string>();
         private List<FileCode> _sources = new List<FileCode>();
 
