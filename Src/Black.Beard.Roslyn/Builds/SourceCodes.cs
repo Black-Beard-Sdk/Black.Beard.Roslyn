@@ -30,8 +30,8 @@ namespace Bb.Json.Jslt.Builds
             this.EnsureUptodated();
             foreach (var item in _sources.Values)
             {
-                key ^= item.Name.CalculateCrc32();
-                key ^= item.Datas.CalculateCrc32();
+                key ^= item.Name.Calculate();
+                key ^= item.Datas.Calculate();
             }
 
             return "assembly_" + key.ToString();
