@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using Bb;
 
 namespace Bb.Json.Jslt.Builds
 {
@@ -19,7 +20,7 @@ namespace Bb.Json.Jslt.Builds
             if (!filePathSource.Exists)
                 throw new FileNotFoundException(filePathSource.FullName);
 
-            var getDatas = filename.LoadContentFromFile();
+            var getDatas = filename.LoadFromFile();
 
             return new SourceCode(getDatas, name) { Filename = filename };
 
@@ -35,7 +36,7 @@ namespace Bb.Json.Jslt.Builds
             if (!file.Exists)
                 throw new FileNotFoundException(file.FullName);
 
-            var getDatas = file.LoadContentFromFile();
+            var getDatas = file.LoadFromFile();
 
             return new SourceCode(getDatas, name);
 
@@ -78,7 +79,7 @@ namespace Bb.Json.Jslt.Builds
         public void Reload()
         {
             if (File.Exists(this.Name))
-                this.Datas = this.Name.LoadContentFromFile();
+                this.Datas = this.Name.LoadFromFile();
         }
 
 

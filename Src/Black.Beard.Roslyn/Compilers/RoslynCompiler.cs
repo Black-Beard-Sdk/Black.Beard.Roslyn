@@ -46,7 +46,7 @@ namespace Bb.Compilers
         public RoslynCompiler AddCodeSource(string source, string path = null)
         {
             this._sources.Add(new FileCode() { Content = source, Filepath = path ?? string.Empty });
-            this._hash ^= Crc32.Calculate(source);
+            this._hash ^= Crc32.CalculateCrc32(source);
             return this;
         }
 
