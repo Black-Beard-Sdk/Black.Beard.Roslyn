@@ -15,12 +15,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.1" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.1" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.1" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.4" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.4" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.4" />
 		<PackageReference Include="Microsoft.Build.Locator" Version="1.5.5" />
-		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.4.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.4.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.6.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.6.0" />
 	</ItemGroup>
 
 	<ItemGroup>

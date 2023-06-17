@@ -23,7 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Black.Beard.ComponentModel" Version="1.0.40" />
+		<PackageReference Include="Black.Beard.ComponentModel" Version="1.0.41" />
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.4" />
 		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.4" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
