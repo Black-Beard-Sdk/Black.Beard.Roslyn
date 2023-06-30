@@ -1,0 +1,95 @@
+version: 1.0.{build}
+image: Visual Studio 2022
+environment:
+  KEY_NUGET_ORG: 
+    secure: XEHJjBhiTg5uwzq35gVWH9Uc8TasqX3oV3dAbRQDAQlSq/c8qYVWY31ldsHgai0r
+build_script:
+- ps: >-
+    WRITE-HOST "version :" $Env:APPVEYOR_BUILD_VERSION
+
+
+
+    WRITE-HOST "---------   Build Roslyn   ---------"
+
+    dotnet build ".\Src\Black.Beard.Roslyn\Black.Beard.Roslyn.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION
+
+
+    WRITE-HOST "---------   Build build   ---------"
+
+    dotnet build ".\Src\Black.Beard.Build\Black.Beard.Build.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION
+
+
+    WRITE-HOST "---------   Build projects models ---------"
+
+    dotnet build ".\Src\Black.Beard.Build.Models\Black.Beard.Projects.Models.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION
+
+
+    WRITE-HOST "---------   Build schemas   ---------"
+
+    dotnet build ".\Src\Black.Beard.Schemas\Black.Beard.Schemas.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION
+
+
+
+    WRITE-HOST "---------   Build process   ---------"
+
+    dotnet build ".\Src\Black.Beard.Process\Black.Beard.Process.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION
+
+
+
+    WRITE-HOST "---------  Pack Roslyn   ---------"
+
+    dotnet pack ".\Src\Black.Beard.Roslyn\Black.Beard.Roslyn.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+
+
+
+    WRITE-HOST "---------  Pack Build   ---------"
+
+    dotnet pack ".\Src\Black.Beard.Build\Black.Beard.Build.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+
+
+    WRITE-HOST "---------   Pack projects models ---------"
+
+    dotnet build ".\Src\Black.Beard.Build.Models\Black.Beard.Projects.Models.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION  -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+
+
+    WRITE-HOST "---------  Pack Schema   ---------"
+
+    dotnet pack ".\Src\Black.Beard.Schemas\Black.Beard.Schemas.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+
+
+
+    WRITE-HOST "---------  Pack Process   ---------"
+
+    dotnet pack ".\Src\Black.Beard.Process\Black.Beard.Process.csproj" -c release /p:Version=$Env:APPVEYOR_BUILD_VERSION -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+artifacts:
+- path: .\Src\Black.Beard.Roslyn\bin\release\Black.Beard.*.*nupkg
+  name: package
+- path: .\Src\Black.Beard.Build\bin\release\Black.Beard.*.*nupkg
+  name: package_build
+- path: .\Src\Black.Beard.Schemas\bin\release\Black.Beard.*.*nupkg
+  name: package_schemas
+- path: .\Src\Black.Beard.Build.Models\bin\release\Black.Beard.*.*nupkg
+  name: package_project
+- path: .\Src\Black.Beard.Process\bin\release\Black.Beard.*.*nupkg
+  name: package_process
+deploy:
+- provider: NuGet
+  api_key:
+    secure: y39LgAirVlF9Kb3mtv8Y9g==
+  artifact: package
+- provider: NuGet
+  api_key:
+    secure: y39LgAirVlF9Kb3mtv8Y9g==
+  artifact: package_build
+- provider: NuGet
+  api_key:
+    secure: y39LgAirVlF9Kb3mtv8Y9g==
+  artifact: package_schemas
+- provider: NuGet
+  api_key:
+    secure: y39LgAirVlF9Kb3mtv8Y9g==
+  artifact: package_project
+- provider: NuGet
+  api_key:
+    secure: y39LgAirVlF9Kb3mtv8Y9g==
+  artifact: package_process

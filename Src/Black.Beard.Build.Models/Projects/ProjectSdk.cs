@@ -19,7 +19,7 @@ namespace Bb.Projects
 
         public override XObject Serialize()
         {
-            return new XAttribute(Name, Value);
+            return new XAttribute(KeyName, Value);
         }
 
     }

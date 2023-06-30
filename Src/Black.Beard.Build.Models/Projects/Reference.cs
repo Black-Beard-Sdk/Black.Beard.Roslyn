@@ -13,7 +13,7 @@ namespace Bb.Projects
         public override XObject Serialize()
         {
 
-            var result = new XElement(Name,
+            var result = new XElement(KeyName,
                 new XAttribute("Include", Value),
                 new XElement("HintPath", _path)
                 );

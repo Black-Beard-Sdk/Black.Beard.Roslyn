@@ -19,8 +19,8 @@ namespace Bb.Build
             : base(name, dir)
         {
 
-            this.AssemblyFile = Path.Combine(this.Directory.FullName, "bin", $"{Name}.dll");
-            this.SymbolFile = Path.Combine(this.Directory.FullName, "bin", $"{Name}.pdb");
+            this.AssemblyFile = Path.Combine(this.Directory.FullName, "bin", $"{KeyName}.dll");
+            this.SymbolFile = Path.Combine(this.Directory.FullName, "bin", $"{KeyName}.pdb");
         
         }
 

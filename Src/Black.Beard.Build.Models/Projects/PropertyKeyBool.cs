@@ -12,7 +12,7 @@ namespace Bb.Projects
 
         public override XObject Serialize()
         {
-            return new XElement(Name, Value);
+            return new XElement(KeyName, Value);
         }
 
     }

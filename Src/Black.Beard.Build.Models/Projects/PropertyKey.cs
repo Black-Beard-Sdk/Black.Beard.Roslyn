@@ -20,9 +20,9 @@ namespace Bb.Projects
         public override void Serialize(XElement parent)
         {
             if (Kind == PropertyKeyKind.XElement)
-                parent.Add(new XElement(Name, Value));
+                parent.Add(new XElement(KeyName, Value));
             else
-                parent.Add(new XAttribute(Name, Value));
+                parent.Add(new XAttribute(KeyName, Value));
         }
 
         public override string ToString()

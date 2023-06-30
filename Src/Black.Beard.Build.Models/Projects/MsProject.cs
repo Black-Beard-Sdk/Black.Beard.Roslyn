@@ -19,6 +19,8 @@ namespace Bb.Projects
             if (dir == null)
                 throw new ArgumentNullException(nameof(dir));
 
+            dir.Refresh();
+
             if (!dir.Exists)
                 dir.Create();
 

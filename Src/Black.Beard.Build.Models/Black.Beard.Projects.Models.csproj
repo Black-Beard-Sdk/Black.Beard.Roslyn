@@ -4,7 +4,6 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<RootNamespace>Bb</RootNamespace>
 
 		<Description>Helper for compile Csharp at runtime</Description>
 		<RepositoryUrl>https://github.com/Black-Beard-Sdk/Black.Beard.Roslyn</RepositoryUrl>
