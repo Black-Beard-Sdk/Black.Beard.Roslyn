@@ -299,12 +299,13 @@ namespace Bb.Process
 
             this._task = Task.Run(() =>
             {
-                Task? t = default;
+                Task<int?>? t = default;
                 try
                 {
                     t = Start();
                     this.PushTaskEvent(t, TaskEventEnum.Started);
                     t.Wait();
+                    this.ExitCode = t.Result;
                     this.PushTaskEvent(t, TaskEventEnum.Completed);
                 }
                 catch (Exception ex)
@@ -322,15 +323,16 @@ namespace Bb.Process
 
         }
 
-        private async Task Start()
+        private async Task<int?> Start()
         {
+
+            int? exitCode = null;
 
             //processStartInfo.UserName = null;
             //processStartInfo.LoadUserProfile = true;
             //processStartInfo.Password = null;
             //processStartInfo.PasswordInClearText = null;
             //processStartInfo.Verb = "";
-
 
             using (this._process = new System.Diagnostics.Process() { StartInfo = _processStartInfo })
             {
@@ -343,13 +345,17 @@ namespace Bb.Process
 
                 try
                 {
-                    _process.Start();                                           // start the process
-                    _process.BeginOutputReadLine();                             // then begin asynchronously reading the output
-                    _process.BeginErrorReadLine();                              // then begin asynchronously reading the output
-                    listen = true;
+                    var started = _process.Start();                                 // start the process
+                    if (started)
+                    {
+                        listen = true;
+                        _process.BeginOutputReadLine();                             // then begin asynchronously reading the output
+                        _process.BeginErrorReadLine();                              // then begin asynchronously reading the output
+                        await _process.WaitForExitAsync(this._cancellation.Token);  // then wait for the process to exit
 
-                    await _process.WaitForExitAsync(this._cancellation.Token);       // then wait for the process to exit
+                        exitCode = _process.ExitCode;
 
+                    }
                 }
                 catch (TaskCanceledException)
                 {
@@ -361,13 +367,10 @@ namespace Bb.Process
                 }
                 finally
                 {
-
                     _process.OutputDataReceived -= new DataReceivedEventHandler(OutputDataReceived);
                     _process.ErrorDataReceived -= new DataReceivedEventHandler(ErrorDataReceived);
-
                     if (listen)
                     {
-
                         _process.CancelOutputRead();     // then cancel asynchronously reading the output
                         _process.CancelErrorRead();
                     }
@@ -380,6 +383,8 @@ namespace Bb.Process
             }
 
             _process = null;
+
+            return exitCode;
 
         }
 
@@ -430,14 +435,14 @@ namespace Bb.Process
         {
             if (!string.IsNullOrEmpty(e.Data) && TaskEventHandler != null)
                 TaskEventHandler?.Invoke(sender, new TaskEventArgs(this, TaskEventEnum.ErrorReceived, e));
-        }    
+        }
 
         public void PushTaskEvent(Task task, TaskEventEnum status)
         {
             if (TaskEventHandler != null)
                 TaskEventHandler?.Invoke(task, new TaskEventArgs(this, status, null));
         }
-       
+
         public ProcessCommand Intercept(TaskEventHandler append)
         {
             this._interceptors.Add(append);
@@ -495,6 +500,7 @@ namespace Bb.Process
         public Guid Id { get; }
         public object Tag { get; }
         public bool Cancelling { get; private set; }
+        public int? ExitCode { get; private set; }
 
         private ProcessStartInfo _processStartInfo;
         private System.Diagnostics.Process _process;
