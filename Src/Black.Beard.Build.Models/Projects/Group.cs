@@ -15,7 +15,7 @@ namespace Bb.Projects
         {
 
             if (string.IsNullOrEmpty(key))
-                throw new ArgumentNullException(nameof(key);
+                throw new ArgumentNullException(nameof(key));
 
             this.KeyName = key;
 
