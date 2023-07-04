@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Bb.Compilers;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
@@ -893,8 +894,8 @@ namespace Bb.Codings
         }
 
         public static IdentifierNameSyntax Identifier(this string self)
-        {
-            return SyntaxFactory.IdentifierName(self);
+        {            
+            return SyntaxFactory.IdentifierName(self.EnsureLiteralName());
         }
 
         public static BlockSyntax ToBlock(this SyntaxList<StatementSyntax> self)
