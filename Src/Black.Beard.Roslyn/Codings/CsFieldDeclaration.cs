@@ -9,6 +9,11 @@ namespace Bb.Codings
     public class CsFieldDeclaration : CSMemberDeclaration
     {
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CsFieldDeclaration"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="typeName">Name of the type.</param>
         public CsFieldDeclaration(string name, TypeSyntax typeName)
             : base(name)
         {
@@ -16,6 +21,11 @@ namespace Bb.Codings
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CsFieldDeclaration"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="typeName">Name of the type.</param>
         public CsFieldDeclaration(string name, string typeName)
             : base(name)
         {
@@ -25,18 +35,33 @@ namespace Bb.Codings
 
         #region ReturnType
 
+        /// <summary>
+        /// Specify the type of the field
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
         public CsFieldDeclaration ReturnType(string type)
         {
             TypeReturn = type.AsType();
             return this;
         }
 
+        /// <summary>
+        /// Specify the type of the field
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
         public CsFieldDeclaration ReturnType(TypeSyntax type)
         {
             TypeReturn = type;
             return this;
         }
 
+        /// <summary>
+        /// Specify the type of the field
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
         public CsFieldDeclaration ReturnType(Type type)
         {
             TypeReturn = type.AsType();
@@ -112,6 +137,11 @@ namespace Bb.Codings
             return declaration;
         }
 
+        /// <summary>
+        /// Sets the initial value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
         public CsFieldDeclaration SetInitialValue(object value)
         {
             this.InitialValue = value.Literal();
@@ -122,6 +152,7 @@ namespace Bb.Codings
         private TypeSyntax TypeReturn;
 
         public bool IsEnumMember { get; set; }
+
         public ExpressionSyntax InitialValue { get; private set; }
 
     }

@@ -9,18 +9,33 @@ namespace Bb.Codings
     public class CsPropertyDeclaration : CSMemberDeclaration
     {
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CsPropertyDeclaration"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="typeName">Name of the type.</param>
         public CsPropertyDeclaration(string name, string typeName)
             : base(name)
         {
             TypeReturn = typeName.AsType();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CsPropertyDeclaration"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="type">The type.</param>
         public CsPropertyDeclaration(string name, Type type)
             : base(name)
         {
             TypeReturn = type.Name.AsType();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CsPropertyDeclaration"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="type">The type.</param>
         public CsPropertyDeclaration(string name, TypeSyntax type)
             : base(name)
         {
@@ -29,18 +44,33 @@ namespace Bb.Codings
 
         #region ReturnType
 
+        /// <summary>
+        /// Specify the type of the property.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
         public CsPropertyDeclaration ReturnType(string type)
         {
             TypeReturn = type.AsType();
             return this;
         }
 
+        /// <summary>
+        /// Specify the type of the property
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
         public CsPropertyDeclaration ReturnType(TypeSyntax type)
         {
             TypeReturn = type;
             return this;
         }
 
+        /// <summary>
+        /// Specify the type of the property
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
         public CsPropertyDeclaration ReturnType(Type type)
         {
             TypeReturn = type.AsType();
@@ -49,13 +79,22 @@ namespace Bb.Codings
 
         #endregion ReturnType
 
-
+        /// <summary>
+        /// generate empty set. { set; }
+        /// </summary>
+        /// <returns></returns>
         public CsPropertyDeclaration AutoSet()
         {
             _autoSet = true;
             return this;
         }
 
+        /// <summary>
+        /// Manipulate the set body.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
         public CsPropertyDeclaration BodySet(Action<CodeBlock> action)
         {
             if (action == null)
@@ -66,6 +105,12 @@ namespace Bb.Codings
             return this;
         }
 
+        /// <summary>
+        /// Manipulate the get body.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
         public CsPropertyDeclaration BodyGet(Action<CodeBlock> action)
         {
             if (action == null)
@@ -76,6 +121,10 @@ namespace Bb.Codings
             return this;
         }
 
+        /// <summary>
+        /// generate empty get. { get; }
+        /// </summary>
+        /// <returns></returns>
         public CsPropertyDeclaration AutoGet()
         {
             _autoGet = true;

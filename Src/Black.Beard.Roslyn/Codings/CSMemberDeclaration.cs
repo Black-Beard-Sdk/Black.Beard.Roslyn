@@ -117,6 +117,12 @@ namespace Bb.Codings
 
         #endregion Modifiers
 
+        /// <summary>
+        /// Generic method for add member
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="member"></param>
+        /// <returns></returns>
         public T Add<T>(T member)
             where T : CSMemberDeclaration
         {
@@ -131,7 +137,15 @@ namespace Bb.Codings
 
         }
 
-
+        /// <summary>
+        /// Add a new field
+        /// </summary>
+        /// <param name="fieldName">name of the field</param>
+        /// <param name="type">Type of the field</param>
+        /// <param name="action">Action for manipulate the field</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">fieldName can't be null.</exception>
+        /// <exception cref="InvalidOperationException">the field can't named like the class</exception>
         public CSMemberDeclaration Field(string fieldName, string type, Action<CsFieldDeclaration> action)
         {
             var field = Field(fieldName, type);
@@ -140,8 +154,23 @@ namespace Bb.Codings
             return this;
         }
 
+        /// <summary>
+        /// Add a new field
+        /// </summary>
+        /// <param name="fieldName">name of the field</param>
+        /// <param name="type">Type of the field</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">fieldName can't be null.</exception>
+        /// <exception cref="InvalidOperationException">the field can't named like the class</exception>
         public CsFieldDeclaration Field(string fieldName, string type)
         {
+
+            if (fieldName == null)
+                throw new ArgumentNullException(nameof(fieldName));
+
+            if (fieldName == this.Name)
+                throw new InvalidOperationException($"the field {nameof(fieldName)} can't named like the class");
+
             return Add(new CsFieldDeclaration(fieldName, type));
         }        
 
@@ -154,7 +183,11 @@ namespace Bb.Codings
 
         }
 
-
+        /// <summary>
+        /// Iterator on the members
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public IEnumerable<T> Items<T>()
             where T : CSMemberDeclaration
         {

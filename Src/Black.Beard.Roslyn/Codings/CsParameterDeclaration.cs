@@ -53,6 +53,11 @@ namespace Bb.Codings
 
         #endregion ReturnType
 
+        /// <summary>
+        /// specify the way of the parameter
+        /// </summary>
+        /// <param name="way">The way.</param>
+        /// <returns></returns>
         public CsParameterDeclaration Way(ParameterWay way)
         {
             this._parameterWay = way;

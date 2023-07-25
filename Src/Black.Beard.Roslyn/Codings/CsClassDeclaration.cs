@@ -32,11 +32,21 @@ namespace Bb.Codings
 
         #region Members
 
+        /// <summary>
+        /// add a new constructor
+        /// </summary>
+        /// <returns></returns>
         public CsCtorDeclaration Ctor()
         {
             return Add(new CsCtorDeclaration(Name));
         }
 
+        /// <summary>
+        /// add a new constructor
+        /// </summary>
+        /// <param name="action">action for manipulate the constructor.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
         public CsClassDeclaration Ctor(Action<CsCtorDeclaration> action)
         {
             if (action == null)
@@ -48,7 +58,14 @@ namespace Bb.Codings
         }
 
 
-
+        /// <summary>
+        /// Add a new Field with specified field name.
+        /// </summary>
+        /// <param name="fieldName">Name of the field.</param>
+        /// <param name="type">The type of the field.</param>
+        /// <param name="action">action for manipulate the field.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
         public new CsClassDeclaration Field(string fieldName, string type, Action<CsFieldDeclaration> action)
         {
             if (action == null)
@@ -59,19 +76,43 @@ namespace Bb.Codings
         }
 
 
-
-        public CsClassDeclaration Property(string methodName, string type, Action<CsPropertyDeclaration> action)
+        /// <summary>
+        /// Add a new property the specified method name.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="type">The type of the property.</param>
+        /// <param name="action">The action for manipulate the property.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
+        /// <exception cref="System.ArgumentNullException">propertyName</exception>
+        /// <exception cref="System.InvalidOperationException">the property name can't named like the class</exception>
+        public CsClassDeclaration Property(string propertyName, string type, Action<CsPropertyDeclaration> action)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            action(Property(methodName, type));
+            action(Property(propertyName, type));
             return this;
         }
 
-        public CsPropertyDeclaration Property(string methodName, string type)
+        /// <summary>
+        /// Add a new property the specified method name.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        /// <param name="type">The type of the property.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">propertyName</exception>
+        /// <exception cref="System.InvalidOperationException">the property name can't named like the class</exception>
+        public CsPropertyDeclaration Property(string propertyName, string type)
         {
-            return Add(new CsPropertyDeclaration(methodName, type));
+
+            if (propertyName == null)
+                throw new ArgumentNullException(nameof(propertyName));
+
+            if (propertyName == this.Name)
+                throw new InvalidOperationException($"the property {nameof(propertyName)} can't named like the class");
+
+            return Add(new CsPropertyDeclaration(propertyName, type));
         }
 
         #endregion Members
@@ -80,7 +121,6 @@ namespace Bb.Codings
         {
 
             ClassDeclarationSyntax classDeclaration = SyntaxFactory.ClassDeclaration(Name);
-
 
             #region attributes
 
