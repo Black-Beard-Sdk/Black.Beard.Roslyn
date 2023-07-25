@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using Bb.Compilers;
 
 namespace Bb.Codings
 {
@@ -16,7 +17,7 @@ namespace Bb.Codings
             : base()
         {
             _isPublic = true;
-            Name = name;
+            Name = name?.EnsureLiteralName();
             _attributes = new List<CsAttributeDeclaration>();
             _members = new List<CSMemberDeclaration>();
         }

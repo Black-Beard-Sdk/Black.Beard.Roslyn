@@ -41,7 +41,7 @@ namespace Bb.Codings
 
         public static MemberAccessExpressionSyntax MemberAccess(this string name, string memberName)
         {
-            return MemberAccess(SyntaxFactory.ParseExpression(name), memberName);
+            return MemberAccess(SyntaxFactory.ParseExpression(name.EnsureLiteralName()), memberName);
         }
 
         public static MemberAccessExpressionSyntax MemberAccess(this NamedNode namedNode, string memberName)
@@ -51,12 +51,12 @@ namespace Bb.Codings
 
         public static MemberAccessExpressionSyntax MemberAccess(this ExpressionSyntax expression, string memberName)
         {
-            return MemberAccess(expression, (SimpleNameSyntax)SyntaxFactory.ParseName(memberName));
+            return MemberAccess(expression, (SimpleNameSyntax)SyntaxFactory.ParseName(memberName.EnsureLiteralName()));
         }
 
         public static MemberAccessExpressionSyntax MemberAccess(this string name, SimpleNameSyntax memberName)
         {
-            return MemberAccess(SyntaxFactory.ParseExpression(name), memberName);
+            return MemberAccess(SyntaxFactory.ParseExpression(name.EnsureLiteralName()), memberName);
         }
 
         public static MemberAccessExpressionSyntax MemberAccess(this ExpressionSyntax expression, SimpleNameSyntax memberName)
@@ -190,7 +190,7 @@ namespace Bb.Codings
             (
 
                 SyntaxFactory.CatchDeclaration(exceptionType)
-                    .WithIdentifier(SyntaxFactory.Identifier(exceptionVariableName))
+                    .WithIdentifier(SyntaxFactory.Identifier(exceptionVariableName.EnsureLiteralName()))
 
             ).WithBlock(list.ToBlock());
 
@@ -304,127 +304,132 @@ namespace Bb.Codings
 
         }
 
-        public static LiteralExpressionSyntax Literal(this string self, object value)
-        {
+        ///// <summary>
+        ///// convert in literal
+        ///// </summary>
+        ///// <param name="self">value to convert</param>
+        ///// <param name="value">value to convert</param>
+        ///// <returns></returns>
+        ///// <exception cref="ArgumentNullException">thrown if the value argument is null.</exception>
+        ///// <exception cref="NotImplementedException"></exception>
+        //public static LiteralExpressionSyntax Literal(this string self, object value)
+        //{
 
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
+        //    if (value is int s1)
+        //        return self.Literal(s1);
 
-            if (value is int s1)
-                return self.Literal(s1);
+        //    if (value is string s2)
+        //        return self.Literal(s2);
 
-            if (value is string s2)
-                return self.Literal(s2);
+        //    if (value is uint s3)
+        //        return self.Literal(s3);
 
-            if (value is uint s3)
-                return self.Literal(s3);
+        //    if (value is long s4)
+        //        return self.Literal(s4);
 
-            if (value is long s4)
-                return self.Literal(s4);
+        //    if (value is ulong s5)
+        //        return self.Literal(s5);
 
-            if (value is ulong s5)
-                return self.Literal(s5);
+        //    if (value is float s6)
+        //        return self.Literal(s6);
 
-            if (value is float s6)
-                return self.Literal(s6);
+        //    if (value is double s7)
+        //        return self.Literal(s7);
 
-            if (value is double s7)
-                return self.Literal(s7);
+        //    if (value is decimal s8)
+        //        return self.Literal(s8);
 
-            if (value is decimal s8)
-                return self.Literal(s8);
+        //    if (value is char s9)
+        //        return self.Literal(s9);
 
-            if (value is char s9)
-                return self.Literal(s9);
+        //    throw new NotImplementedException(self.ToString());
 
-            throw new NotImplementedException(self.ToString());
-
-        }
+        //}
 
         public static LiteralExpressionSyntax Literal(this int self)
         {
             return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
         }
 
-        public static LiteralExpressionSyntax Literal(this string self, int value)
-        {
-            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
-        }
+        //public static LiteralExpressionSyntax Literal(this string self, int value)
+        //{
+        //    return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
+        //}
 
         public static LiteralExpressionSyntax Literal(this uint self)
         {
             return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
         }
 
-        public static LiteralExpressionSyntax Literal(this string self, uint value)
-        {
-            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
-        }
+        //public static LiteralExpressionSyntax Literal(this string self, uint value)
+        //{
+        //    return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
+        //}
 
         public static LiteralExpressionSyntax Literal(this long self)
         {
             return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
         }
 
-        public static LiteralExpressionSyntax Literal(this string self, long value)
-        {
-            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
-        }
+        //public static LiteralExpressionSyntax Literal(this string self, long value)
+        //{
+        //    return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
+        //}
 
         public static LiteralExpressionSyntax Literal(this ulong self)
         {
             return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
         }
 
-        public static LiteralExpressionSyntax Literal(this string self, ulong value)
-        {
-            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
-        }
+        //public static LiteralExpressionSyntax Literal(this string self, ulong value)
+        //{
+        //    return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
+        //}
 
         public static LiteralExpressionSyntax Literal(this float self)
         {
             return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
         }
 
-        public static LiteralExpressionSyntax Literal(this string self, float value)
-        {
-            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
-        }
+        //public static LiteralExpressionSyntax Literal(this string self, float value)
+        //{
+        //    return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
+        //}
 
         public static LiteralExpressionSyntax Literal(this double self)
         {
             return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
         }
 
-        public static LiteralExpressionSyntax Literal(this string self, double value)
-        {
-            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
-        }
+        //public static LiteralExpressionSyntax Literal(this string self, double value)
+        //{
+        //    return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
+        //}
 
         public static LiteralExpressionSyntax Literal(this decimal self)
         {
             return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
         }
 
-        public static LiteralExpressionSyntax Literal(this string self, decimal value)
-        {
-            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
-        }
+        //public static LiteralExpressionSyntax Literal(this string self, decimal value)
+        //{
+        //    return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
+        //}
 
-        public static LiteralExpressionSyntax Literal(this string self, string value)
-        {
-            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
-        }
+        //public static LiteralExpressionSyntax Literal(this string self, string value)
+        //{
+        //    return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
+        //}
 
         public static LiteralExpressionSyntax Literal(this char self)
         {
             return SyntaxFactory.LiteralExpression(SyntaxKind.CharacterLiteralExpression, SyntaxFactory.Literal(self));
         }
 
-        public static LiteralExpressionSyntax Literal(this string self, char value)
-        {
-            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
-        }
+        //public static LiteralExpressionSyntax Literal(this string self, char value)
+        //{
+        //    return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(self));
+        //}
 
         public static ThisExpressionSyntax This()
         {

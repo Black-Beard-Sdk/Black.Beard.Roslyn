@@ -12,9 +12,18 @@ namespace Bb.Codings
 {
 
 
+    /// <summary>
+    /// Manage csharp code artifact for generate the code.
+    /// </summary>
+    /// <seealso cref="Bb.Codings.CSMemberDeclaration" />
     public class CSharpArtifact : CSMemberDeclaration
     {
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CSharpArtifact"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="projectPath">The project path.</param>
         public CSharpArtifact(string name, string projectPath = null) 
             : base(name)
         {
@@ -23,7 +32,7 @@ namespace Bb.Codings
         }
 
         /// <summary>
-        /// append using directives in the source code.
+        /// append using directives in the source code with specified name.
         /// </summary>
         /// <param name="usings">The usings to append.</param>
         /// <returns></returns>
@@ -34,6 +43,11 @@ namespace Bb.Codings
             return this;
         }
 
+        /// <summary>
+        /// append using directives in the source code with specified name.
+        /// </summary>
+        /// <param name="usings">The usings.</param>
+        /// <returns></returns>
         public CSharpArtifact Usings(params Type[] usings)
         {
             foreach (var @using in usings)
@@ -48,7 +62,13 @@ namespace Bb.Codings
             return Add( new CSNamespace(@namespace));
         }
 
-
+        /// <summary>
+        /// Add a new Namespace with specified name.
+        /// </summary>
+        /// <param name="namespace">The namespace.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">action</exception>
         public CSharpArtifact Namespace(string @namespace, Action<CSNamespace> action)
         {
             if (action == null)
@@ -58,6 +78,12 @@ namespace Bb.Codings
         }
 
 
+        public CompilationUnitSyntax Tree => (CompilationUnitSyntax)Build();
+
+        /// <summary>
+        /// return the code generated
+        /// </summary>
+        /// <returns></returns>
         public StringBuilder Code()
         {
             CompilationUnitSyntax b = (CompilationUnitSyntax)Build();
@@ -69,7 +95,17 @@ namespace Bb.Codings
             return sb;
         }
 
-    
+        /// <summary>
+        /// return the code generated.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return Code().ToString();
+        }
+
         private CompilationUnitSyntax AppendUsings(CompilationUnitSyntax self)
         {
             foreach (var @using in _usings)
@@ -82,6 +118,10 @@ namespace Bb.Codings
             return self;
         }
 
+        /// <summary>
+        /// Builds this instance.
+        /// </summary>
+        /// <returns></returns>
         internal override SyntaxNode Build()
         {
 
@@ -110,20 +150,5 @@ namespace Bb.Codings
         private readonly HashSet<string> _usings;
 
     }
-
-
-
-
-    //public class CsClassDeclaration : TypeDeclaration
-    //{
-    //}
-
-    //public class TypeDeclaration : BaseTypeDeclaration
-    //{
-    //}
-
-    //public class BaseTypeDeclaration : CSMemberDeclaration
-    //{
-    //}
 
 }

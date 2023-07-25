@@ -7,17 +7,17 @@ using Xunit;
 
 namespace Bb.Beard.Roslyn.XTests
 {
-    public class UnitTest1
+    public class BuildUnitTest1
     {
 
-        public UnitTest1()
+        public BuildUnitTest1()
         {
-            this._assemblyFile = new FileInfo(typeof(UnitTest1).Assembly.Location);
+            this._assemblyFile = new FileInfo(typeof(BuildUnitTest1).Assembly.Location);
 
         }
 
         [Fact]
-        public void Test1()
+        public void Build1()
         {
 
             var file2 = Path.Combine(_assemblyFile.Directory.FullName, "Class1.cs");
