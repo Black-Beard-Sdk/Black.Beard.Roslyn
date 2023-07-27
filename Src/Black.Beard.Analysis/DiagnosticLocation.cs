@@ -1,5 +1,5 @@
 ﻿
-namespace Bb.Compilers
+namespace Bb.Analysis
 {
 
     public class DiagnosticLocation

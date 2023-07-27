@@ -1,11 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-
-namespace Bb.Compilers
+﻿
+namespace Bb.Analysis
 {
-
 
     [System.Diagnostics.DebuggerDisplay("[{Severity}] {Message}")]
     public class DiagnosticReport

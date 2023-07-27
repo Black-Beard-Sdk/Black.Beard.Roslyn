@@ -1,4 +1,5 @@
-﻿using Bb.Compilers.Exceptions;
+﻿using Bb.Analysis;
+using Bb.Compilers.Exceptions;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.IO;

@@ -1,4 +1,5 @@
-﻿using Bb.Compilers;
+﻿using Bb.Analysis;
+using Bb.Compilers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;

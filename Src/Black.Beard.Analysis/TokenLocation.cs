@@ -1,5 +1,5 @@
 ﻿
-namespace Bb.Compilers
+namespace Bb.Analysis
 {
     [System.Diagnostics.DebuggerDisplay("{StartIndex}, {StopIndex} : ({Line},{Column})")]
     public class TokenLocation

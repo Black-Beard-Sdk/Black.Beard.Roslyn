@@ -31,7 +31,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Black.Beard.CodeDiagnostic\Black.Beard.CodeDiagnostic.csproj" />
+	  <ProjectReference Include="..\Black.Beard.Analysis\Black.Beard.Analysis.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
