@@ -159,7 +159,7 @@ namespace Bb.Builds
                     _compiledAssemblies.Add(key, result);
 
                 foreach (var item in e)
-                    result.Disgnostics.Insert(0,
+                    result.Diagnostics.Insert(0,
                         new DiagnosticReport()
                         {
                             Id = String.Empty,

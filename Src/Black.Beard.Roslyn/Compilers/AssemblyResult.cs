@@ -16,7 +16,7 @@ namespace Bb.Compilers
 
         public AssemblyResult()
         {
-            Disgnostics = new List<DiagnosticReport>();
+            Diagnostics = new Diagnostics();
             this.Documents = new List<string>();
         }
 
@@ -26,11 +26,11 @@ namespace Bb.Compilers
 
         public string AssemblyFilePdb { get; internal set; }
 
-        public List<DiagnosticReport> Disgnostics { get; internal set; }
+        public Diagnostics Diagnostics { get; internal set; }
 
-        public IEnumerable<DiagnosticReport> Errors { get => Disgnostics.Where(c => c.Severity == "Error"); }
+        public IEnumerable<DiagnosticReport> Errors { get => Diagnostics.Where(c => c.Severity == "Error"); }
 
-        public IEnumerable<DiagnosticReport> Warnings { get => Disgnostics.Where(c => c.Severity == "Warning"); }
+        public IEnumerable<DiagnosticReport> Warnings { get => Diagnostics.Where(c => c.Severity == "Warning"); }
 
         public List<string> Documents { get; }
 

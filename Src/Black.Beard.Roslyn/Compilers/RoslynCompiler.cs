@@ -149,7 +149,7 @@ namespace Bb.Compilers
 
                     // Map diagnostic for not reference roslyn outsite this assembly
                     foreach (Diagnostic diagnostic in resultEmit.Diagnostics)
-                        result.Disgnostics.Add(diagnostic.Map());
+                        result.Diagnostics.Add(diagnostic.Map());
 
                     result.Success = resultEmit.Success;
 
