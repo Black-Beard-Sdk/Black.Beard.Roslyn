@@ -1,6 +1,6 @@
-﻿
-namespace Bb.Analysis
+﻿namespace Bb.Analysis
 {
+
 
     [System.Diagnostics.DebuggerDisplay("[{Severity}] {Message}")]
     public class DiagnosticReport

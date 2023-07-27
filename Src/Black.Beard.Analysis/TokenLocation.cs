@@ -33,16 +33,17 @@ namespace Bb.Analysis
             this.StopIndex = location.EndIndex;
         }
 
-        public int Line { get; internal set; }
+        public int Line { get; set; }
 
-        public int Column { get; internal set; }
+        public int Column { get; set; }
 
-        public int StartIndex { get; internal set; }
+        public int StartIndex { get; set; }
 
-        public int StopIndex { get; internal set; }
+        public int StopIndex { get; set; }
 
         public string Function { get; set; }
-        public string ScriptFile { get; internal set; }
+
+        public string ScriptFile { get; set; }
 
         public TokenLocation Clone()
         {
