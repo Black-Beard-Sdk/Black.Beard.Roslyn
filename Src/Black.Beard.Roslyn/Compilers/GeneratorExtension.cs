@@ -11,25 +11,25 @@ namespace Bb.Compilers
     {
 
 
-        public static DiagnosticResult Map(this Diagnostic self)
+        public static DiagnosticReport Map(this Diagnostic self)
         {
 
-            return new DiagnosticResult()
+            return new DiagnosticReport()
             {
                 Locations = GetLocations(self),
                 Id = self.Id,
                 Message = self.GetMessage(),
-                IsWarningAsError = self.IsWarningAsError,
+                IsSeverityAsError = self.IsWarningAsError,
                 Severity = self.Severity.ToString(),
-                WarningLevel = self.WarningLevel,
+                SeverityLevel = self.WarningLevel,
             };
             
         }
 
-        private static List<LocationResult> GetLocations(Diagnostic self)
+        private static List<DiagnosticLocation> GetLocations(Diagnostic self)
         {
 
-            List<LocationResult> result = new List<LocationResult>(self.AdditionalLocations.Count + 1)
+            List<DiagnosticLocation> result = new List<DiagnosticLocation>(self.AdditionalLocations.Count + 1)
             {
                 Map(self.Location)
             };
@@ -41,19 +41,19 @@ namespace Bb.Compilers
 
         }
 
-        private static LocationResult Map(Location location)
+        private static DiagnosticLocation Map(Location location)
         {
 
             var lineSpan = location.GetLineSpan();
-            return new LocationResult()
+            return new DiagnosticLocation()
             {
-                FilePath = location?.SourceTree?.FilePath ?? string.Empty,
+                Filename = location?.SourceTree?.FilePath ?? string.Empty,
 
-                StartCharacter = location?.SourceSpan.Start ?? 0,
+                StartIndex = location?.SourceSpan.Start ?? 0,
                 StartLine = lineSpan.StartLinePosition.Line + 1,
                 StartColumn = lineSpan.StartLinePosition.Character,
 
-                EndCharacter = location?.SourceSpan.End ?? 0,
+                EndIndex = location?.SourceSpan.End ?? 0,
                 EndLine = lineSpan.EndLinePosition.Line + 1,
                 EndColumn = lineSpan.EndLinePosition.Character,
 

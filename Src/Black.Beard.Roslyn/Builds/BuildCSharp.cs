@@ -159,18 +159,18 @@ namespace Bb.Builds
 
                 foreach (var item in e)
                     result.Disgnostics.Insert(0,
-                        new DiagnosticResult()
+                        new DiagnosticReport()
                         {
                             Id = String.Empty,
-                            WarningLevel = 3,
-                            IsWarningAsError = false,
+                            SeverityLevel = 3,
+                            IsSeverityAsError = false,
                             Severity = "Warning",
                             Message = item.Value.Message,
-                            Locations = new List<LocationResult>()
+                            Locations = new List<DiagnosticLocation>()
                             {
-                                new LocationResult()
+                                new DiagnosticLocation()
                                 {
-                                    FilePath = item.Key,
+                                    Filename = item.Key,
                                 }
                             }
                         });
