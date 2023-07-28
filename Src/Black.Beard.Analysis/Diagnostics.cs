@@ -160,10 +160,33 @@ namespace Bb.Analysis
             return d;
         }
 
+        /// <summary>
+        /// Creates & adds a new diagnostic and return the diagnostic
+        /// </summary>
+        /// <param name="severityEnum">The severity enum.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="text">The text.</param>
+        /// <param name="message">The message.</param>
+        /// <returns><see cref="T:DiagnosticReport"></returns>
+        public DiagnosticReport Add(SeverityEnum severityEnum, DiagnosticLocation location, string text, string message)
+        {
+
+            var d = new DiagnosticReport((DiagnosticLocation)location.Clone())
+            {
+                Text = text,
+                Message = message,
+                Severity = severityEnum.ToString(),
+                SeverityLevel = (int)severityEnum,
+                IsSeverityAsError = severityEnum == SeverityEnum.Error,
+            };
+            this.Add(d);
+            return d;
+        }
+
         #endregion Add
 
         #region Implement IList  
-        
+
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>

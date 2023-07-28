@@ -2,7 +2,7 @@
 namespace Bb.Analysis
 {
 
-    public class DiagnosticLocation
+    public class DiagnosticLocation : ICloneable
     {
 
         /// <summary>
@@ -116,6 +116,11 @@ namespace Bb.Analysis
         {
             var file = this.Filename ?? string.Empty;
             return $"{file} from (line {this.StartLine}, column {this.StartColumn}) to (line {this.EndLine}, column {this.EndColumn})";
+        }
+
+        public object Clone()
+        {
+            return new DiagnosticLocation(this.Filename, StartIndex, StartLine, StartColumn) { EndIndex = EndIndex, EndColumn = EndColumn, EndLine = EndLine };
         }
 
     }
