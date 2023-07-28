@@ -55,19 +55,23 @@ namespace Bb.Compilers
         {
 
             var lineSpan = location.GetLineSpan();
-            return new DiagnosticLocation()
-            {
-                Filename = location?.SourceTree?.FilePath ?? string.Empty,
+            return new DiagnosticLocation
+             (
+            
+                location?.SourceTree?.FilePath ?? string.Empty,
+                new TextLocation(
+                    lineSpan.StartLinePosition.Line + 1,
+                    lineSpan.StartLinePosition.Character,
+                    location?.SourceSpan.Start ?? 0
+                 ),
+                
+                new TextLocation(
+                 lineSpan.EndLinePosition.Line + 1,
+                 lineSpan.EndLinePosition.Character,
+                 location?.SourceSpan.End ?? 0
+                )                               
 
-                StartIndex = location?.SourceSpan.Start ?? 0,
-                StartLine = lineSpan.StartLinePosition.Line + 1,
-                StartColumn = lineSpan.StartLinePosition.Character,
-
-                EndIndex = location?.SourceSpan.End ?? 0,
-                EndLine = lineSpan.EndLinePosition.Line + 1,
-                EndColumn = lineSpan.EndLinePosition.Character,
-
-            };
+            );
 
         }
 

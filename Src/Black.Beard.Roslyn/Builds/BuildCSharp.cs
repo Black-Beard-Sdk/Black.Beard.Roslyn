@@ -169,10 +169,7 @@ namespace Bb.Builds
                             Message = item.Value.Message,
                             Locations = new List<DiagnosticLocation>()
                             {
-                                new DiagnosticLocation()
-                                {
-                                    Filename = item.Key,
-                                }
+                                new DiagnosticLocation(item.Key)
                             }
                         });
 

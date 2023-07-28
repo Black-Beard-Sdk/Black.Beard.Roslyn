@@ -2,96 +2,59 @@
 namespace Bb.Analysis
 {
 
-    public class DiagnosticLocation : ICloneable
+
+    public class DiagnosticLocation : SpanLocation
     {
 
+        #region Ctors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
         /// </summary>
-        public DiagnosticLocation()
+        /// <param name="filename">The filename.</param>
+        public DiagnosticLocation(string filename, int startIndex, int startLine, int startColumn) : base(new TextLocation(startLine, startColumn, startIndex), TextLocation.Empty)
         {
-
+            this.Filename = filename ?? string.Empty;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
         /// </summary>
         /// <param name="filename">The filename.</param>
-        public DiagnosticLocation(string filename)
+        public DiagnosticLocation(string filename) : base(TextLocation.Empty, TextLocation.Empty)
         {
-            this.Filename = filename;
+            this.Filename = filename ?? string.Empty;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
         /// </summary>
         /// <param name="filename">The filename.</param>
-        /// <param name="startIndex">The start index.</param>
-        /// <param name="startline">The startline.</param>
-        /// <param name="startColumn">The start column.</param>
-        public DiagnosticLocation(string filename, int startIndex, int startline = -1, int startColumn = -1) : this(filename)
+        /// <param name="locationStart">The location start.</param>
+        public DiagnosticLocation(string filename, TextLocation locationStart) : base(locationStart, TextLocation.Empty)
         {
-            this.StartIndex = startIndex;
-            this.StartLine = startline;
-            this.StartColumn = startColumn;
+            this.Filename = filename ?? string.Empty;
         }
-                
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="locationStart">The location start.</param>
+        public DiagnosticLocation(string filename, TextLocation locationStart, TextLocation locationEnd) : base(locationStart, TextLocation.Empty)
+        {
+            this.Filename = filename ?? string.Empty;
+        }
+
+        #endregion Ctors
+
         /// <summary>
         /// Gets or sets the filename of the diagnostic.
         /// </summary>
         /// <value>
         /// The filename.
         /// </value>
-        public string Filename { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start index.
-        /// </summary>
-        /// <value>
-        /// The start index.
-        /// </value>
-        public int StartIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start column.
-        /// </summary>
-        /// <value>
-        /// The start column.
-        /// </value>
-        public int StartColumn { get; set; }
-
-        /// <summary>
-        /// Gets or sets the start line.
-        /// </summary>
-        /// <value>
-        /// The start line.
-        /// </value>
-        public int StartLine { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets the end index.
-        /// </summary>
-        /// <value>
-        /// The end index.
-        /// </value>
-        public int EndIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end column.
-        /// </summary>
-        /// <value>
-        /// The end column.
-        /// </value>
-        public int EndColumn { get; set; }
-
-        /// <summary>
-        /// Gets or sets the end line.
-        /// </summary>
-        /// <value>
-        /// The end line.
-        /// </value>
-        public int EndLine { get; set; }
+        public string Filename { get; }
 
         /// <summary>
         /// Converts to string.
@@ -102,16 +65,22 @@ namespace Bb.Analysis
         public override string ToString()
         {
             var file = this.Filename ?? string.Empty;
-            return $"{file} from (line {this.StartLine}, column {this.StartColumn}) to (line {this.EndLine}, column {this.EndColumn})";
+         
+            if (this.End.IsEmpty)
+                return $"{file} at (line {this.Start.Line}, column {this.Start.Column}) to (line {this.End.Line}, column {this.End.Column})";
+
+            return $"{file} at (line {this.Start.Line}, column {this.Start.Column})";
+
+
         }
 
         public object Clone()
         {
-            return new DiagnosticLocation(this.Filename, StartIndex, StartLine, StartColumn) { EndIndex = EndIndex, EndColumn = EndColumn, EndLine = EndLine };
+            return new DiagnosticLocation(this.Filename, (TextLocation)Start.Clone(), (TextLocation)End.Clone());
+            
         }
 
     }
-
 
     public enum SeverityEnum
     {

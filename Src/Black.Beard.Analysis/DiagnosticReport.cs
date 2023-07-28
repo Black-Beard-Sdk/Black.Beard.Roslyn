@@ -37,7 +37,7 @@
         /// <value>
         /// The start index.
         /// </value>
-        public int? StartIndex => Location?.StartIndex;
+        public int? StartIndex => Location?.Start.Index;
 
         /// <summary>
         /// Gets the start column of the first Diagnostic location
@@ -45,7 +45,7 @@
         /// <value>
         /// The start column.
         /// </value>
-        public int? StartColumn => Location?.StartColumn;
+        public int? StartColumn => Location?.Start.Column;
 
         /// <summary>
         /// Gets the start line of the first Diagnostic location
@@ -53,7 +53,7 @@
         /// <value>
         /// The start line.
         /// </value>
-        public int? StartLine => Location?.StartLine;
+        public int? StartLine => Location?.Start.Line;
 
         /// <summary>
         /// Gets the first location.
