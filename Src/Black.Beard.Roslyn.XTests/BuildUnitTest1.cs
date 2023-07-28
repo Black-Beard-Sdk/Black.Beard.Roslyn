@@ -1,4 +1,6 @@
+using Bb.Analysis;
 using Bb.Builds;
+using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,11 +38,26 @@ namespace Bb.Beard.Roslyn.XTests
             var result = builder.Build();
 
             var assembly = result.LoadAssembly();
-            var types= assembly.GetExportedTypes();
+            var types = assembly.GetExportedTypes();
 
             var instance = Activator.CreateInstance(types[0]);
 
             Assert.NotNull(instance);
+
+        }
+
+        [Fact]
+        public void Diagnostic1()
+        {
+
+            int line = 0;
+            int column = 0;
+
+            var diag = new Diagnostics();
+
+            diag.AddError("filename", line, 0, column, "text", "message");
+
+            Assert.False(diag.Success);
 
         }
 

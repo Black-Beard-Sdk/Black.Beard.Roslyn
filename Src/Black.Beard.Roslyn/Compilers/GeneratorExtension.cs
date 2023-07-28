@@ -11,7 +11,11 @@ namespace Bb.Compilers
     public static class GeneratorExtension
     {
 
-
+        /// <summary>
+        /// Maps the specified self.
+        /// </summary>
+        /// <param name="self">The self.</param>
+        /// <returns></returns>
         public static DiagnosticReport Map(this Diagnostic self)
         {
 
@@ -42,6 +46,11 @@ namespace Bb.Compilers
 
         }
 
+        /// <summary>
+        /// Maps the specified location.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <returns></returns>
         private static DiagnosticLocation Map(Location location)
         {
 
