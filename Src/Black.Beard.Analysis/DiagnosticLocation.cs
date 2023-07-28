@@ -12,7 +12,7 @@ namespace Bb.Analysis
         /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
         /// </summary>
         /// <param name="filename">The filename.</param>
-        public DiagnosticLocation(string filename, int startIndex, int startLine, int startColumn) : base(new TextLocation(startLine, startColumn, startIndex), TextLocation.Empty)
+        public DiagnosticLocation(string filename, int startIndex, int startLine, int startColumn) : base(new CodeLocation(startLine, startColumn, startIndex), CodeLocation.Empty)
         {
             this.Filename = filename ?? string.Empty;
         }
@@ -21,17 +21,7 @@ namespace Bb.Analysis
         /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
         /// </summary>
         /// <param name="filename">The filename.</param>
-        public DiagnosticLocation(string filename) : base(TextLocation.Empty, TextLocation.Empty)
-        {
-            this.Filename = filename ?? string.Empty;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <param name="locationStart">The location start.</param>
-        public DiagnosticLocation(string filename, TextLocation locationStart) : base(locationStart, TextLocation.Empty)
+        public DiagnosticLocation(string filename) : base(CodeLocation.Empty, CodeLocation.Empty)
         {
             this.Filename = filename ?? string.Empty;
         }
@@ -41,7 +31,17 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <param name="locationStart">The location start.</param>
-        public DiagnosticLocation(string filename, TextLocation locationStart, TextLocation locationEnd) : base(locationStart, TextLocation.Empty)
+        public DiagnosticLocation(string filename, CodeLocation locationStart) : base(locationStart, CodeLocation.Empty)
+        {
+            this.Filename = filename ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="locationStart">The location start.</param>
+        public DiagnosticLocation(string filename, CodeLocation locationStart, CodeLocation locationEnd) : base(locationStart, CodeLocation.Empty)
         {
             this.Filename = filename ?? string.Empty;
         }
@@ -76,7 +76,7 @@ namespace Bb.Analysis
 
         public object Clone()
         {
-            return new DiagnosticLocation(this.Filename, (TextLocation)Start.Clone(), (TextLocation)End.Clone());
+            return new DiagnosticLocation(this.Filename, (CodeLocation)Start.Clone(), (CodeLocation)End.Clone());
             
         }
 

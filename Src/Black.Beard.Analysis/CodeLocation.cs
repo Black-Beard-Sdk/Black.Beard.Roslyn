@@ -1,19 +1,19 @@
 ﻿
 namespace Bb.Analysis
 {
-    public struct TextLocation : ICloneable
+    public struct CodeLocation : ICloneable
     {
 
         /// <summary>
         /// The empty value
         /// </summary>
-        public static readonly TextLocation Empty = new TextLocation(-1, -1);
+        public static readonly CodeLocation Empty = new CodeLocation(-1, -1);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TextLocation"/> struct.
+        /// Initializes a new instance of the <see cref="CodeLocation"/> struct.
         /// </summary>
         /// <param name="position">The position.</param>
-        public TextLocation((int, int) position, int index = -1)
+        public CodeLocation((int, int) position, int index = -1)
         {
             Line = position.Item1;
             Column = position.Item2;
@@ -21,11 +21,11 @@ namespace Bb.Analysis
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TextLocation"/> struct.
+        /// Initializes a new instance of the <see cref="CodeLocation"/> struct.
         /// </summary>
         /// <param name="line">The line.</param>
         /// <param name="column">The column.</param>
-        public TextLocation(int line, int column, int index = -1)
+        public CodeLocation(int line, int column, int index = -1)
         {
             Line = line;
             Column = column;
@@ -58,33 +58,33 @@ namespace Bb.Analysis
         {
 
             if (this.Line == -1 && this.Column == -1 && this.Index == -1)
-                return TextLocation.Empty;
+                return CodeLocation.Empty;
 
-            return new TextLocation(this.Line, this.Column);
+            return new CodeLocation(this.Line, this.Column);
         }
 
         /// <summary>
-        /// Performs an implicit conversion from <see cref="System.ValueTuple{System.Int32, System.Int32}"/> to <see cref="TextLocation"/>.
+        /// Performs an implicit conversion from <see cref="System.ValueTuple{System.Int32, System.Int32}"/> to <see cref="CodeLocation"/>.
         /// </summary>
         /// <param name="position">The position.</param>
         /// <returns>
         /// The result of the conversion.
         /// </returns>
-        public static implicit operator TextLocation((int, int) position)
+        public static implicit operator CodeLocation((int, int) position)
         {
-            return new TextLocation(position);
+            return new CodeLocation(position);
         }
 
         /// <summary>
-        /// Performs an implicit conversion from <see cref="System.ValueTuple{System.Int32, System.Int32, System.Int32}"/> to <see cref="TextLocation"/>.
+        /// Performs an implicit conversion from <see cref="System.ValueTuple{System.Int32, System.Int32, System.Int32}"/> to <see cref="CodeLocation"/>.
         /// </summary>
         /// <param name="position">The position.</param>
         /// <returns>
         /// The result of the conversion.
         /// </returns>
-        public static implicit operator TextLocation((int, int, int) position)
+        public static implicit operator CodeLocation((int, int, int) position)
         {
-            return new TextLocation(position.Item1, position.Item2, position.Item3);
+            return new CodeLocation(position.Item1, position.Item2, position.Item3);
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <param name="locationStart">The location start.</param>
-        public SpanLocation(TextLocation locationStart)
+        public SpanLocation(CodeLocation locationStart)
         {
             this.Start = locationStart;
         }
@@ -21,7 +21,7 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <param name="locationStart">The location start.</param>
-        public SpanLocation(TextLocation locationStart, TextLocation locationEnd)
+        public SpanLocation(CodeLocation locationStart, CodeLocation locationEnd)
         {
             this.Start = locationStart;
             this.End = locationEnd;
@@ -29,9 +29,9 @@ namespace Bb.Analysis
 
         #endregion Ctors
 
-        public TextLocation Start { get; }
+        public CodeLocation Start { get; }
 
-        public TextLocation End { get; }
+        public CodeLocation End { get; }
 
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Bb.Analysis
 
         public virtual object Clone()
         {
-            return new SpanLocation((TextLocation)Start.Clone(), (TextLocation)End.Clone());
+            return new SpanLocation((CodeLocation)Start.Clone(), (CodeLocation)End.Clone());
 
         }
 

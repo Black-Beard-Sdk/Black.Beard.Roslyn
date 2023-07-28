@@ -59,13 +59,13 @@ namespace Bb.Compilers
              (
             
                 location?.SourceTree?.FilePath ?? string.Empty,
-                new TextLocation(
+                new CodeLocation(
                     lineSpan.StartLinePosition.Line + 1,
                     lineSpan.StartLinePosition.Character,
                     location?.SourceSpan.Start ?? 0
                  ),
                 
-                new TextLocation(
+                new CodeLocation(
                  lineSpan.EndLinePosition.Line + 1,
                  lineSpan.EndLinePosition.Character,
                  location?.SourceSpan.End ?? 0
