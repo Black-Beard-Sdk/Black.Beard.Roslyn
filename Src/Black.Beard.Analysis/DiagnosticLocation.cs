@@ -35,20 +35,7 @@ namespace Bb.Analysis
             this.StartLine = startline;
             this.StartColumn = startColumn;
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        /// <param name="location">The location.</param>
-        public DiagnosticLocation(string filename, TokenLocation location) : this(filename)
-        {
-            Filename = filename;
-            StartLine = location.Line;
-            StartIndex = location.StartIndex;
-            StartColumn = location.Column;
-        }
-
+                
         /// <summary>
         /// Gets or sets the filename of the diagnostic.
         /// </summary>

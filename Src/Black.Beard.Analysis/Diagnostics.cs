@@ -28,7 +28,7 @@ namespace Bb.Analysis
         public DiagnosticReport AddInformation(string filename, int line, int startIndex, int column, string text, string message)
         {
             return this.Add(SeverityEnum.Information, filename, line, startIndex, column, text, message);
-        }
+        }               
 
         /// <summary>
         /// Adds the information diagnostic.
@@ -38,9 +38,9 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddInformation(string filename, TokenLocation location, string text, string message)
+        public DiagnosticReport AddInformation(DiagnosticLocation location, string text, string message)
         {
-            return this.Add(SeverityEnum.Information, filename, location, text, message);
+            return this.Add(SeverityEnum.Information, location, text, message);
         }
 
         /// <summary>
@@ -55,9 +55,9 @@ namespace Bb.Analysis
         /// <returns><see cref="T:DiagnosticReport"></returns>
         public DiagnosticReport AddWarning(string filename, int line, int startIndex, int column, string text, string message)
         {
-            return this.Add(SeverityEnum.Warning, filename, line, startIndex, column, text, message);           
+            return this.Add(SeverityEnum.Warning, filename, line, startIndex, column, text, message);
         }
-
+                
         /// <summary>
         /// Adds the warning diagnostic.
         /// </summary>
@@ -66,14 +66,9 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddWarning(string filename, TokenLocation location, string text, string message)
+        public DiagnosticReport AddWarning(DiagnosticLocation location, string text, string message)
         {
-
-            if (location == null)
-                location = new TokenLocation();
-
-            return this.Add(SeverityEnum.Warning, filename, location, text, message);
-
+            return this.Add(SeverityEnum.Warning, location, text, message);
         }
 
         /// <summary>
@@ -88,9 +83,9 @@ namespace Bb.Analysis
         /// <returns><see cref="T:DiagnosticReport"></returns>
         public DiagnosticReport AddError(string filename, int line, int startIndex, int column, string text, string message)
         {
-            return this.Add(SeverityEnum.Error, filename, line, startIndex, column, text, message);           
+            return this.Add(SeverityEnum.Error, filename, line, startIndex, column, text, message);
         }
-
+                
         /// <summary>
         /// Adds the error diagnostic.
         /// </summary>
@@ -99,14 +94,11 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddError(string filename, TokenLocation location, string text, string message)
+        public DiagnosticReport AddError(DiagnosticLocation location, string text, string message)
         {
 
-            if (location == null)
-                location = new TokenLocation();
+            return this.Add(SeverityEnum.Error, location, text, message);
 
-            return this.Add(SeverityEnum.Error, filename, location, text, message);
-        
         }
 
         /// <summary>
@@ -123,32 +115,6 @@ namespace Bb.Analysis
         public DiagnosticReport Add(SeverityEnum severityEnum, string filename, int line, int startIndex, int column, string text, string message)
         {
             var d = new DiagnosticReport(new DiagnosticLocation(filename, startIndex, line, column))
-            {
-                Text = text,
-                Message = message,
-                Severity = severityEnum.ToString(),
-                SeverityLevel = (int)severityEnum,
-                IsSeverityAsError = severityEnum == SeverityEnum.Error,
-            };
-            this.Add(d);
-            return d;
-        }
-
-        /// <summary>
-        /// Creates & adds a new diagnostic and return the diagnostic
-        /// </summary>
-        /// <param name="severityEnum">The severity enum.</param>
-        /// <param name="filename">The filename.</param>
-        /// <param name="location">The location.</param>
-        /// <param name="text">The text.</param>
-        /// <param name="message">The message.</param>
-        /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport Add(SeverityEnum severityEnum, string filename, TokenLocation location, string text, string message)
-        {
-
-            if (location == null)
-                location = new TokenLocation();
-            var d = new DiagnosticReport(new DiagnosticLocation(filename, location))
             {
                 Text = text,
                 Message = message,
@@ -292,7 +258,7 @@ namespace Bb.Analysis
         }
 
         #endregion Implement IList        
-        
+
         /// <summary>
         /// Gets the errors diagnostic items.
         /// </summary>
@@ -300,7 +266,7 @@ namespace Bb.Analysis
         /// The errors.
         /// </value>
         public IEnumerable<DiagnosticReport> Errors { get => this._list.Where(c => c.SeverityLevel == (int)SeverityEnum.Error); }
-        
+
         /// <summary>
         /// Gets a value indicating whether this <see cref="Diagnostics"/> is success. then the list of diagnostic don't contains error.
         /// </summary>
@@ -308,17 +274,17 @@ namespace Bb.Analysis
         ///   <c>true</c> if success; otherwise, <c>false</c>.
         /// </value>
         public bool Success { get => !this.Errors.Any(); }
-        
+
         /// <summary>
         /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" />.
         /// </summary>
         public int Count => _list.Count;
-        
+
         /// <summary>
         /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only.
         /// </summary>
         public bool IsReadOnly => false;
-        
+
         /// <summary>
         /// Gets or sets the <see cref="DiagnosticReport"/> at the specified index.
         /// </summary>
@@ -328,7 +294,7 @@ namespace Bb.Analysis
         /// <param name="index">The index.</param>
         /// <returns></returns>
         public DiagnosticReport this[int index] { get => _list[index]; set => _list[index] = value; }
-        
+
         /// <summary>
         /// Occurs when the collection changes.
         /// </summary>
