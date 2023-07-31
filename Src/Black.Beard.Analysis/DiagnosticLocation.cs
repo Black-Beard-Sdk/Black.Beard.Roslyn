@@ -17,6 +17,26 @@ namespace Bb.Analysis
             this.Filename = filename ?? string.Empty;
         }
 
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
+        /// </summary>
+        /// <param name="span">The span.</param>
+        public DiagnosticLocation(SpanLocation span) : this(string.Empty, (CodeLocation)span.Start.Clone(), (CodeLocation)span.End.Clone())
+        {
+            
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
+        /// </summary>
+        /// <param name="diag">The span.</param>
+        public DiagnosticLocation(DiagnosticLocation diag) : this(diag.Filename, (CodeLocation)diag.Start.Clone(), (CodeLocation)diag.End.Clone())
+        {
+
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
         /// </summary>
@@ -48,6 +68,8 @@ namespace Bb.Analysis
 
         #endregion Ctors
 
+        public static DiagnosticLocation Empty = new DiagnosticLocation(string.Empty);
+
         /// <summary>
         /// Gets or sets the filename of the diagnostic.
         /// </summary>
@@ -65,7 +87,7 @@ namespace Bb.Analysis
         public override string ToString()
         {
             var file = this.Filename ?? string.Empty;
-         
+
             if (this.End.IsEmpty)
                 return $"{file} at (line {this.Start.Line}, column {this.Start.Column}) to (line {this.End.Line}, column {this.End.Column})";
 
@@ -77,7 +99,7 @@ namespace Bb.Analysis
         public object Clone()
         {
             return new DiagnosticLocation(this.Filename, (CodeLocation)Start.Clone(), (CodeLocation)End.Clone());
-            
+
         }
 
     }

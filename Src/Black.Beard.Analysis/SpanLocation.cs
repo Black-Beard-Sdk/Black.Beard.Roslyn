@@ -29,6 +29,9 @@ namespace Bb.Analysis
 
         #endregion Ctors
 
+
+        public static SpanLocation Empty = new SpanLocation(CodeLocation.Empty);
+
         public CodeLocation Start { get; }
 
         public CodeLocation End { get; }

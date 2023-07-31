@@ -1,6 +1,7 @@
 ﻿
 namespace Bb.Analysis
 {
+
     public struct CodeLocation : ICloneable
     {
 

@@ -59,6 +59,7 @@ namespace Bb.Compilers
              (
             
                 location?.SourceTree?.FilePath ?? string.Empty,
+
                 new CodeLocation(
                     lineSpan.StartLinePosition.Line + 1,
                     lineSpan.StartLinePosition.Character,

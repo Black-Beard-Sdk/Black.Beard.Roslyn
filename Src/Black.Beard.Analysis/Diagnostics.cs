@@ -9,9 +9,9 @@ using System.Linq;
 
 namespace Bb.Analysis
 {
+
     public class Diagnostics : IList<DiagnosticReport>, System.Collections.Specialized.INotifyCollectionChanged
     {
-
 
         #region Add
 
@@ -303,6 +303,5 @@ namespace Bb.Analysis
         private List<DiagnosticReport> _list = new List<DiagnosticReport>();
 
     }
-
 
 }
