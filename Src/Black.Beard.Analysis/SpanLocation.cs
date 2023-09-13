@@ -7,23 +7,51 @@ namespace Bb.Analysis
         #region Ctors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
+        /// Initializes a new instance of the <see cref="SpanLocation"/> class.
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <param name="locationStart">The location start.</param>
-        public SpanLocation(CodeLocation locationStart)
+        public SpanLocation()
+        {
+            this.Start = CodeLocation.Empty;
+            this.End = CodeLocation.Empty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpanLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="locationStart">The location start.</param>
+        public SpanLocation(CodeLocation locationStart) : this()
         {
             this.Start = locationStart;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
+        /// Initializes a new instance of the <see cref="SpanLocation"/> class.
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <param name="locationStart">The location start.</param>
-        public SpanLocation(CodeLocation locationStart, CodeLocation locationEnd)
+        public SpanLocation(int startIndex, int startLine, int startColumn) : this(new CodePositionLocation(startLine, startColumn, startIndex))
         {
-            this.Start = locationStart;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpanLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="locationStart">The location start.</param>
+        public SpanLocation(string path) : this(new CodePathLocation(path))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpanLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="locationStart">The location start.</param>
+        public SpanLocation(CodeLocation locationStart, CodeLocation locationEnd) : this(locationStart)
+        {
             this.End = locationEnd;
         }
 
@@ -36,6 +64,8 @@ namespace Bb.Analysis
 
         public CodeLocation End { get; }
 
+        public bool IsEmpty => (Start == null || Start.IsEmpty) && (End == null || End.IsEmpty);
+
 
         /// <summary>
         /// Converts to string.
@@ -45,18 +75,20 @@ namespace Bb.Analysis
         /// </returns>
         public override string ToString()
         {
-            
-            if (this.End.IsEmpty)
-                return $"line {this.Start.Line}, column {this.Start.Column})";
 
-            return $"line {this.Start.Line}, column {this.Start.Column}) to (line {this.End.Line}, column {this.End.Column}";
+            if (this.End != null && !this.End.IsEmpty)
+                return $"{this.Start} to {this.End}";
+
+            if (this.Start != null)
+                return this.Start.ToString();
+
+            return "unknown location";
 
         }
 
         public virtual object Clone()
         {
             return new SpanLocation((CodeLocation)Start.Clone(), (CodeLocation)End.Clone());
-
         }
 
     }

@@ -160,20 +160,14 @@ namespace Bb.Builds
 
                 foreach (var item in e)
                     result.Diagnostics.Insert(0,
-                        new DiagnosticReport()
+                        new DiagnosticReport(new DiagnosticLocation(item.Key))
                         {
                             Id = String.Empty,
                             SeverityLevel = 3,
                             IsSeverityAsError = false,
                             Severity = "Warning",
                             Message = item.Value.Message,
-                            Locations = new List<DiagnosticLocation>()
-                            {
-                                new DiagnosticLocation(item.Key)
-                            }
                         });
-
-
 
             }
 

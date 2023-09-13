@@ -2,52 +2,21 @@
 namespace Bb.Analysis
 {
 
-    public struct CodeLocation : ICloneable
+    public class CodeLocation : ICloneable
     {
 
         /// <summary>
         /// The empty value
         /// </summary>
-        public static readonly CodeLocation Empty = new CodeLocation(-1, -1);
+        public static readonly CodeLocation Empty = new CodeLocation();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CodeLocation"/> struct.
         /// </summary>
         /// <param name="position">The position.</param>
-        public CodeLocation((int, int) position, int index = -1)
+        public CodeLocation()
         {
-            Line = position.Item1;
-            Column = position.Item2;
-            this.Index = index;
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeLocation"/> struct.
-        /// </summary>
-        /// <param name="line">The line.</param>
-        /// <param name="column">The column.</param>
-        public CodeLocation(int line, int column, int index = -1)
-        {
-            Line = line;
-            Column = column;
-            this.Index = index;
-        }               
-
-        /// <summary>
-        /// Gets or sets the end line.
-        /// </summary>
-        /// <value>
-        /// The end line.
-        /// </value>
-        public int Line { get; }
-
-        /// <summary>
-        /// Gets or sets the end column.
-        /// </summary>
-        /// <value>
-        /// The end column.
-        /// </value>
-        public int Column { get; }
 
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
@@ -55,14 +24,19 @@ namespace Bb.Analysis
         /// <returns>
         /// A new object that is a copy of this instance.
         /// </returns>
-        public object Clone()
+        public virtual object Clone()
         {
-
-            if (this.Line == -1 && this.Column == -1 && this.Index == -1)
-                return CodeLocation.Empty;
-
-            return new CodeLocation(this.Line, this.Column);
+            return new CodeLocation();
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is the empty instance.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance match(this.Line == -1 && this.Column == -1 && this.Index == -1); otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsEmpty => Equals(this, Empty);
+
 
         /// <summary>
         /// Performs an implicit conversion from <see cref="System.ValueTuple{System.Int32, System.Int32}"/> to <see cref="CodeLocation"/>.
@@ -73,7 +47,7 @@ namespace Bb.Analysis
         /// </returns>
         public static implicit operator CodeLocation((int, int) position)
         {
-            return new CodeLocation(position);
+            return new CodePositionLocation(position);
         }
 
         /// <summary>
@@ -85,24 +59,20 @@ namespace Bb.Analysis
         /// </returns>
         public static implicit operator CodeLocation((int, int, int) position)
         {
-            return new CodeLocation(position.Item1, position.Item2, position.Item3);
+            return new CodePositionLocation(position.Item1, position.Item2, position.Item3);
         }
 
         /// <summary>
-        /// Gets the index.
+        /// Converts to string.
         /// </summary>
-        /// <value>
-        /// The index.
-        /// </value>
-        public int Index { get; }
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return "unknown location";
+        }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is the empty instance.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance match(this.Line == -1 && this.Column == -1 && this.Index == -1); otherwise, <c>false</c>.
-        /// </value>
-        public bool IsEmpty => this.Line == -1 && this.Column == -1 && this.Index == -1;
     }
 
 

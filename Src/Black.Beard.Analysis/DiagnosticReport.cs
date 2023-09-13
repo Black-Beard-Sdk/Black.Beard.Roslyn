@@ -1,4 +1,6 @@
-﻿namespace Bb.Analysis
+﻿using System.Text;
+
+namespace Bb.Analysis
 {
 
 
@@ -9,10 +11,11 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="DiagnosticReport"/> class.
         /// </summary>
-        /// <param name="locations">The locations.</param>
-        public DiagnosticReport(params DiagnosticLocation[] locations) : this()
+        /// <param name="locations">The list of locations.</param>
+        public DiagnosticReport(params SpanLocation[] locations) : this()
         {
-            Locations.AddRange(locations);
+            if (locations.Length > 0)
+                this.Locations.AddRange(locations);
         }
 
         /// <summary>
@@ -20,7 +23,16 @@
         /// </summary>
         public DiagnosticReport()
         {
-            Locations = new List<DiagnosticLocation>();
+
+            Id = Guid.NewGuid().ToString("N");
+
+            SetSeverity(SeverityEnum.Other);
+
+            Message = string.Empty;
+            Text = string.Empty;
+
+            Locations = new List<SpanLocation>();
+
         }
 
         /// <summary>
@@ -29,7 +41,7 @@
         /// <value>
         /// The filename.
         /// </value>
-        public string? Filename => Location?.Filename;
+        public string? Filename => (Location as DiagnosticLocation)?.Filename ?? string.Empty;
 
         /// <summary>
         /// Gets the start index of the first Diagnostic location
@@ -37,7 +49,7 @@
         /// <value>
         /// The start index.
         /// </value>
-        public int? StartIndex => Location?.Start.Index;
+        public int? StartIndex => (Location?.Start as CodePositionLocation)?.Index;
 
         /// <summary>
         /// Gets the start column of the first Diagnostic location
@@ -45,7 +57,7 @@
         /// <value>
         /// The start column.
         /// </value>
-        public int? StartColumn => Location?.Start.Column;
+        public int? StartColumn => (Location?.Start as CodePositionLocation)?.Column;
 
         /// <summary>
         /// Gets the start line of the first Diagnostic location
@@ -53,15 +65,15 @@
         /// <value>
         /// The start line.
         /// </value>
-        public int? StartLine => Location?.Start.Line;
+        public int? StartLine => (Location?.Start as CodePositionLocation)?.Line;
 
         /// <summary>
-        /// Gets the first location.
+        /// Gets the path
         /// </summary>
         /// <value>
-        /// The location.
+        /// The path location.
         /// </value>
-        public DiagnosticLocation? Location => Locations[0];
+        public string Path => (Location?.Start as CodePathLocation)?.Path ?? string.Empty;
 
         /// <summary>
         /// Gets or sets the locations items.
@@ -69,7 +81,7 @@
         /// <value>
         /// The locations.
         /// </value>
-        public List<DiagnosticLocation> Locations { get; set; }
+        // public List<DiagnosticLocation> Locations { get; set; }
 
         /// <summary>
         /// Gets or sets the text that causes the diagnostic item
@@ -93,7 +105,7 @@
         /// <value>
         /// The severity.
         /// </value>
-        public string Severity { get; set; }
+        public string? Severity { get; set; }
 
         /// <summary>
         /// Gets or sets the severity level.
@@ -121,11 +133,11 @@
         /// <returns></returns>
         public SeverityEnum GetSeverity()
         {
-            
+
             if (Enum.TryParse<SeverityEnum>(this.Severity, out var s))
                 return s;
-            
-            return  SeverityEnum.Other;
+
+            return SeverityEnum.Other;
 
         }
 
@@ -137,14 +149,39 @@
         /// </value>
         public bool IsSeverityAsError { get; set; }
 
-        public string Id { get;  set; }
+        public string Id { get; set; }
+
+        public List<SpanLocation> Locations { get; }
+
+        public SpanLocation Location => Locations.Count > 0 ? Locations[0] : SpanLocation.Empty;
 
 
         // public string Location => $"({StartLine}, {StartColumn})";
 
         public override string ToString()
         {
-            return Message.ToString();
+
+            StringBuilder sb = new StringBuilder(Message.Length * 2);
+            sb.Append("[");
+            sb.Append(Severity);
+            sb.Append("] ");
+
+            if (!this.Location.IsEmpty)
+                foreach (SpanLocation location in Locations)
+                {
+                    sb.Append(location.ToString());
+                    sb.Append(" ");
+                }
+
+            sb.Append("'");
+            sb.Append(Text);
+            sb.Append("'");
+
+            sb.Append(" '");
+            sb.Append(Message);
+            sb.Append("'");
+
+            return sb.ToString();
         }
 
     }

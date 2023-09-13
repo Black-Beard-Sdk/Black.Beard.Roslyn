@@ -19,9 +19,10 @@ namespace Bb.Compilers
         public static DiagnosticReport Map(this Diagnostic self)
         {
 
-            return new DiagnosticReport()
-            {
-                Locations = GetLocations(self),
+            var locations = GetLocations(self);
+
+            return new DiagnosticReport(locations)
+            {                   
                 Id = self.Id,
                 Message = self.GetMessage(),
                 IsSeverityAsError = self.IsWarningAsError,
@@ -31,10 +32,10 @@ namespace Bb.Compilers
             
         }
 
-        private static List<DiagnosticLocation> GetLocations(Diagnostic self)
+        private static SpanLocation[] GetLocations(Diagnostic self)
         {
 
-            List<DiagnosticLocation> result = new List<DiagnosticLocation>(self.AdditionalLocations.Count + 1)
+            List<SpanLocation> result = new List<SpanLocation>(self.AdditionalLocations.Count + 1)
             {
                 Map(self.Location)
             };
@@ -42,7 +43,7 @@ namespace Bb.Compilers
             foreach (var item in self.AdditionalLocations)
                 result.Add(Map(item));
 
-            return result;
+            return result.ToArray();
 
         }
 
@@ -60,13 +61,13 @@ namespace Bb.Compilers
             
                 location?.SourceTree?.FilePath ?? string.Empty,
 
-                new CodeLocation(
+                new CodePositionLocation(
                     lineSpan.StartLinePosition.Line + 1,
                     lineSpan.StartLinePosition.Character,
                     location?.SourceSpan.Start ?? 0
                  ),
                 
-                new CodeLocation(
+                new CodePositionLocation(
                  lineSpan.EndLinePosition.Line + 1,
                  lineSpan.EndLinePosition.Character,
                  location?.SourceSpan.End ?? 0

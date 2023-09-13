@@ -12,7 +12,32 @@ namespace Bb.Analysis
         /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
         /// </summary>
         /// <param name="filename">The filename.</param>
-        public DiagnosticLocation(string filename, int startIndex, int startLine, int startColumn) : base(new CodeLocation(startLine, startColumn, startIndex), CodeLocation.Empty)
+        public DiagnosticLocation(string filename = null) 
+            : base()
+        {
+            this.Filename = filename ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="startIndex">The start index.</param>
+        /// <param name="startLine">The start line.</param>
+        /// <param name="startColumn">The start column.</param>
+        public DiagnosticLocation(string filename, int startIndex, int startLine, int startColumn)
+            : base(new CodePositionLocation(startLine, startColumn, startIndex), CodeLocation.Empty)
+        {
+            this.Filename = filename ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="path">The path.</param>
+        public DiagnosticLocation(string filename, string path) 
+            : base(new CodePathLocation(path), CodeLocation.Empty)
         {
             this.Filename = filename ?? string.Empty;
         }
@@ -22,11 +47,11 @@ namespace Bb.Analysis
         /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
         /// </summary>
         /// <param name="span">The span.</param>
-        public DiagnosticLocation(SpanLocation span) : this(string.Empty, (CodeLocation)span.Start.Clone(), (CodeLocation)span.End.Clone())
+        public DiagnosticLocation(SpanLocation span) 
+            : this(string.Empty, (CodeLocation)span.Start.Clone(), (CodeLocation)span.End.Clone())
         {
             
         }
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
@@ -35,15 +60,6 @@ namespace Bb.Analysis
         public DiagnosticLocation(DiagnosticLocation diag) : this(diag.Filename, (CodeLocation)diag.Start.Clone(), (CodeLocation)diag.End.Clone())
         {
 
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticLocation"/> class.
-        /// </summary>
-        /// <param name="filename">The filename.</param>
-        public DiagnosticLocation(string filename) : base(CodeLocation.Empty, CodeLocation.Empty)
-        {
-            this.Filename = filename ?? string.Empty;
         }
 
         /// <summary>
@@ -86,17 +102,20 @@ namespace Bb.Analysis
         /// </returns>
         public override string ToString()
         {
-            var file = this.Filename ?? string.Empty;
 
-            if (this.End.IsEmpty)
-                return $"{file} at (line {this.Start.Line}, column {this.Start.Column}) to (line {this.End.Line}, column {this.End.Column})";
+            var file = this.Filename ?? "unknown file";
 
-            return $"{file} at (line {this.Start.Line}, column {this.Start.Column})";
+            if (this.End != null && !this.End.IsEmpty)
+                return $"{file} at {this.Start} to {this.End}";
 
+            if (this.Start != null)
+                return $"{file} at {this.Start}";
+
+            return $"{file} at unknown location";
 
         }
 
-        public object Clone()
+        public override object Clone()
         {
             return new DiagnosticLocation(this.Filename, (CodeLocation)Start.Clone(), (CodeLocation)End.Clone());
 
