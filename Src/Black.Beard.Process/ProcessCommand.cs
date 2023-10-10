@@ -17,11 +17,12 @@ namespace Bb.Process
     public class ProcessCommand : IDisposable
     {
 
+        /// <summary>
+        /// Initializes the <see cref="ProcessCommand"/> class.
+        /// </summary>
         static ProcessCommand()
         {
-
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
         }
 
         /// <summary>
@@ -78,11 +79,21 @@ namespace Bb.Process
 
         #region parameters
 
+        /// <summary>
+        /// the batch on 'cmd.exe'.
+        /// </summary>
+        /// <returns></returns>
         public ProcessCommand CommandBatch()
         {
             return Command("cmd.exe");
         }
 
+        /// <summary>
+        /// set the Commands to run with the argument's line.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <param name="arguments">The arguments.</param>
+        /// <returns></returns>
         public ProcessCommand Command(string command, string arguments = null)
         {
             this._processStartInfo.FileName = command;
@@ -91,6 +102,12 @@ namespace Bb.Process
             return this;
         }
 
+        /// <summary>
+        /// set the Commands to run with the list of argument
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <param name="arguments">The arguments.</param>
+        /// <returns></returns>
         public ProcessCommand CommandWithArgumentList(string command, params string[] arguments)
         {
             this._processStartInfo.FileName = command;
@@ -99,18 +116,50 @@ namespace Bb.Process
             return this;
         }
 
+        /// <summary>
+        /// specify the argument's line.
+        /// </summary>
+        /// <param name="arguments">The arguments.</param>
+        /// <returns></returns>
         public ProcessCommand Arguments(string arguments)
         {
             this._processStartInfo.Arguments = arguments;
             return this;
         }
 
+        /// <summary>
+        /// Gets the argument text line.
+        /// </summary>
+        /// <value>
+        /// The argument text.
+        /// </value>
+        public string ArgumentText => this._processStartInfo.Arguments;
+
+        /// <summary>
+        /// Gets the filename to execute.
+        /// </summary>
+        /// <value>
+        /// The file name text.
+        /// </value>
+        public string FileNameText => this._processStartInfo.FileName;
+
+        /// <summary>
+        /// Adds the specified variable in the environment.
+        /// </summary>
+        /// <param name="variableName">Name of the variable.</param>
+        /// <param name="variableValue">The variable value.</param>
+        /// <returns></returns>
         public ProcessCommand AddVariable(string variableName, string variableValue)
         {
             _processStartInfo.EnvironmentVariables.Add(variableName, variableValue);
             return this;
         }
 
+        /// <summary>
+        /// add the argument's list.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
         public ProcessCommand ArgumentList(params string[] args)
         {
             foreach (string arg in args)
@@ -118,12 +167,22 @@ namespace Bb.Process
             return this;
         }
 
+        /// <summary>
+        /// Sets the working directory.
+        /// </summary>
+        /// <param name="WorkingDirectory">The working directory.</param>
+        /// <returns></returns>
         public ProcessCommand SetWorkingDirectory(string WorkingDirectory)
         {
             _processStartInfo.WorkingDirectory = WorkingDirectory;
             return this;
         }
 
+        /// <summary>
+        /// Writes the command in the input stream.
+        /// </summary>
+        /// <param name="command">The command.</param>
+        /// <returns></returns>
         public ProcessCommand WriteInput(string command)
         {
             _process.StandardInput.WriteLine(command);
