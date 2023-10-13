@@ -1,106 +1,134 @@
-//using Bb.Process;
-//using System.Diagnostics;
+using Bb.Process;
+using System.Diagnostics;
 
-//namespace Black.Beard.UnitTests
-//{
-//    public class UnitTest1
-//    {
-
-
-//        [Fact]
-//        public void TestRun1()
-//        {
-
-//            using (var cmd = new ProcessCommand()
-//                     .CommandBatch()
-//                     .Intercept((c, d) =>
-//                     {
-//                         Trace.WriteLine(d.DateReceived.Datas);
-//                     })
-//                     .Run())
-
-//            {
-//                cmd
-//                    .Wait("(c) Microsoft Corporation. Tous droits réservés.")
-                   
-//                    .WriteInput("cls")
-//                    .WaitPrompt()
-                   
-//                    .WriteInput("dir")
-//                    .WaitPrompt()
-                   
-//                    .WriteInput("Exit")
-//                    .WaitPrompt()
-                   
-//                   ;
-
-//            }
-
-//        }
+namespace Black.Beard.UnitTests
+{
+    public class UnitTest1
+    {
 
 
+        // build "c:\tmp\parrot\projects\parcel\mock\service\mock.csproj" -c release /p:Version=1.0.0.0
 
-//        [Fact]
-//        public void TestRun2()
-//        {
+        [Fact]
+        public void TestFailedToStart()
+        {
+            List<TaskEventEnum> results = new List<TaskEventEnum>();
+            using (var cmd = new ProcessCommand()
+                     .Command("cmd1.exe")
+                     .Intercept((c, d) =>
+                     {
+                         results.Add(d.Status);
+                     })
+                     .Run())
 
-//            using (ProcessCommandService service = new ProcessCommandService())
-//            {
+            {
 
-//                Guid id = Guid.NewGuid();
-//                service.Run(c =>
-//                {
-//                    c.CommandBatch();
-//                    id = c.Id;
-//                });
+                cmd
+                    .Wait(30000);
+            }
 
-//                var task = service.GetTask(id);
-//                Assert.NotNull(task);
+            Assert.Equal(results[0], TaskEventEnum.FailedToStart);
+            Assert.Equal(results[1], TaskEventEnum.Releasing);
+            Assert.Equal(results[2], TaskEventEnum.Disposing);
 
-//                service.Cancel(id);
+        }
 
-//                task = service.GetTask(id);
-//                Assert.Null(task);
+        [Fact]
+        public void TestRun1()
+        {
 
-//            }
+            List<TaskEventEnum> results = new List<TaskEventEnum>();
 
-//        }
+            using (var cmd = new ProcessCommand()
+                     .Command("cmd.exe")
+                     .Intercept((c, d) =>
+                     {
 
-//        [Fact]
-//        public void TestLog()
-//        {
+                         results.Add(d.Status);
 
-//            Guid id = Guid.NewGuid();
-//            Guid id1 = Guid.NewGuid();
-//            Guid id2 = Guid.NewGuid();
+                     })
+                     .Run())
 
-//            using (ProcessCommandService service = new ProcessCommandService())
-//            {
+            {
 
-//                service.Output(c =>
-//                {
-//                    id1 = c.Command.Id;
-//                });
+                cmd
+                    .Wait(5000);
 
-//                service.Output(c =>
-//                {
-//                    id2 = c.Command.Id;
-//                });
+            }
 
-//                service.Run(c =>
-//                {
-//                    c.CommandBatch();
-//                    id = c.Id;
-//                });
+            Assert.Equal(results[0], TaskEventEnum.Started);
+            Assert.Equal(results[1], TaskEventEnum.DataReceived);
+            Assert.Equal(results[2], TaskEventEnum.DataReceived);
+            Assert.Equal(results[3], TaskEventEnum.DataReceived);
+            Assert.Equal(results[4], TaskEventEnum.Completed);
+            Assert.Equal(results[5], TaskEventEnum.Releasing);
+            Assert.Equal(results[6], TaskEventEnum.Disposing);
 
-//                var task = service.GetTask(id);
-//                task.Wait(2000);
+        }
 
-//            }
+        [Fact]
+        public void TestRun2()
+        {
 
-//            Assert.Equal(id1, id2);
+            using (ProcessCommandService service = new ProcessCommandService())
+            {
 
-//        }
+                Guid id = Guid.NewGuid();
+                service.Run(c =>
+                {
+                    c.CommandWindowsBatch();
+                    id = c.Id;
+                });
 
-//    }
-//}
+                service.Wait(id, 1000);
+
+                var task = service.GetTask(id);
+                Assert.NotNull(task);
+
+                service.Cancel(id);
+
+                Assert.True(task.Canceled);
+
+            }
+
+        }
+
+        [Fact]
+        public void TestLog()
+        {
+
+            Guid id = Guid.NewGuid();
+            Guid id1 = Guid.NewGuid();
+            Guid id2 = Guid.NewGuid();
+
+            using (ProcessCommandService service = new ProcessCommandService())
+            {
+
+
+                service.Intercept((c, d) =>
+                {
+                    id1 = d.Process.Id;
+                });
+
+                service.Intercept((c, d) =>
+                {
+                    id2 = d.Process.Id;
+                });
+
+                service.Run(c =>
+                {
+                    c.CommandWindowsBatch();
+                    id = c.Id;
+                });
+
+                var task = service.GetTask(id);
+                task.Wait(2000);
+
+            }
+
+            Assert.Equal(id1, id2);
+
+        }
+
+    }
+}

@@ -53,20 +53,6 @@ namespace Bb.Process
 
         }
 
-        private void AppendIntercept(ProcessCommand cmd, Guid id)
-        {
-            if (_indexPrepare.TryGetValue(id, out var list))
-            {
-
-                foreach (var item in list)
-                    cmd.Intercept(item);
-
-                if (id != Guid.Empty)
-                    _indexPrepare.Remove(id);
-
-            }
-        }
-
         /// <summary>
         /// Create and Runs a command. Method fluent
         /// </summary>
@@ -102,6 +88,7 @@ namespace Bb.Process
 
         }
 
+
         /// <summary>
         /// Adds the specified command.
         /// </summary>
@@ -110,35 +97,31 @@ namespace Bb.Process
         public ProcessCommand Add(ProcessCommand cmd)
         {
 
-            //TaskIntercptorContainer output = this._actionScreen ?? new TaskIntercptorContainer(c =>
-            //{
-            //    if (c.DateReceived != null)
-            //        Trace.WriteLine(c.DateReceived.Data);
-            //    });
-
-            //cmd.Output(output);
-
             lock (_lock)
             {
-                this._items.Add(cmd);
-                this._index.Add(cmd.Id, cmd);
-                this._indexByTag = null;
+                _items.Add(cmd);
+                _index.Add(cmd.Id, cmd);
+                _indexByTag = null;
             }
 
             cmd.Intercept((c, d) =>
             {
-                if (d.Closing)
+                if (d.Closed)
                     lock (_lock)
                     {
-                        this._items.Remove(d.Process);
-                        this._index.Remove(d.Process.Id);
-                        this._indexByTag = null;
+                        if (this._index.ContainsKey(cmd.Id))
+                        {
+                            _items.Remove(d.Process);
+                            _index.Remove(d.Process.Id);
+                            _indexByTag = null;
+                        }
                     }
             });
 
             return cmd;
 
         }
+               
 
         /// <summary>
         /// Gets the task identified by id.
@@ -154,7 +137,7 @@ namespace Bb.Process
             return null;
 
         }
-
+              
         /// <summary>
         /// Gets the task identified by tag.
         /// </summary>
@@ -175,37 +158,13 @@ namespace Bb.Process
 
         }
 
-        /// <summary>
-        /// Gets the count of command process.
-        /// </summary>
-        /// <value>
-        /// The count.
-        /// </value>
-        public int Count => _items.Count;
-
-        #region IDisposable
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: supprimer l'état managé (objets managés)
-                    Cancel();
-                }
-
-                // TODO: libérer les ressources non managées (objets non managés) et substituer le finaliseur
-                // TODO: affecter aux grands champs une valeur null
-                disposedValue = true;
-            }
-        }
+        #region Cancels
 
         /// <summary>
         /// Cancel all command process.
         /// </summary>
         /// <param name="wait">if set to <c>true</c> [wait].</param>
-        public void Cancel(bool wait = true)
+        public void Cancel(int wait = 5000)
         {
 
             int count = _items.Count;
@@ -228,7 +187,7 @@ namespace Bb.Process
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="wait">if set to <c>true</c> [wait].</param>
-        public void Cancel(Guid id, bool wait = true)
+        public void Cancel(Guid id, int wait = 5000)
         {
             if (_index.TryGetValue((Guid)id, out var item))
                 item.Cancel(wait);
@@ -239,7 +198,7 @@ namespace Bb.Process
         /// </summary>
         /// <param name="tag">The tag.</param>
         /// <param name="wait">if set to <c>true</c> [wait].</param>
-        public void CancelByTag(object tag, bool wait = true)
+        public void CancelByTag(object tag, int wait = 5000)
         {
 
             var items = GetTaskByTag(tag).ToList();
@@ -249,7 +208,11 @@ namespace Bb.Process
 
         }
 
-        // // TODO: substituer le finaliseur uniquement si 'Dispose(bool disposing)' a du code pour libérer les ressources non managées
+        #endregion Cancels
+
+        #region IDisposable
+
+        // TODO: substituer le finaliseur uniquement si 'Dispose(bool disposing)' a du code pour libérer les ressources non managées
         // ~ProcessCommandService()
         // {
         //     // Ne changez pas ce code. Placez le code de nettoyage dans la méthode 'Dispose(bool disposing)'
@@ -266,23 +229,74 @@ namespace Bb.Process
             GC.SuppressFinalize(this);
         }
 
-        public ProcessCommandService Intercept(Guid id, TaskEventHandler action)
+        protected virtual void Dispose(bool disposing)
         {
-            if (!_indexPrepare.TryGetValue(id, out var list))
-                _indexPrepare.Add(id, list = new List<TaskEventHandler>());
-            if (!list.Contains(action))
-                list.Add(action);
-            return this;
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: supprimer l'état managé (objets managés)
+                    Cancel();
+                }
+
+                // TODO: libérer les ressources non managées (objets non managés) et substituer le finaliseur
+                // TODO: affecter aux grands champs une valeur null
+                disposedValue = true;
+            }
         }
 
+        #endregion IDisposable
+
+        #region Intercept
+
+        /// <summary>
+        /// append a new subscription on the output.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        public ProcessCommandService Intercept(Guid id, TaskEventHandler action)
+        {
+
+            if (!_indexPrepare.TryGetValue(id, out var list))
+                _indexPrepare.Add(id, list = new List<TaskEventHandler>());
+
+            if (!list.Contains(action))
+                list.Add(action);
+
+            return this;
+
+        }
+
+        /// <summary>
+        /// append a new subscription on the output
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
         public ProcessCommandService Intercept(TaskEventHandler action)
         {
             Intercept(Guid.Empty, action);
             return this;
         }
 
+        private void AppendIntercept(ProcessCommand cmd, Guid id)
+        {
+            if (_indexPrepare.TryGetValue(id, out var list))
+            {
+
+                foreach (var item in list)
+                    cmd.Intercept(item);
+
+                if (id != Guid.Empty)
+                    _indexPrepare.Remove(id);
+
+            }
+        }
+
+        #endregion Intercept
+
         /// <summary>
-        /// Waits the specified test return true.
+        /// Waits the specified test return <see cref="ProcessCommandService"/>
         /// </summary>
         /// <param name="test">The test.</param>
         public ProcessCommandService Wait(Action<ProcessCommandService> test)
@@ -291,7 +305,34 @@ namespace Bb.Process
             return this;
         }
 
-        #endregion IDisposable
+        /// <summary>
+        /// Waits the specified time return <see cref="ProcessCommandService"/>.
+        /// </summary>
+        /// <param name="test">The test.</param>
+        public ProcessCommandService Wait(int wait = 5000)
+        {
+            Thread.Sleep(wait);
+            return this;
+        }
+
+        public ProcessCommand? Wait(Guid id, int wait = 5000)
+        {
+
+            if (_index.TryGetValue(id, out var index))
+                index.Wait(wait);
+
+            return null;
+
+        }
+
+        /// <summary>
+        /// Gets the count of command process.
+        /// </summary>
+        /// <value>
+        /// The count.
+        /// </value>
+        public int Count => _items.Count;
+
 
         private bool disposedValue;
         private ILookup<object, ProcessCommand> _indexByTag;

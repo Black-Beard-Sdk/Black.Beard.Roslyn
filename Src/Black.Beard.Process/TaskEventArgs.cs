@@ -36,7 +36,14 @@ namespace Bb.Process
         /// <value>
         ///   <c>true</c> if closing; otherwise, <c>false</c>.
         /// </value>
-        public bool Closing => Status == TaskEventEnum.Completed || Status == TaskEventEnum.CompletedWithException;
+        public bool Closed => 
+              Status == TaskEventEnum.Completed 
+            || Status == TaskEventEnum.RanWithException
+            || Status == TaskEventEnum.RanCanceled
+            || Status == TaskEventEnum.Releasing
+            || Status == TaskEventEnum.Disposing
+            || Status == TaskEventEnum.FailedToStart
+            ;
 
         /// <summary>
         /// Gets the received DTM.
@@ -69,6 +76,7 @@ namespace Bb.Process
         /// The date received.
         /// </value>
         public DataReceivedEventArgs DateReceived { get; }
+        public Exception Exception { get; internal set; }
     }
 
     /// <summary>
@@ -77,10 +85,18 @@ namespace Bb.Process
     public enum TaskEventEnum
     {
         Started,
+        FailedToStart,
+
         ErrorReceived,
         DataReceived,
+
         Completed,
-        CompletedWithException,
+        RanWithException,
+        RanCanceled,
+
+        FailedToCancel,
+        Releasing,
+        Disposing,
     }
 
 
