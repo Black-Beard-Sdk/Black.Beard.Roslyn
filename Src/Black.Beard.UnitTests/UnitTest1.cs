@@ -1,10 +1,13 @@
 using Bb.Process;
+using System.Data;
 using System.Diagnostics;
 
 namespace Black.Beard.UnitTests
 {
     public class UnitTest1
     {
+        private TaskEventEnum Current;
+        private List<string?> _datas;
 
 
         // build "c:\tmp\parrot\projects\parcel\mock\service\mock.csproj" -c release /p:Version=1.0.0.0
@@ -104,7 +107,6 @@ namespace Black.Beard.UnitTests
             using (ProcessCommandService service = new ProcessCommandService())
             {
 
-
                 service.Intercept((c, d) =>
                 {
                     id1 = d.Process.Id;
@@ -121,8 +123,7 @@ namespace Black.Beard.UnitTests
                     id = c.Id;
                 });
 
-                var task = service.GetTask(id);
-                task.Wait(2000);
+                var task = service.Wait(id);
 
             }
 
@@ -130,5 +131,75 @@ namespace Black.Beard.UnitTests
 
         }
 
+
+
+        [Fact]
+        public void TestInterceptor()
+        {
+
+            Guid id = Guid.NewGuid();
+            this._datas = new List<string?>();
+
+            using (LocalProcessCommandService service = new LocalProcessCommandService())
+            {
+
+                service.Run(c =>
+                {
+                    c.CommandWindowsBatch();
+                    id = c.Id;
+                    c.Intercept(log);
+                });
+
+                service.Wait();
+
+                Assert.Equal(service.Current, Current);
+                Assert.Equal(this._datas.Count, service.Datas.Count);
+                for (int i = 0; i < _datas.Count; i++)
+                    Assert.Equal(this._datas[i], service.Datas[i]);
+
+                service.Cancel(id);
+
+                Assert.Equal(service.Current, Current);
+                Assert.Equal(this._datas.Count, service.Datas.Count);
+                for (int i = 0; i < _datas.Count; i++)
+                    Assert.Equal(this._datas[i], service.Datas[i]);
+
+            }
+
+        }
+
+        private void log(object sender, TaskEventArgs args)
+        {
+            this.Current = args.Status;
+            if (args.Status == TaskEventEnum.DataReceived)
+                _datas.Add(args.DateReceived?.Data);
+        }
+
+
     }
+
+
+    public class LocalProcessCommandService : ProcessCommandService
+    {
+
+        public LocalProcessCommandService()
+        {
+            Intercept(log);
+            this.Datas = new List<string?>();
+        }
+
+        public TaskEventEnum Current { get; private set; }
+        public List<string?> Datas { get; }
+
+        private void log(object sender, TaskEventArgs args)
+        {            
+            this.Current = args.Status;
+            if (args.Status == TaskEventEnum.DataReceived)
+                Datas.Add(args.DateReceived?.Data);
+        }
+
+
+    }
+
+
 }

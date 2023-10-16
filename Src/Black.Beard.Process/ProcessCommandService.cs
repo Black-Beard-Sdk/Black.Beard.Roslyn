@@ -161,10 +161,10 @@ namespace Bb.Process
         #region Cancels
 
         /// <summary>
-        /// Cancel all command process.
+        /// Cancel all commands process.
         /// </summary>
         /// <param name="wait">if set to <c>true</c> [wait].</param>
-        public void Cancel(int wait = 5000)
+        public ProcessCommandService Cancel(int wait = 5000)
         {
 
             int count = _items.Count;
@@ -180,6 +180,8 @@ namespace Bb.Process
 
             }
 
+            return this;
+
         }
 
         /// <summary>
@@ -187,24 +189,28 @@ namespace Bb.Process
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <param name="wait">if set to <c>true</c> [wait].</param>
-        public void Cancel(Guid id, int wait = 5000)
+        public ProcessCommand? Cancel(Guid id, int wait = 5000)
         {
             if (_index.TryGetValue((Guid)id, out var item))
                 item.Cancel(wait);
+
+            return item;
         }
 
         /// <summary>
-        /// Cancels the command process specified by tag.
+        /// Cancels the commands process specified by tag.
         /// </summary>
         /// <param name="tag">The tag.</param>
         /// <param name="wait">if set to <c>true</c> [wait].</param>
-        public void CancelByTag(object tag, int wait = 5000)
+        public IEnumerable<ProcessCommand>? CancelByTag(object tag, int wait = 5000)
         {
 
             var items = GetTaskByTag(tag).ToList();
             if (items != null)
                 for (int i = 0; i < items.Count; i++)
                     items[i].Cancel(wait);
+
+            return items;
 
         }
 
@@ -315,6 +321,12 @@ namespace Bb.Process
             return this;
         }
 
+        /// <summary>
+        /// Waits the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier of the process command.</param>
+        /// <param name="wait">The time to wait.</param>
+        /// <returns>return the <see cref="ProcessCommand"/> specified by id</returns>
         public ProcessCommand? Wait(Guid id, int wait = 5000)
         {
 
@@ -324,7 +336,7 @@ namespace Bb.Process
             return null;
 
         }
-
+        
         /// <summary>
         /// Gets the count of command process.
         /// </summary>
@@ -332,7 +344,6 @@ namespace Bb.Process
         /// The count.
         /// </value>
         public int Count => _items.Count;
-
 
         private bool disposedValue;
         private ILookup<object, ProcessCommand> _indexByTag;
