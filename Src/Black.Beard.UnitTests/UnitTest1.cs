@@ -131,8 +131,6 @@ namespace Black.Beard.UnitTests
 
         }
 
-
-
         [Fact]
         public void TestInterceptor()
         {
@@ -142,6 +140,51 @@ namespace Black.Beard.UnitTests
 
             using (LocalProcessCommandService service = new LocalProcessCommandService())
             {
+
+                service.Run(c =>
+                {
+                    c.CommandWindowsBatch();
+                    id = c.Id;
+                    c.Intercept(log);
+                });
+
+                service.Wait();
+
+                Assert.Equal(service.Current, Current);
+                Assert.Equal(this._datas.Count, service.Datas.Count);
+                for (int i = 0; i < _datas.Count; i++)
+                    Assert.Equal(this._datas[i], service.Datas[i]);
+
+                service.Cancel(id);
+
+                Assert.Equal(service.Current, Current);
+                Assert.Equal(this._datas.Count, service.Datas.Count);
+                for (int i = 0; i < _datas.Count; i++)
+                    Assert.Equal(this._datas[i], service.Datas[i]);
+
+            }
+
+        }
+
+        [Fact]
+        public void TestInterceptor2()
+        {
+
+            Guid id = Guid.NewGuid();
+            this._datas = new List<string?>();
+
+            using (LocalProcessCommandService service = new LocalProcessCommandService())
+            {
+
+                service.Run(c =>
+                {
+                    c.CommandWindowsBatch();
+                    id = c.Id;
+                    c.Intercept(log);
+                });
+                service.Wait();
+                service.Cancel(id);
+
 
                 service.Run(c =>
                 {
