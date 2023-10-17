@@ -32,37 +32,25 @@ namespace Bb.Process
         }
 
         /// <summary>
+        /// Create and Runs a command. Method fluent
+        /// </summary>
+        /// <param name="actionToConfigure">The action to configure.</param>
+        /// <param name="tag">The tag.</param>
+        /// <returns></returns>
+        public ProcessCommandService Run(Guid id, Action<ProcessCommand> actionToConfigure, object tag = null)
+        {
+            RunAndGet(id, actionToConfigure, tag);
+            return this;
+        }
+
+        /// <summary>
         /// Create and Runs a command
         /// </summary>
         /// <param name="actionToConfigure">The action to configure.</param>
         /// <returns></returns>
         public ProcessCommand RunAndGet(Action<ProcessCommand> actionToConfigure)
         {
-
-            var cmd = new ProcessCommand()
-                    .Configure(actionToConfigure)
-                    ;
-
-            AppendIntercept(cmd, Guid.Empty);
-            AppendIntercept(cmd, cmd.Id);
-
-            Add(cmd)
-                .Run();
-
-            return cmd;
-
-        }
-
-        /// <summary>
-        /// Create and Runs a command. Method fluent
-        /// </summary>
-        /// <param name="tag">The tag.</param>
-        /// <param name="actionToConfigure">The action to configure.</param>
-        /// <returns></returns>
-        public ProcessCommandService Run(Guid id, Action<ProcessCommand> actionToConfigure, object tag = null)
-        {
-            RunAndGet(id, actionToConfigure, tag);
-            return this;
+            return Add(new ProcessCommand(), actionToConfigure).Run();
         }
 
         /// <summary>
@@ -73,36 +61,22 @@ namespace Bb.Process
         /// <returns></returns>
         public ProcessCommand RunAndGet(Guid id, Action<ProcessCommand> actionToConfigure, object tag = null)
         {
-
-            var cmd = new ProcessCommand(id, tag)
-                    .Configure(actionToConfigure)                    
-                    ;
-
-            AppendIntercept(cmd, Guid.Empty);
-            AppendIntercept(cmd, cmd.Id);
-
-            Add(cmd)
-                .Run();
-
-            return cmd;
-
+            return Add(new ProcessCommand(id, tag), actionToConfigure).Run();
         }
-
 
         /// <summary>
         /// Adds the specified command.
         /// </summary>
         /// <param name="cmd">The command.</param>
         /// <returns></returns>
-        public ProcessCommand Add(ProcessCommand cmd)
+        public ProcessCommand Add(ProcessCommand cmd, Action<ProcessCommand> actionToConfigure = null)
         {
 
-            lock (_lock)
-            {
-                _items.Add(cmd);
-                _index.Add(cmd.Id, cmd);
-                _indexByTag = null;
-            }
+            if (actionToConfigure != null)
+                cmd.Configure(actionToConfigure);
+
+            AppendIntercept(cmd, Guid.Empty);
+            AppendIntercept(cmd, cmd.Id);
 
             cmd.Intercept((c, d) =>
             {
@@ -117,6 +91,13 @@ namespace Bb.Process
                         }
                     }
             });
+
+            lock (_lock)
+            {
+                _items.Add(cmd);
+                _index.Add(cmd.Id, cmd);
+                _indexByTag = null;
+            }
 
             return cmd;
 

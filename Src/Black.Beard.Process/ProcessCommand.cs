@@ -34,13 +34,23 @@ namespace Bb.Process
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessCommand"/> class.
         /// </summary>
-        /// <param name="tag">The tag.</param>
-        public ProcessCommand(Guid id, object tag) : this()
+        /// <param name="id">Set the id process</param>
+        public ProcessCommand(Guid id) 
+            : this (id, null)
+        {
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessCommand"/> class.
+        /// </summary>
+        /// <param name="id">Set the id process.</param>
+        /// <param name="tag">Set the tag.</param>
+        public ProcessCommand(Guid id, object tag) 
+            : this()
         {
             this.Id = id;
             this.Tag = tag;
-            this._interceptors = new List<TaskEventHandler>();
-            CreateProcessInfo();
         }
 
         /// <summary>
@@ -51,6 +61,7 @@ namespace Bb.Process
             this.Id = Guid.NewGuid();
             this._interceptors = new List<TaskEventHandler>();
             CreateProcessInfo();
+            
         }
 
         public class ProcessInfo
@@ -558,8 +569,6 @@ namespace Bb.Process
                 try
                 {
 
-
-
                     var started = _process.Start();                                 // start the process
                     if (started)
                     {
@@ -676,8 +685,15 @@ namespace Bb.Process
         /// <returns></returns>
         public ProcessCommand Intercept(TaskEventHandler interceptor)
         {
-            this._interceptors.Add(interceptor);
-            TaskEventHandler += interceptor;
+
+            if (!this._interceptors.Contains(interceptor))
+                lock (_lock)
+                    if (!this._interceptors.Contains(interceptor))
+                    {
+                        this._interceptors.Add(interceptor);
+                        TaskEventHandler += interceptor;
+                    }
+
             return this;
         }
 
@@ -688,15 +704,19 @@ namespace Bb.Process
         /// <returns></returns>
         public ProcessCommand RemoveIntercept(TaskEventHandler interceptor)
         {
+
             if (this._interceptors.Contains(interceptor))
-            {
-                this._interceptors.Remove(interceptor);
-                TaskEventHandler -= interceptor;
-            }
+                lock (_lock)
+                    if (this._interceptors.Contains(interceptor))
+                    {
+                        this._interceptors.Remove(interceptor);
+                        TaskEventHandler -= interceptor;
+                    }
+
             return this;
         }
 
-        private event TaskEventHandler TaskEventHandler;
+        private event TaskEventHandler? TaskEventHandler;
 
         #endregion Interceptors
 
@@ -750,7 +770,7 @@ namespace Bb.Process
 
         public Guid Id { get; }
 
-        public object Tag { get; }
+        public object? Tag { get; }
 
         public bool Canceled { get; private set; }
 
@@ -773,15 +793,16 @@ namespace Bb.Process
             return securePassword;
         }
 
-        private ProcessStartInfo _processStartInfo;
-        private System.Diagnostics.Process _process;
-        private CancellationTokenSource _cancellation;
-        private Task _task;
+        private ProcessStartInfo? _processStartInfo;
+        private System.Diagnostics.Process? _process;
+        private CancellationTokenSource? _cancellation;
+        private Task? _task;
         private bool disposedValue;
         private string delimiterString = "--> waiting";
         private bool _waitingInPrompt;
         private bool _waitingOutOfPrompt;
         private List<TaskEventHandler> _interceptors;
+        private volatile object _lock = new object();
     }
 
 }
