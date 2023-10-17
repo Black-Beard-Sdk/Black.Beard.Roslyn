@@ -27,7 +27,7 @@ namespace Bb.Process
         /// <returns></returns>
         public ProcessCommandService Run(Action<ProcessCommand> actionToConfigure)
         {
-            RunAndGet(actionToConfigure);
+            RunAndGet(actionToConfigure); 
             return this;
         }
 
@@ -65,11 +65,28 @@ namespace Bb.Process
         }
 
         /// <summary>
+        /// Create and Runs a command.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="command"></param>
+        /// <param name="tag">The tag. for identified the process.</param>
+        /// <param name="actionToConfigure">The action to configure the command process.</param>
+        /// <returns></returns>
+        public T RunAndGet<T>(T command, Action<T> actionToConfigure)
+            where T : ProcessCommand
+        {
+            Add(command, actionToConfigure);
+            command.Run();
+            return command;
+        }
+
+        /// <summary>
         /// Adds the specified command.
         /// </summary>
         /// <param name="cmd">The command.</param>
         /// <returns></returns>
-        public ProcessCommand Add(ProcessCommand cmd, Action<ProcessCommand> actionToConfigure = null)
+        public T Add<T>(T cmd, Action<T> actionToConfigure = null)
+            where T : ProcessCommand
         {
 
             if (actionToConfigure != null)
