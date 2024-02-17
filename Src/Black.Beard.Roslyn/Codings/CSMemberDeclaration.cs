@@ -6,20 +6,27 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using Bb.Compilers;
+using System.Diagnostics;
 
 namespace Bb.Codings
 {
 
+    [DebuggerDisplay("{Name}")]
     public abstract class CSMemberDeclaration : CSharpNode
     {
 
-        public CSMemberDeclaration(string name)
+        public CSMemberDeclaration()
             : base()
         {
             _isPublic = true;
-            Name = name?.EnsureLiteralName();
             _attributes = new List<CsAttributeDeclaration>();
             _members = new List<CSMemberDeclaration>();
+        }
+
+        public CSMemberDeclaration(string name)
+            : this()
+        {
+            Name = name?.EnsureLiteralName();
         }
 
         internal void ResetName(string name) => Name = name;

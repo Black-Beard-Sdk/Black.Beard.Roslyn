@@ -7,6 +7,7 @@ The way use the tool installed on your machine. It does'nt work if dotnet is not
 
 
 
+## How to install
 Use project model for create a project file
 
 ```powershell
@@ -22,3 +23,39 @@ Use roslyn for compile without project
 ```powershell
 NuGet\Install-Package Black.Beard.Roslyn
 ``` 
+
+## How to use Roslyn
+
+```csharp
+
+// Use existing project
+var projects = _directoryProject.GetFiles("*.csproj", SearchOption.AllDirectories);
+
+foreach (var item in projects)
+{
+    var builder = ProjectRoslynBuilderHelper.CreateCsharpBuild(item.FullName, true);
+    var result = builder.Build();
+    var assembly = result.LoadAssembly();
+    var types = assembly.GetExportedTypes();
+    var instance = Activator.CreateInstance(types[0]);
+}
+```
+
+```csharp
+
+// Use Roslyn for generate #Csharp
+var artifact = new CSharpArtifact("test1")
+    .Namespace("namespace1", ns =>
+    {
+        ns.Class("class1", cls =>
+        {
+            cls.Property("get1", nameof(String), property =>
+            {
+                property.AutoGet().AutoSet();
+            });
+        });
+    });
+
+var code = artifact.ToString();
+
+```

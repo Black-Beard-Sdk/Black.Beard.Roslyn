@@ -7,7 +7,7 @@ namespace Bb.Analysis
         /// <summary>
         /// The empty value
         /// </summary>
-        public static readonly CodeLocation Empty = new CodePositionLocation(-1, -1);
+        public static new readonly CodeLocation Empty = new CodePositionLocation(-1, -1);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CodeLocation"/> struct.

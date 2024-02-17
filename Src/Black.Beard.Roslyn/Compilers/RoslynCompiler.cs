@@ -3,17 +3,18 @@ using Bb.Builds;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Collections.Immutable;
+using Bb.Codings;
+using System.Reflection;
+using System.Linq;
+using Refs;
 
 namespace Bb.Compilers
 {
+
+
 
     public class RoslynCompiler
     {
@@ -21,26 +22,20 @@ namespace Bb.Compilers
         public RoslynCompiler(AssemblyReferences assemblies)
         {
 
-            this.LanguageVersion = LanguageVersion.CSharp6;
+            this._assemblies = assemblies;
+            this.LanguageVersion = assemblies.Sdk.LanguageVersion;
 
-            var ass = new string[] { "netstandard", "mscorlib", "System.Runtime" };
+            assemblies.AddByType(typeof(object));
+            assemblies.ResolveFilename(Refs.mscorlib.AssemblyFile);
+            assemblies.ResolveFilename(Refs.System.Runtime.AssemblyFile);
 
-            foreach (var item in ass)
-            {
-                var a = item.ResolveAssemblyByName();
-                if (a != null)
-                    assemblies.Add(a);
-            }
-
-            _defaultReferences = new List<MetadataReference>();
-            foreach (PortableExecutableReference assembly in assemblies)
-                _defaultReferences.Add(assembly);
+            _resolver = new ReferenceResolver(assemblies);
 
         }
 
-        public string KeyFile {get;set;}
+        public string KeyFile { get; set; }
 
-        public bool DelaySign { get; set;}
+        public bool DelaySign { get; set; }
 
         public ImmutableArray<byte> StrongNameKey { get; set; } = ImmutableArray<byte>.Empty;
 
@@ -63,11 +58,20 @@ namespace Bb.Compilers
 
         public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
 
+        private readonly AssemblyReferences _assemblies;
+
         public LanguageVersion LanguageVersion { get; set; }
 
         public bool ResolveObjects { get; set; }
 
         public bool Debug { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public CSUsing[] Usings { get; internal set; }
+
+
 
         public AssemblyResult Generate(string? assemblyName = null)
         {
@@ -76,83 +80,17 @@ namespace Bb.Compilers
             this._assemblyName = assemblyName ?? $"assembly_{this._hash}_{date.Year}{date.Month}{date.Day}_{date.Hour}{date.Minute}{date.Second}{date.Millisecond}";
 
             AssemblyResult result = GetAssemblyResult();
+            CSharpCompilation compilation = GetCsharpContext(result);
 
-            ResetFilesIfExists(result);
-
-            var parsedSyntaxTree = Parse(result);
-            CSharpVisitor visitor = new CSharpVisitor();
-            foreach (var item in parsedSyntaxTree)
-                visitor.Visit(item.GetRoot());
-            var usings = visitor.GetUsings();
-
-            var _references = ResolveAsemblies(usings);
-
-            CSharpCompilationOptions compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-
-                .WithModuleName($"{_assemblyName}.dll")
-
-                .WithOverflowChecks(true)
-
-                .WithOptimizationLevel(this.Debug
-                    ? OptimizationLevel.Debug
-                    : OptimizationLevel.Release)
-
-                .WithPlatform(Platform.AnyCpu)
-
-            //.WithUsings(repository.Usings)
-            ;
-
-            if (this.KeyFile != null)
+            try     // emit the compilation result to a byte array corresponding to {AssemblyName}.netmodule byte code
             {
-
-                if (File.Exists(this.KeyFile))
-                {
-
-                    compilationOptions.WithCryptoKeyFile(this.KeyFile)
-                                      .WithDelaySign(this.DelaySign)
-                                      .WithCryptoPublicKey(StrongNameKey);
-                }
-            }
-
-            if (ConfigureCompilation != null)
-                ConfigureCompilation(compilationOptions);
-
-
-            var compilation = CSharpCompilation.Create
-            (
-                result.AssemblyName,
-                 parsedSyntaxTree,
-                _references,
-                compilationOptions
-            );
-
-            try
-            {
-
-                // emit the compilation result to a byte array corresponding to {AssemblyName}.netmodule byte code
-                //byte[] compilationAResult = compilation.EmitToArray(DiagnosticSeverity.Error, out CompilerException exception);
-                //Assembly newAssembly = Assembly.Load(compilationAResult);
 
                 using (var peStream = File.Create(result.AssemblyFile))
                 using (var pdbStream = File.Create(result.AssemblyFilePdb))
                 {
-
                     EmitResult resultEmit = compilation.Emit(peStream, pdbStream);
                     var diags = resultEmit.Diagnostics.ToList().Select(c => c.ToString()).ToArray();
-
-                    Trace.WriteLine(
-                        new
-                        {
-                            Message = $"Compilation of {result.AssemblyName} return : " + (resultEmit.Success ? " Success!!" : " Failed"),
-                            Diagnostics = string.Join(", ", diags),
-                        });
-
-                    // Map diagnostic for not reference roslyn outsite this assembly
-                    foreach (Diagnostic diagnostic in resultEmit.Diagnostics)
-                        result.Diagnostics.Add(diagnostic.Map());
-
-                    result.Success = resultEmit.Success;
-
+                    AnalyzeCompilation(result, resultEmit, diags);
                 }
 
             }
@@ -168,47 +106,93 @@ namespace Bb.Compilers
 
             }
 
-
-            result.Codes = parsedSyntaxTree;
-
-
-            List<CodeObject> objects = new List<CodeObject>();
             if (this.ResolveObjects)
-                foreach (var item in parsedSyntaxTree)
-                {
-                    var o = ObjectResolverVisitor.GetObjects(item);
-                    objects.AddRange(o);
-                }
-
+                result.Objects = ResolveObjects_Impl(result);
 
             return result;
 
         }
 
-        private List<MetadataReference> ResolveAsemblies(HashSet<string> usings)
+        private CSharpCompilation GetCsharpContext(AssemblyResult result)
         {
 
-            var references = _defaultReferences.ToList();
-            IEnumerable<Assembly> ass = TypeDiscovery.Instance.GetAssemblies(usings);
+            CSharpCompilationOptions compilationOptions = GetCompilationOptions(result);
 
-            HashSet<string> _distinct = new HashSet<string>();
-            foreach (var assembly in ass)
-            {
+            var _defaultReferences = _assemblies.Libraries().ToList();
 
-                if (!_assemblies.Contains(assembly.Location) & _distinct.Add(assembly.Location))
-                {
-                    var newReference = AssemblyMetadata.CreateFromFile(assembly.Location).GetReference();
-                    references.Add(newReference);
-                }
-            }
+            return CSharpCompilation.Create
+            (
+                result.AssemblyName,
+                 result.SyntaxTree,
+                _defaultReferences,
+                compilationOptions
+            );
+        }
 
-            return references;
+        private static List<CodeObject> ResolveObjects_Impl(AssemblyResult result)
+        {
+            List<CodeObject> objects = new List<CodeObject>();
+            foreach (var item in result.SyntaxTree)
+                objects.AddRange(ObjectResolverVisitor.GetObjects(item));
+            return objects;
+        }
+
+        private CSharpCompilationOptions GetCompilationOptions(AssemblyResult result)
+        {
+
+            CSharpCompilationOptions compilationOptions = new CSharpCompilationOptions
+                (OutputKind.DynamicallyLinkedLibrary,
+                    allowUnsafe: true,
+                    xmlReferenceResolver: null, // no support for permission set and doc includes in interactive
+                    metadataReferenceResolver: _resolver,
+                    assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
+                )
+                .WithModuleName($"{_assemblyName}.dll")
+                .WithOptimizationLevel(this.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release)
+                .WithPlatform(Platform.AnyCpu)
+                //.WithUsings(result.Usings)
+                ;
+
+            if (this.KeyFile != null)
+                AddSignature(compilationOptions);
+
+            if (ConfigureCompilation != null)
+                ConfigureCompilation(compilationOptions);
+
+            return compilationOptions;
 
         }
 
-        #endregion Methods
+        private void AddSignature(CSharpCompilationOptions compilationOptions)
+        {
+            if (File.Exists(this.KeyFile))
+                compilationOptions.WithCryptoKeyFile(this.KeyFile)
+                                  .WithDelaySign(this.DelaySign)
+                                  .WithCryptoPublicKey(StrongNameKey);
+        }
 
+        private static void AnalyzeCompilation(AssemblyResult result, EmitResult resultEmit, string[] diags)
+        {
+            Trace.WriteLine
+            (new
+            {
+                Message = $"Compilation of {result.AssemblyName} return : " + (resultEmit.Success ? " Success!!" : " Failed"),
+                Diagnostics = string.Join(", ", diags),
+            });
 
+            var missingRefs = resultEmit.Diagnostics.Where(c => c.Id == "CS0246").ToList();
+
+            foreach (var item in missingRefs)
+            {
+                var tt = item.Descriptor.MessageFormat;
+            }
+
+            // Map diagnostic for not reference roslyn outsite this assembly
+            foreach (Diagnostic diagnostic in resultEmit.Diagnostics)
+                result.Diagnostics.Add(diagnostic.Map());
+
+            result.Success = resultEmit.Success;
+        }
 
         private AssemblyResult GetAssemblyResult()
         {
@@ -216,20 +200,104 @@ namespace Bb.Compilers
             if (!Directory.Exists(_outputPah))
                 Directory.CreateDirectory(_outputPah);
 
-            return new AssemblyResult()
+            var result = new AssemblyResult()
             {
                 AssemblyName = _assemblyName,
                 AssemblyFile = Path.Combine(_outputPah, $"{_assemblyName}.dll"),
                 AssemblyFilePdb = Path.Combine(_outputPah, $"{_assemblyName}.pdb"),
             };
 
+            ResetFilesIfExists(result);
+
+            var sources = new List<SyntaxTree>();
+
+            if (this.Usings.Any())
+            {
+
+                bool isGlobal = false;
+
+                var builder = new CSharpArtifact();
+                foreach (var item in this.Usings)
+                {
+                    if (item.IsGlobal)
+                    {
+
+                        switch (item.NamespaceOrType)
+                        {
+
+                            case "System.Linq":
+                                this._assemblies.ResolveFilename(Refs.System.Linq.AssemblyFile);
+                                break;
+
+                            case "System.Net.Http":
+                                this._assemblies.ResolveFilename(Refs.System.Net.Http.AssemblyFile);
+                                break;
+
+                            case "System.Threading":
+                                this._assemblies.ResolveFilename(Refs.System.Threading.AssemblyFile);
+                                break;
+
+                            default:
+                                break;
+
+                        }
+
+                        isGlobal = true;
+                    }
+
+                    builder.Using(item);
+                }
+
+                var src = builder.Code().ToString();
+
+                sources.Add(builder.Build().SyntaxTree);
+
+                if (isGlobal && LanguageVersion < LanguageVersion.CSharp12)
+                    LanguageVersion = LanguageVersion.CSharp12;
+
+            }
+
+            Parse(result, sources);
+
+            //// Try to resolve assemblies
+            //CSharpVisitor visitor = new CSharpVisitor();
+            //foreach (var item in sources)
+            //    visitor.Visit(item.GetRoot());
+            //var usings = visitor.GetUsings();
+            //var _references = ResolveAsemblies(usings);
+
+            return result;
+
         }
+
+        //private List<MetadataReference> ResolveAsemblies(HashSet<string> usings)
+        //{
+        //    // find assemblies that contains usings.
+        //    var lst = usings.ToList();
+        //    foreach (var item in _assemblies)
+        //    {
+        //        var lib = Refs.Libs.ResolveLibraryByFilename(item.Key);
+        //        if (lib != null)
+        //        {
+        //            var rr = lst.Intersect(lib.Namespaces).ToArray();
+        //            foreach (var ns in rr)
+        //            {
+        //                lst.Remove(ns);
+        //            }
+        //        }
+        //        if (lst.Count == 0)
+        //            break;
+        //    }
+
+        //    List<ILib> _list = new List<ILib>();
+
+        //    foreach (var item in lst)
+        //        _list.AddRange( Refs.Libs.GetAssembliesWithNamespace(item).ToList());
+        //    return null;
+        //}
 
         private static void ResetFilesIfExists(AssemblyResult result)
         {
-
-            //if (File.Exists(result.CodeFile))
-            //    File.Delete(result.CodeFile);
 
             if (File.Exists(result.AssemblyFile))
                 File.Delete(result.AssemblyFile);
@@ -238,10 +306,12 @@ namespace Bb.Compilers
                 File.Delete(result.AssemblyFilePdb);
         }
 
-        private SyntaxTree[] Parse(AssemblyResult result)
+        private void Parse(AssemblyResult result, List<SyntaxTree> sources = null)
         {
 
-            List<SyntaxTree> _sources = new List<SyntaxTree>();
+            if (sources == null)
+                sources = new List<SyntaxTree>();
+
             foreach (var item in this._sources)
             {
 
@@ -254,19 +324,17 @@ namespace Bb.Compilers
 
                 var stringText = Microsoft.CodeAnalysis.Text.SourceText.From(item.Content, Encoding.UTF8);
                 var tree = SyntaxFactory.ParseSyntaxTree(stringText, options, item.Filepath);
-                _sources.Add(tree);
+                sources.Add(tree);
             }
 
-            return _sources.ToArray();
+            result.SyntaxTree = sources.ToArray();
 
         }
 
+        #endregion Methods
 
-        // private static readonly string runtimePath = Path.Combine(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory(), "{0}.dll");
-        private readonly List<MetadataReference> _defaultReferences;
-        private HashSet<string> _assemblies = new HashSet<string>();
+        private readonly ReferenceResolver _resolver;
         private List<FileCode> _sources = new List<FileCode>();
-
         private string _assemblyName;
         private string _outputPah;
         private uint _hash;

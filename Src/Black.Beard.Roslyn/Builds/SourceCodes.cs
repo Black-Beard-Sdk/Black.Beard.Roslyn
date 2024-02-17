@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Bb.Builds
 {
+
+
     public class SourceCodes
     {
 
@@ -9,7 +12,7 @@ namespace Bb.Builds
         {
             _sources = new Dictionary<string, SourceCode>();
         }
-             
+
 
         public SourceCode Add(string filename)
         {
@@ -47,6 +50,8 @@ namespace Bb.Builds
                 item.Value.HasUpdated();
             }
         }
+
+        public Func<SourceCode, bool> Filter { get; internal set; }
 
 
         private readonly Dictionary<string, SourceCode> _sources;

@@ -1,11 +1,6 @@
 ﻿
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Data.Common;
-using System.Linq;
-
 
 namespace Bb.Analysis
 {
@@ -96,9 +91,7 @@ namespace Bb.Analysis
         /// <returns><see cref="T:DiagnosticReport"></returns>
         public DiagnosticReport AddError(DiagnosticLocation location, string text, string message)
         {
-
             return this.Add(SeverityEnum.Error, location, text, message);
-
         }
 
         /// <summary>
@@ -265,7 +258,7 @@ namespace Bb.Analysis
         /// <value>
         /// The errors.
         /// </value>
-        public IEnumerable<DiagnosticReport> Errors { get => this._list.Where(c => c.SeverityLevel == (int)SeverityEnum.Error); }
+        public IEnumerable<DiagnosticReport> Errors { get => this._list.Where(c => c.IsSeverityAsError); }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="Diagnostics"/> is success. then the list of diagnostic don't contains error.
@@ -298,7 +291,7 @@ namespace Bb.Analysis
         /// <summary>
         /// Occurs when the collection changes.
         /// </summary>
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
         private List<DiagnosticReport> _list = new List<DiagnosticReport>();
 

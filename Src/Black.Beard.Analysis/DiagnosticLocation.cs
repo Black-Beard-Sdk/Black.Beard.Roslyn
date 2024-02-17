@@ -84,7 +84,7 @@ namespace Bb.Analysis
 
         #endregion Ctors
 
-        public static DiagnosticLocation Empty = new DiagnosticLocation(string.Empty);
+        public new readonly static DiagnosticLocation Empty = new DiagnosticLocation(string.Empty);
 
         /// <summary>
         /// Gets or sets the filename of the diagnostic.

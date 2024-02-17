@@ -99,7 +99,7 @@ namespace Bb.Build
                         }
 
                     }
-
+                
                 }
 
                 return false;
@@ -118,7 +118,77 @@ namespace Bb.Build
 
         public string AssemblyFile { get; protected set; }
 
-        private bool GenerateOnMemory(bool load, Compilation? compilation)
+        public new MsProjectForBuild SetPropertyGroup(Action<PropertyGroup> action)
+        {
+            base.SetPropertyGroup(action);
+            return this;
+
+        }
+
+        public new MsProjectForBuild Packages(Action<PackageReferences> action)
+        {
+            base.Packages(action);
+            return this;
+        }
+
+        public new MsProjectForBuild Sdk(ProjectSdk value)
+        {
+            base.Sdk(value);
+            return this;
+        }
+
+        public new MsProjectForBuild DefaultTargets(string value)
+        {
+            base.DefaultTargets(value);            
+            return this;
+        }
+
+        public new MsProjectForBuild InitialTargets(string value)
+        {
+            base.InitialTargets(value);
+            return this;
+        }
+
+        public new MsProjectForBuild ToolsVersion(Version value)
+        {
+            base.ToolsVersion(value);
+            return this;
+        }
+               
+        public new MsProjectForBuild ItemGroup(Action<ItemGroup> action)
+        {
+            base.ItemGroup(action);
+            return this;
+        }
+
+        public new MsProjectForBuild SqlCmdVariables(Action<SqlCmdVariables> action)
+        {
+            base.SqlCmdVariables(action);
+            return this;
+
+        }
+
+        public new MsProjectForBuild SqlDeploy(Action<SqlDeploy> action)
+        {
+            base.SqlDeploy(action);
+            return this;
+        }
+         
+        public new MsProjectForBuild References(Action<References> action)
+        {
+            base.References(action);
+            return this;
+        }
+
+        public new MsProjectForBuild ProjectReferences(Action<ProjectReferences> action)
+        {
+            base.ProjectReferences(action);
+            return this;
+        }
+
+
+
+        private bool GenerateOnMemory(bool load, Compilation compilation)
         {
 
             using (var ass = GetStream())
@@ -219,75 +289,6 @@ namespace Bb.Build
 
         }
 
-
-
-        public new MsProjectForBuild SetPropertyGroup(Action<PropertyGroup> action)
-        {
-            base.SetPropertyGroup(action);
-            return this;
-
-        }
-
-        public new MsProjectForBuild Packages(Action<PackageReferences> action)
-        {
-            base.Packages(action);
-            return this;
-        }
-
-        public new MsProjectForBuild Sdk(ProjectSdk value)
-        {
-            base.Sdk(value);
-            return this;
-        }
-
-        public new MsProjectForBuild DefaultTargets(string value)
-        {
-            base.DefaultTargets(value);            
-            return this;
-        }
-
-        public new MsProjectForBuild InitialTargets(string value)
-        {
-            base.InitialTargets(value);
-            return this;
-        }
-
-        public new MsProjectForBuild ToolsVersion(Version value)
-        {
-            base.ToolsVersion(value);
-            return this;
-        }
-               
-        public new MsProjectForBuild ItemGroup(Action<ItemGroup> action)
-        {
-            base.ItemGroup(action);
-            return this;
-        }
-
-        public new MsProjectForBuild SqlCmdVariables(Action<SqlCmdVariables> action)
-        {
-            base.SqlCmdVariables(action);
-            return this;
-
-        }
-
-        public new MsProjectForBuild SqlDeploy(Action<SqlDeploy> action)
-        {
-            base.SqlDeploy(action);
-            return this;
-        }
-         
-        public new MsProjectForBuild References(Action<References> action)
-        {
-            base.References(action);
-            return this;
-        }
-
-        public new MsProjectForBuild ProjectReferences(Action<ProjectReferences> action)
-        {
-            base.ProjectReferences(action);
-            return this;
-        }
 
 
     }

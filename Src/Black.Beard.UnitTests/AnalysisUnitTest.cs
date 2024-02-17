@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Black.Beard.UnitTests
 {
-    public class AnalisisUnitTest
+    public class AnalysisUnitTest
     {
 
 

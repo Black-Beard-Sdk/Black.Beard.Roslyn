@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Bb.Beard.Roslyn.XTests
 {
+
     public class BuildUnitTest1
     {
 
@@ -29,8 +30,8 @@ namespace Bb.Beard.Roslyn.XTests
             {
                 ResolveAssembliesInCode = true,
                 Debug = true,
-                LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp7,
             }
+            .SetVersion("net5.0")
             .AddSource(file2)
             .Suppress("CS1702", "CS1998")
             ;

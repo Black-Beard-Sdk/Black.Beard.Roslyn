@@ -14,67 +14,53 @@ namespace Bb.Compilers
     public static class CommentHelper
     {
 
-        public static void ResolveProperties(this string payloadCode, CompilationProperties compilationProperties)
-        {
+        //public static void ResolveProperties(this string payloadCode, CompilationProperties compilationProperties)
+        //{
+        //    var items = CommentHelper.ResolveComments(payloadCode);
+        //    foreach (var item in items)
+        //    {
+        //        var payload = item.GetTrimmedPayload();
+        //        var lines = payload.Split(Environment.NewLine).Where(c => c.StartsWith("@")).ToArray();
+        //        foreach (var line in lines)
+        //        {
+        //            var o = System.Text.Json.JsonDocument.Parse(line.Trim('@'));
+        //            var p = o.RootElement;
+        //            foreach (JsonProperty property in p.EnumerateObject())
+        //                switch (property.Name.ToLower())
+        //                {
+        //                    case "assemblies":
+        //                        ParseAssemblies(property.Value, compilationProperties);
+        //                        break;
+        //                    default:
+        //                        break;
+        //                }
+        //        }
+        //    }
+        //}
 
-            var items = CommentHelper.ResolveComments(payloadCode);
-            foreach (var item in items)
-            {
-                var payload = item.GetTrimmedPayload();
-                var lines = payload.Split(Environment.NewLine).Where(c => c.StartsWith("@")).ToArray();
-                foreach (var line in lines)
-                {
+        //private static void ParseAssemblies(JsonElement assemblies, CompilationProperties result)
+        //{
+        //    //if (assemblies.ValueKind == JsonValueKind.Array)
+        //    //{
+        //    //    var e = assemblies.EnumerateArray();
+        //    //    while(e.MoveNext())
+        //    //    {
+        //    //        if (e.Current is JValue v)
+        //    //        {
+        //    //            if (v.Value is string s)
+        //    //            {
+        //    //                //var assemblyName = AssemblyName.GetAssemblyName(s);
+        //    //                var assembly = TypeDiscovery.Instance.AddAssemblyname(s, true);
+        //    //                result.AddAssembly(assembly);
+        //    //            }
+        //    //        }
+        //    //    }
+        //    //}
+        //    //else
+        //    //{
+        //    //}
+        //}
 
-                    var o = System.Text.Json.JsonDocument.Parse(line.Trim('@'));
-                    var p = o.RootElement;
-
-                    foreach (JsonProperty property in p.EnumerateObject())
-                        switch (property.Name.ToLower())
-                        {
-
-                            case "assemblies":
-                                ParseAssemblies(property.Value, compilationProperties);
-                                break;
-
-                            default:
-                                break;
-
-                        }
-
-                }
-            }
-
-        }
-
-        private static void ParseAssemblies(JsonElement assemblies, CompilationProperties result)
-        {
-
-            //if (assemblies.ValueKind == JsonValueKind.Array)
-            //{
-
-            //    var e = assemblies.EnumerateArray();
-            //    while(e.MoveNext())
-            //    {
-            //        if (e.Current is JValue v)
-            //        {
-
-            //            if (v.Value is string s)
-            //            {
-            //                //var assemblyName = AssemblyName.GetAssemblyName(s);
-            //                var assembly = TypeDiscovery.Instance.AddAssemblyname(s, true);
-            //                result.AddAssembly(assembly);
-            //            }
-
-            //        }
-            //    }
-
-            //}
-            //else
-            //{
-
-            //}
-
-        }
 
         public static List<CommentBlock> ResolveComments(string payload)
         {

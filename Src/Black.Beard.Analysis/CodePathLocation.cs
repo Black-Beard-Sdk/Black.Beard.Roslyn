@@ -7,7 +7,7 @@ namespace Bb.Analysis
         /// <summary>
         /// The empty value
         /// </summary>
-        public static readonly CodeLocation Empty = new CodePathLocation(string.Empty);
+        public static new readonly CodeLocation Empty = new CodePathLocation(string.Empty);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CodeLocation"/> struct.

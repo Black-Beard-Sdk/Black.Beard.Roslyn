@@ -21,15 +21,17 @@ namespace Bb.Compilers
 
             var locations = GetLocations(self);
 
-            return new DiagnosticReport(locations)
+            var result = new DiagnosticReport(locations)
             {                   
                 Id = self.Id,
                 Message = self.GetMessage(),
-                IsSeverityAsError = self.IsWarningAsError,
+                IsSeverityAsError = self.IsWarningAsError || self.Severity == DiagnosticSeverity.Error,
                 Severity = self.Severity.ToString(),
-                SeverityLevel = self.WarningLevel,
+                SeverityLevel =  self.IsWarningAsError ? (int)SeverityEnum.Error : (int)self.Severity,
             };
             
+            return result;
+
         }
 
         private static SpanLocation[] GetLocations(Diagnostic self)

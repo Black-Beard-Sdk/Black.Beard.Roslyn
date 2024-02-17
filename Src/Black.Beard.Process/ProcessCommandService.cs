@@ -4,7 +4,7 @@ namespace Bb.Process
 {
 
     /// <summary>
-    /// class for manage lifecycle of the <see cref="ProcessCommand"/>
+    /// class for manage life cycle of the <see cref="ProcessCommand"/>
     /// </summary>
     /// <seealso cref="System.IDisposable" />
     public class ProcessCommandService : IDisposable

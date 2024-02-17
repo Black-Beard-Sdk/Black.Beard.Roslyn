@@ -3,13 +3,14 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<RootNamespace>Bb</RootNamespace>
-		
+		<ImplicitUsings>true</ImplicitUsings>
 		<Description>Helper for compile Csharp at runtime</Description>
 		<RepositoryUrl>https://github.com/Black-Beard-Sdk/Black.Beard.Roslyn</RepositoryUrl>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl></PackageProjectUrl>
-
+		<PreserveCompilationContext>true</PreserveCompilationContext>
+		
 	</PropertyGroup>
 
 	<ItemGroup>		
@@ -23,10 +24,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Black.Beard.ComponentModel" Version="1.0.41" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.19" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.19" />
+		<PackageReference Include="Black.Beard.ComponentModel" Version="1.0.48" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.25" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.25" />
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.8.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyModel" Version="8.0.0" />
 		<PackageReference Include="Ude.NetStandard" Version="1.2.0" />
 	</ItemGroup>
 

@@ -22,7 +22,7 @@ Sample to use Black.Beard.Projects.Models for create a csproj
                     .CreateProject((name, dir)        
                     .Sdk(ProjectSdk.MicrosoftNETSdk)    // Specify the target build
 
-                    .SetPropertyGroup(c =>              // set the properies of the build
+                    .SetPropertyGroup(c =>              // set the properties of the build
                     {
                         c.TargetFramework(TargetFramework.Net6)
                          .RootNamespace("Bb")

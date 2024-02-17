@@ -38,7 +38,9 @@ namespace Bb.Compilers
 
         public Exception Exception { get; internal set; }
 
-        public SyntaxTree[] Codes { get; internal set; }
+        public List<CodeObject> Objects { get; internal set; }
+
+        public SyntaxTree[] SyntaxTree { get; internal set; }
 
         public Assembly LoadAssembly()
         {

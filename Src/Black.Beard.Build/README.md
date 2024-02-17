@@ -141,4 +141,13 @@ This way use Roslyn for generate the assembly
 
     }        
 
+
+
+```
+
+``` CSHARP
+
+var builder = ProjectRoslynBuilderHelper.CreateCsharpBuild("project.csproj", true);
+    var result = builder.Build();
+
 ```

@@ -11,8 +11,11 @@ namespace Bb.Projects
         {
         }
 
+        public static TargetFramework Net5 { get; } = new TargetFramework("net5.0");
+
         public static TargetFramework Net6 { get; } = new TargetFramework("net6.0");
-        
+
+
         public static TargetFramework Netstandard20 { get; } = new TargetFramework("netstandard2.0");
 
     }
