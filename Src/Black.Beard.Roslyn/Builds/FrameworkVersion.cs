@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.Extensions.DependencyModel;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Bb.Builds
 {
@@ -60,11 +62,16 @@ namespace Bb.Builds
         {
 
             this.Version = new Version(directory.Name);
+            this.Name = GetName(this.Version);
             this.Directory = directory;
+            this.Compatibilities = new List<string>();
 
-            var kind = this.Directory.Parent.Name;
+            
+            if (Version.Major >= 5)
+                this.Compatibilities.Add("netstandard2.0");
+            
 
-            switch (kind)
+            switch (this.Directory.Parent.Name)
             {
 
                 case "Microsoft.AspNetCore.App":
@@ -83,6 +90,7 @@ namespace Bb.Builds
                     Stop();
                     break;
             }
+
 
             switch (Version.Major)
             {
@@ -113,10 +121,49 @@ namespace Bb.Builds
 
             }
 
+
             return this;
 
         }
-            
+
+
+        public static string GetName(Version version)
+        {
+
+            switch (version.Major.ToString() + "." + version.Minor.ToString())
+            {
+                case "2.0":
+                    return "netstandard2.0";
+
+                case "2.1":
+                    return "netcoreapp2.1";
+                case "2.2":
+                    return "netcoreapp2.2";
+                case "3.0":
+                    return "netcoreapp3.0";
+                case "3.1":
+                    return "netcoreapp3.1";
+
+                case "4.6":
+                    return "net4.6" + version.Build.ToString();
+                case "4.8":
+                    return "net4.8";
+                case "5.0":
+                    return "net5.0";
+                case "6.0":
+                    return "net6.0";
+                case "7.0":
+                    return "net7.0";
+                case "8.0":
+                    return "net8.0";
+                default:
+                    Stop();
+                    break;
+            }
+
+            return null;
+
+        }
 
         /// <summary>
         /// Gets the version of dotnet.
@@ -125,6 +172,7 @@ namespace Bb.Builds
         /// The version.
         /// </value>
         public Version Version { get; private set; }
+        public string Name { get; private set; }
 
 
         /// <summary>
@@ -223,6 +271,8 @@ namespace Bb.Builds
         /// The framework versions.
         /// </value>
         public static IEnumerable<FrameworkVersion> All => _versions;
+
+        public List<string> Compatibilities { get; private set; }
 
         public static string ResolveSdkName(string sdk)
         {

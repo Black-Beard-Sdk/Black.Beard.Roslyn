@@ -9,6 +9,8 @@ using System.Reflection;
 
 namespace Bb.Builds
 {
+
+
     public class FileReferences : IEnumerable<string>
     {
 
@@ -16,20 +18,10 @@ namespace Bb.Builds
 
         public FileReferences(DirectoryInfo dir)
         {
-                     
-            //var nugetCache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget/packages");
-            //var references = new List<MetadataReference>
-            //{
-            //  MetadataReference.CreateFromFile(nugetCache + @"System.Runtime\4.3.0\ref\netstandard1.5\System.Runtime.dll"),
-            //  MetadataReference.CreateFromFile(nugetCache + @"System.Runtime.Extensions\4.3.0\ref\netstandard1.5\System.Runtime.Extensions.dll"),
-            //}
-            //.ToList();
-
+                        
             foreach (var item in dir.GetFiles("*.dll", SearchOption.TopDirectoryOnly))
-            {
                 _files.Add(item.FullName);
-            }
-
+            
         }
 
 
@@ -51,7 +43,7 @@ namespace Bb.Builds
             return result;
 
         }
-             
+
         public IEnumerator<string> GetEnumerator()
         {
             return _files.GetEnumerator();

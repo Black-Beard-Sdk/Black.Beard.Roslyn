@@ -79,6 +79,10 @@ namespace Black.Beard.Roslyn.BuildProjects
                     switch (e2.Name.ToLower())
                     {
 
+                        case "projectreference":
+
+                            break;
+
                         case "none":
                             break;
 
@@ -101,8 +105,10 @@ namespace Black.Beard.Roslyn.BuildProjects
                                 builder.Using(us);                            
                             break;
 
-                        case "PackageReference":
-
+                        case "packagereference":
+                            var nugetName = e2.Attributes["Include"].Value.ToString();
+                            var version = e2.Attributes["Version"].Value.ToString();
+                            builder.Nugets.AddReference(nugetName, version);
                             break;
 
                         default:
@@ -126,15 +132,8 @@ namespace Black.Beard.Roslyn.BuildProjects
                             var p = e2.InnerText;
                             if (!string.IsNullOrEmpty(p))
                             {
-
                                 string[] targetframeworks = p.Split(';').Where(c => !string.IsNullOrEmpty(c)).ToArray();
                                 builder.AddAvailableVersion(targetframeworks);
-
-                                //builder.ConfigureCompilation(c =>
-                                //{
-                                //    // c.WithPlatform(Microsoft.CodeAnalysis.Platform.AnyCpu);
-                                //});
-
                             }
                             break;
 
@@ -151,6 +150,7 @@ namespace Black.Beard.Roslyn.BuildProjects
                         case "generatepackageonbuild":
                         case "repositoryurl":
                         case "preservecompilationcontext":
+                        case "ispackable":
                             break;
 
                         default:
@@ -179,7 +179,6 @@ namespace Black.Beard.Roslyn.BuildProjects
             doc.LoadXml(txt);
             return doc;
         }
-
 
         [System.Diagnostics.DebuggerStepThrough]
         [System.Diagnostics.DebuggerNonUserCode]

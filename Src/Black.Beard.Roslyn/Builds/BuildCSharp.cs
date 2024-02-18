@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Bb.Compilers.CommentHelper;
@@ -29,6 +30,7 @@ namespace Bb.Builds
         public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
         {
 
+            this.Nugets = new NugetController().AddDefaultWindowsFolder();
             Framework = new Framework();
 
             ConfigureCompilations = new List<Action<CSharpCompilationOptions>>(2);
@@ -134,6 +136,8 @@ namespace Bb.Builds
         /// The references.
         /// </value>
         public AssemblyReferences References { get; }
+
+        public NugetController Nugets { get; }
 
         public Framework Framework { get; internal set; }
 
@@ -388,6 +392,8 @@ namespace Bb.Builds
                 }
 
 
+                Nugets.Resolve(References);
+
                 RoslynCompiler compiler = CreateBuilder();
 
                 result = compiler.Generate(key);
@@ -406,6 +412,7 @@ namespace Bb.Builds
         private RoslynCompiler CreateBuilder()
         {
 
+            References.Next(Nugets);
             var compiler = new RoslynCompiler(References)
             {
                 ConfigureCompilation = Configure,

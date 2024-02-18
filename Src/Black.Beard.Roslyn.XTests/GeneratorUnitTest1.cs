@@ -13,10 +13,8 @@ namespace Bb.Roslyn.XTests
 
         public GeneratorUnitTest()
         {
-
             this._assemblyFile = new FileInfo(typeof(GeneratorUnitTest).Assembly.Location);
             this._directoryProject = this._assemblyFile.Directory.Parent.Parent.Parent.Parent;
-
         }
 
         [Fact]
@@ -66,7 +64,6 @@ namespace Bb.Roslyn.XTests
         public void TestProject()
         {
 
-            // Microsoft.NETCore.App.Runtime.win-x64
             var projects = _directoryProject.GetFiles("*.csproj", SearchOption.AllDirectories);
 
             foreach (var item in projects)
@@ -77,14 +74,37 @@ namespace Bb.Roslyn.XTests
 
                 var result = builder.Build();
 
-                var assembly = result.LoadAssembly();
-                var types = assembly.GetExportedTypes();
+                if (result.Success)
+                {
 
-                var instance = Activator.CreateInstance(types[0]);
 
-                Assert.NotNull(instance);
+                    var assembly = result.LoadAssembly();
+                    var types = assembly.GetExportedTypes();
 
+                    var instance = Activator.CreateInstance(types[0]);
+
+                    Assert.NotNull(instance);
+                }
+                else
+                {
+                    Assert.Fail();
+
+                }
             }
+
+        }
+
+        [Fact]
+        public void TestDownload()
+        {
+
+            var dir = Path.Combine(Environment.CurrentDirectory, Path.GetRandomFileName());
+            var controller = new NugetController().AddFolder(dir, NugetController.NugetOrgHost);
+
+            // new Version("1.0.48")
+            var test = controller.TryToDownload("Black.Beard.Componentmodel", null);
+
+            Assert.True(test);
 
         }
 
