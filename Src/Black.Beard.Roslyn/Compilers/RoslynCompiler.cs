@@ -30,8 +30,8 @@ namespace Bb.Compilers
             this.LanguageVersion = assemblies.Sdk.LanguageVersion;
 
             assemblies.AddByType(typeof(object));
-            assemblies.ResolveFilename(Refs.mscorlib.AssemblyFile, Refs.mscorlib.AssemblyName);
-            assemblies.ResolveFilename(Refs.System.Runtime.AssemblyFile, Refs.System.Runtime.AssemblyName);
+            assemblies.AddResolveFilename(Refs.mscorlib.AssemblyFile, Refs.mscorlib.AssemblyName);
+            assemblies.AddResolveFilename(Refs.System.Runtime.AssemblyFile, Refs.System.Runtime.AssemblyName);
 
             _resolver = new ReferenceResolver(assemblies, diagnostics);
 
@@ -276,15 +276,15 @@ namespace Bb.Compilers
                         {
 
                             case "System.Linq":
-                                this._assemblies.ResolveFilename(Refs.System.Linq.AssemblyFile, Refs.System.Linq.AssemblyName);
+                                this._assemblies.AddResolveFilename(Refs.System.Linq.AssemblyFile, Refs.System.Linq.AssemblyName);
                                 break;
 
                             case "System.Net.Http":
-                                this._assemblies.ResolveFilename(Refs.System.Net.Http.AssemblyFile, Refs.System.Net.Http.AssemblyName);
+                                this._assemblies.AddResolveFilename(Refs.System.Net.Http.AssemblyFile, Refs.System.Net.Http.AssemblyName);
                                 break;
 
                             case "System.Threading":
-                                this._assemblies.ResolveFilename(Refs.System.Threading.AssemblyFile, Refs.System.Threading.AssemblyName);
+                                this._assemblies.AddResolveFilename(Refs.System.Threading.AssemblyFile, Refs.System.Threading.AssemblyName);
                                 break;
 
                             default:

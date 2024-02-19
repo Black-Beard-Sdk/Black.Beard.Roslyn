@@ -34,14 +34,16 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="typeAssembly">The type assembly.</param>
         /// <exception cref="System.NullReferenceException">typeAssembly</exception>
-        public void AddTypesRange(params Type[] typeAssembly)
+        public AssemblyReferences AddByTypes(params Type[] typeAssembly)
         {
 
             if (typeAssembly == null)
                 throw new NullReferenceException(nameof(typeAssembly));
 
             foreach (var item in typeAssembly)
-                AddAssembly(item.Assembly);
+                AddByAssembly(item.Assembly);
+
+            return this;
 
         }
 
@@ -50,13 +52,15 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="type">The type.</param>
         /// <exception cref="System.NullReferenceException">type</exception>
-        public void AddByType(Type type)
+        public AssemblyReferences AddByType(Type type)
         {
 
             if (type == null)
                 throw new NullReferenceException(nameof(type));
 
-            AddAssembly(type.Assembly);
+            AddByAssembly(type.Assembly);
+
+            return this;
 
         }
 
@@ -65,14 +69,16 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="assemblies">The assemblies.</param>
         /// <exception cref="System.NullReferenceException">assemblies</exception>
-        public void AddAssembliesRange(params Assembly[] assemblies)
+        public AssemblyReferences AddByAssemblies(params Assembly[] assemblies)
         {
 
             if (assemblies == null)
                 throw new NullReferenceException(nameof(assemblies));
 
             foreach (var item in assemblies)
-                AddAssembly(item);
+                AddByAssembly(item);
+
+            return this;
 
         }
 
@@ -81,13 +87,15 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="assembly">The assembly.</param>
         /// <exception cref="System.NullReferenceException">assembly</exception>
-        public PortableExecutableReference AddAssembly(Assembly assembly)
+        public AssemblyReferences AddByAssembly(Assembly assembly)
         {
 
             if (assembly == null)
                 throw new NullReferenceException(nameof(assembly));
 
-            return AddAssemblyLocation(assembly.Location, assembly.GetName().Name);
+            AddAssemblyLocation(assembly.Location, assembly.GetName().Name);
+
+            return this;
 
         }
 
@@ -98,7 +106,7 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="filename"></param>
         /// <exception cref="FileNotFoundException"></exception>
-        public PortableExecutableReference ResolveFilename(string assemblyFilename, string assemblyName = null)
+        public AssemblyReferences AddResolveFilename(string assemblyFilename, string assemblyName = null)
         {
 
             FileReferences references = Sdk.GetReferences();
@@ -108,7 +116,9 @@ namespace Bb.Builds
             if (l == null)
                 throw new FileNotFoundException(assemblyFilename);
 
-            return AddAssemblyLocation(l, assemblyName);
+            AddAssemblyLocation(l, assemblyName);
+
+            return this;
 
         }
 
@@ -118,10 +128,11 @@ namespace Bb.Builds
         /// <param name="assemblyName">Name of the assembly.</param>
         /// <exception cref="System.ArgumentNullException">assemblyName</exception>
         /// <exception cref="System.IO.FileLoadException"></exception>
-        public PortableExecutableReference ResolveAssemblyName(string assemblyName)
+        public PortableExecutableReference AddResolveAssemblyName(string assemblyName)
         {
 
             string lib = null;
+            Reference reference;
 
             if (string.IsNullOrEmpty(assemblyName))
                 throw new ArgumentNullException(nameof(assemblyName));
@@ -136,15 +147,25 @@ namespace Bb.Builds
             {
                 lib = Sdk.GetReferences().Resolve(assemblyName);
                 if (!string.IsNullOrEmpty(lib))
-                    return AddAssemblyLocation(lib, assemblyName);
+                    AddAssemblyLocation(lib, assemblyName);
+
+                if (_referencesByAssembly.TryGetValue(assemblyName, out reference))
+                    return reference.ExecutableReference;
+
             }
 
             if (_next != null)
             {
+
                 lib = _next.ResolveAssemblyName(assemblyName, this.Sdk);
                 if (!string.IsNullOrEmpty(lib))
-                    return AddAssemblyLocation(lib, assemblyName);
+                    AddAssemblyLocation(lib, assemblyName);
+
+                if (_referencesByAssembly.TryGetValue(assemblyName, out reference))
+                    return reference.ExecutableReference;
+
             }
+
 
             return null;
 
@@ -156,7 +177,7 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="assemblies">The assemblies.</param>
         /// <exception cref="System.NullReferenceException">assemblies</exception>
-        public void AddRangeAssemblyFiles(params string[] assemblies)
+        public AssemblyReferences AddAssemblyFiles(params string[] assemblies)
         {
 
             if (assemblies == null)
@@ -164,6 +185,8 @@ namespace Bb.Builds
 
             foreach (var item in assemblies)
                 AddAssemblyLocation(item);
+
+            return this;
 
         }
 
@@ -173,13 +196,15 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="assemblyLocation">The assembly location.</param>
         /// <exception cref="System.IO.FileNotFoundException"></exception>
-        public PortableExecutableReference AddAssemblyLocation(string assemblyLocation, string assemblyName = null)
+        public AssemblyReferences AddAssemblyLocation(string assemblyLocation, string assemblyName = null)
         {
 
             if (!File.Exists(assemblyLocation))
                 throw new FileNotFoundException(assemblyLocation);
 
-            return Add(assemblyLocation, assemblyName);
+            Add(assemblyLocation, assemblyName);
+
+            return this;
 
         }
 
@@ -218,6 +243,23 @@ namespace Bb.Builds
                 instance.SelectLastest(location);
 
             return instance.ExecutableReference;
+
+        }
+
+
+        /// <summary>
+        /// Return the specified references.
+        /// </summary>
+        /// <param name="location">The key.</param>
+        /// <param name="reference">The reference.</param>
+        /// <exception cref="System.NullReferenceException">reference</exception>
+        public Reference SearchInRegistered(string assemblyName = null)
+        {
+
+            if (!_referencesByAssembly.TryGetValue(assemblyName, out var instance))
+                return instance;
+
+            return null;
 
         }
 
@@ -274,42 +316,6 @@ namespace Bb.Builds
         private IAssemblyReferenceResolver _next;
         private readonly Dictionary<string, Reference> _referencesByAssembly;
 
-
-    }
-
-    public class Reference
-    {
-
-        public Reference(string location, string assemblyName)
-        {
-            this.Location = location;
-            this.AssemblyName = assemblyName;
-
-            this.Version = Helper.ResolveVersion(location);
-
-        }
-
-        public string Location { get; private set; }
-
-        public string AssemblyName { get; private set; }
-        public Version Version { get; private set; }
-
-        public PortableExecutableReference ExecutableReference => _executableReference ?? (_executableReference = MetadataReference.CreateFromFile(Location));
-
-        private PortableExecutableReference _executableReference;
-
-        internal void SelectLastest(string location)
-        {
-
-            var newVersion = Helper.ResolveVersion(location);
-            if (newVersion > this.Version)
-            {
-                this.Location = location;
-                this.Version = Version;
-                _executableReference = null;
-            }
-
-        }
 
     }
 

@@ -45,7 +45,7 @@ namespace Bb.Builds
         public override PortableExecutableReference ResolveMissingAssembly(MetadataReference definition, AssemblyIdentity referenceIdentity)
         {
 
-            PortableExecutableReference result = _assemblies.ResolveAssemblyName(referenceIdentity.Name);
+            PortableExecutableReference result = _assemblies.AddResolveAssemblyName(referenceIdentity.Name);
 
             if (result == null)
             {
