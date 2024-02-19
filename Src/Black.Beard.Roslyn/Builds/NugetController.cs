@@ -69,14 +69,44 @@ namespace Bb.Builds
         }
 
 
+
         /// <summary>
         /// Add a reference to resolve in the build
         /// </summary>
-        /// <param name="nugetName"></param>
-        /// <param name="version"></param>
+        /// <param name="nugetName">nuget reference to add</param>
+        /// <param name="version">minimum version to add</param>
         public void AddReference(string nugetName, string version)
         {
-            _references.Add((nugetName, new Version(version)));
+            AddReference(nugetName, new Version(version));
+        }
+
+        /// <summary>
+        /// Add a reference to resolve in the build
+        /// </summary>
+        /// <param name="nugetName">nuget reference to add</param>
+        /// <param name="version">minimum version to add</param>
+        public void AddReference(string nugetName, Version version)
+        {
+
+            var items = _references.Where(c => c.Item1 == nugetName).ToList();
+
+            if (items.Any(c => c.Item2 == version))
+                return;
+
+            if (items.Any())
+            {
+                
+                var max = items.Max(c => c.Item2);
+                if (max > version)
+                    return;
+
+                foreach (var item in items)
+                    _references.Remove(item);
+
+            }
+
+            _references.Add((nugetName, version));
+
         }
 
 
@@ -111,7 +141,7 @@ namespace Bb.Builds
                         list = TryToResolve(item, framework);
 
                 if (list != null)   // Append references
-                    foreach (var c in list.OrderByDescending(c => c.Item4))
+                    foreach (var c in list.OrderBy(c => c.Item4))
                     {
                         references.AddAssemblyLocation(c.Item1, c.Item3);
                         break;

@@ -64,7 +64,8 @@ namespace Bb.Builds
         {
             if (_folders.TryGetValue(item.Item1.ToLower(), out FileNugetFolder folder))
                 foreach (var version in folder)
-                    yield return version;
+                    if (version.Version >= item.Item2)
+                        yield return version;
         }
 
 

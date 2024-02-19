@@ -101,7 +101,7 @@ namespace Bb.Roslyn.XTests
         {
 
             var dir = Path.Combine(Environment.CurrentDirectory, Path.GetRandomFileName());
-            var controller = new NugetController().AddFolder(dir, NugetController.NugetOrgHost);
+            var controller = new NugetController().AddFolder(dir, NugetController.HostNugetOrg);
 
             // new Version("1.0.48")
             var test = controller.TryToDownload("Black.Beard.Componentmodel", null);
