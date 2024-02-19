@@ -10,6 +10,9 @@ using Bb.Codings;
 using System.Reflection;
 using System.Linq;
 using Refs;
+using static Refs.System;
+using ICSharpCode.Decompiler.Metadata;
+using System.IO;
 
 namespace Bb.Compilers
 {
@@ -43,13 +46,44 @@ namespace Bb.Compilers
 
         #region Methods
 
+        /// <summary>
+        /// Add sources to the compiler
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <returns></returns>
+        public RoslynCompiler AddCodeSource(SourceCodes sources)
+        {
+
+            foreach (var item in sources.Documents)
+                AddCodeSource(item.Source, item.Filename);
+
+            return this;
+
+        }
+
+        /// <summary>
+        /// Add source document to the compiler
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public RoslynCompiler AddCodeSource(string source, string path = null)
         {
-            this._sources.Add(new FileCode() { Content = source, Filepath = path ?? string.Empty });
-            this._hash ^= source.CalculateCrc32();
+
+            this._sources.Add(new FileCode()
+            {
+                Filepath = path ?? string.Empty,
+                Content = source
+            });
+            hastHey = 0;
             return this;
         }
 
+        /// <summary>
+        /// Set the output path
+        /// </summary>
+        /// <param name="outputPah"></param>
+        /// <returns></returns>
         public RoslynCompiler SetOutput(string outputPah)
         {
             this._outputPah = outputPah;
@@ -71,13 +105,26 @@ namespace Bb.Compilers
         /// </summary>
         public CSUsing[] Usings { get; internal set; }
 
-
+        public uint Hash
+        {
+            get
+            {
+                if (hastHey == 0)
+                    foreach (var item in _sources.OrderBy(c => c.Filepath))
+                        hastHey ^= item.Content.CalculateCrc32();
+                return hastHey;
+            }
+        }
 
         public AssemblyResult Generate(string? assemblyName = null)
         {
 
-            var date = DateTime.Now;
-            this._assemblyName = assemblyName ?? $"assembly_{this._hash}_{date.Year}{date.Month}{date.Day}_{date.Hour}{date.Minute}{date.Second}{date.Millisecond}";
+            if (string.IsNullOrEmpty(assemblyName))
+            {
+                var h = this.Hash;
+                var date = DateTime.Now;
+                this._assemblyName = assemblyName ?? $"assembly_{h}_{date.Year.ToString().Substring(2)}{date.Month.ToString("D2")}{date.Day}_{date.Hour.ToString("D2")}{date.Minute.ToString("D2")}{date.Second.ToString("D2")}";
+            }
 
             AssemblyResult result = GetAssemblyResult();
             CSharpCompilation compilation = GetCsharpContext(result);
@@ -337,7 +384,9 @@ namespace Bb.Compilers
         private List<FileCode> _sources = new List<FileCode>();
         private string _assemblyName;
         private string _outputPah;
-        private uint _hash;
+        private uint hastHey = 0;
+
+
     }
 
 

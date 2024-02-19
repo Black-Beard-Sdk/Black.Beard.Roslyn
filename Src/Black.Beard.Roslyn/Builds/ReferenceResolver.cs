@@ -39,8 +39,6 @@ namespace Bb.Builds
         /// </summary>
         public override bool ResolveMissingAssemblies => true;
 
-        // System.Security.Permissions
-        // System.Threading.AccessControl
 
         public override PortableExecutableReference ResolveMissingAssembly(MetadataReference definition, AssemblyIdentity referenceIdentity)
         {

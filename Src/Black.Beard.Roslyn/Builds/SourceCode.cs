@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using static Refs.System;
 
 namespace Bb.Builds
 {
@@ -10,6 +11,23 @@ namespace Bb.Builds
     public class SourceCode
     {
 
+        #region creators
+
+        private SourceCode(FileInfo? file, string datas, string name)
+        {
+            this.File = file;
+            this.ReadedAt = DateTime.Now;
+            this.Name = name;
+            this.Source = datas;
+        }
+
+        /// <summary>
+        /// Create a new instance of <see cref="SourceCode"/>
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
         public static SourceCode GetFromFile(string filename, string name = null)
         {
 
@@ -29,6 +47,13 @@ namespace Bb.Builds
 
         }
 
+        /// <summary>
+        /// Create a new instance of <see cref="SourceCode"/>
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
         public static SourceCode GetFromFile(FileInfo file, string name = null)
         {
             if (string.IsNullOrEmpty(name))
@@ -43,29 +68,49 @@ namespace Bb.Builds
 
         }
 
+        /// <summary>
+        /// Create a new instance of <see cref="SourceCode"/>
+        /// </summary>
+        /// <param name="payload"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static SourceCode GetFromText(StringBuilder payload, string name = null)
         {
             return new SourceCode(null, payload.ToString(), name);
         }
 
+        /// <summary>
+        /// create a new instance of <see cref="SourceCode"/>
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="payload"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static SourceCode GetFromText(FileInfo file, string payload, string name = null)
         {
             return new SourceCode(file, payload, name);
         }
 
+        /// <summary>
+        /// create a new instance of <see cref="SourceCode"/>
+        /// </summary>
+        /// <param name="payload"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static SourceCode GetFromText(string payload, string name = null)
         {
             return new SourceCode(null, payload, name);
         }
 
-        private SourceCode(FileInfo? file, string datas, string name)
-        {
-            this.File = file;
-            this.ReadedAt = DateTime.Now;
-            this.Name = name;
-            this.Datas = datas;
-        }
+        #endregion creators
 
+
+        #region properties
+
+        /// <summary>
+        /// return true if the source is in memory
+        /// </summary>
+        public bool IsMemorySource => this.File == null;
 
         /// <summary>
         /// Gets the file that contains the source code.
@@ -97,10 +142,41 @@ namespace Bb.Builds
         /// <value>
         /// String text
         /// </value>
-        public string Datas { get; private set; }
+        public string Source { get; private set; }
 
         /// <summary>
-        /// Determines whether this file has updated.
+        /// Gets the empty source code.
+        /// </summary>
+        public static SourceCode Empty { get; private set; }
+
+        /// <summary>
+        /// Gets the filename of the file.
+        /// </summary>
+        public string Filename { get; private set; }
+
+        /// <summary>
+        /// Return true if the file was been deleted
+        /// </summary>
+        public bool IsDeleted => File != null && File.Exists;
+
+        /// <summary>
+        /// Return true if the file is a generated source
+        /// </summary>
+        public bool IsGeneratedSource
+        {
+            get
+            {
+                if (this.File != null)
+                    return this.File.Name.ToLower().EndsWith(".g.cs");
+                return false;
+            }
+        }
+            
+        #endregion properties
+
+
+        /// <summary>
+        /// Determines whether this file has been updated.
         /// </summary>
         /// <returns>
         ///   <c>true</c> if this instance has updated; otherwise, <c>false</c>.
@@ -109,9 +185,12 @@ namespace Bb.Builds
         {
 
             if (File != null && File.Exists)
+            {
+                File.Refresh();
                 return File.LastWriteTime > this.ReadedAt;
+            }
 
-            return false;
+            return true;
 
         }
 
@@ -122,61 +201,68 @@ namespace Bb.Builds
         {
             if (File != null && File.Exists)
             {
-                this.Datas = this.Name.LoadFromFile();
+                this.Source = this.Name.LoadFromFile();
                 this.ReadedAt = DateTime.Now;
             }
 
         }
 
-        public static SourceCode Empty { get; private set; }
+        /// <summary>
+        /// A hash code for the current object.
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            uint key = Name.CalculateCrc32();
+            key ^= Source.CalculateCrc32();
+            return (int)key;
+        }
 
-        public string Filename { get; private set; }
 
+        #region implicit conversion
 
+        /// <summary>
+        /// implicit conversion from StringBuilder to SourceCode
+        /// </summary>
+        /// <param name="sb"></param>
         public static implicit operator SourceCode(StringBuilder sb)
         {
             return SourceCode.GetFromText(sb);
         }
 
+
+        /// <summary>
+        /// implicit conversion from string to SourceCode
+        /// </summary>
+        /// <param name="sb"></param>
         public static implicit operator SourceCode(string sb)
         {
             return SourceCode.GetFromText(sb);
         }
 
+        /// <summary>
+        /// implicit conversion from FileInfo to SourceCode
+        /// </summary>
+        /// <param name="file"></param>
         public static implicit operator SourceCode(FileInfo file)
         {
             return SourceCode.GetFromFile(file);
         }
 
-        public bool IsGeneratedSource
-        {
-            get
-            {
-                if (this.File != null)
-                    return this.File.Name.ToLower().EndsWith(".g.cs");
-                return false;
-            }
-        }
+        #endregion implicit conversion
 
 
         //private static string Normalize(string payload)
         //{
-
         //    var length = payload.Length;
         //    StringBuilder sb = new StringBuilder(length);
-
         //    for (int i = 0; i < length; i++)
         //    {
-
         //        char c = payload[i];
-
         //        if ((int)c != 65279)
         //            sb.Append(c);
-
         //    }
-
         //    return sb.ToString();
-
         //}
 
 

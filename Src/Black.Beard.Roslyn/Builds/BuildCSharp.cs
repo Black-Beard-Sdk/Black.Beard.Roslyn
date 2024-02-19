@@ -31,7 +31,7 @@ namespace Bb.Builds
         public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
         {
 
-            _compiledAssemblies = new Dictionary<string, AssemblyResult>();
+            _compiledAssemblies = new Dictionary<int, AssemblyResult>();
             _suppress = new Dictionary<string, ReportDiagnostic>();
             
             this.Nugets = new NugetController();
@@ -392,7 +392,7 @@ namespace Bb.Builds
         public AssemblyResult Build(string assemblyName = null)
         {
 
-            var key = assemblyName ?? Sources.GetUniqueAssemblyName();
+            var key = Sources.GetHashCode();
 
             if (!_compiledAssemblies.TryGetValue(key, out AssemblyResult result))
             {
@@ -405,17 +405,14 @@ namespace Bb.Builds
                         References.Sdk = FrameworkVersion.CurrentVersion;
                 }
 
-
                 Nugets.Resolve(References);
 
                 RoslynCompiler compiler = CreateBuilder();
 
-                result = compiler.Generate(key);
+                result = compiler.Generate(assemblyName);
 
                 if (result.Success)
                     _compiledAssemblies.Add(key, result);
-
-             
 
             }
 
@@ -427,6 +424,7 @@ namespace Bb.Builds
         {
 
             References.Next(Nugets);
+
             var compiler = new RoslynCompiler(References)
             {
                 ConfigureCompilation = Configure,
@@ -437,13 +435,11 @@ namespace Bb.Builds
                 ResolveObjects = this.ResolveObjects,
                 Debug = this.Debug,
                 Usings = _usings.Values.ToArray(),
+            }
 
-            };
-
-            foreach (var item in Sources.Documents)
-                compiler.AddCodeSource(item.Datas, item.Filename);
-
-            compiler.SetOutput(OutputPath);
+            .AddCodeSource(Sources)
+            .SetOutput(OutputPath)            
+            ;
 
             return compiler;
 
@@ -474,10 +470,9 @@ namespace Bb.Builds
             return this;
         }
 
-        private readonly Dictionary<string, AssemblyResult> _compiledAssemblies;
+        private readonly Dictionary<int, AssemblyResult> _compiledAssemblies;
         private readonly Dictionary<string, ReportDiagnostic> _suppress;
         private Dictionary<string, CSUsing> _usings = new Dictionary<string, CSUsing>();
-
 
     }
 

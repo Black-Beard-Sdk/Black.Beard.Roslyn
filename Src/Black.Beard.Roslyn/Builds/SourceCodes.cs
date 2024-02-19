@@ -18,37 +18,45 @@ namespace Bb.Builds
         {
 
             if (!_sources.TryGetValue(filename, out SourceCode code))
-            {
-                code = SourceCode.GetFromFile(filename);
-                _sources.Add(filename, code);
-            }
+                _sources.Add(filename, SourceCode.GetFromFile(filename));
 
             return code;
 
         }
 
-        public string GetUniqueAssemblyName()
+        public IEnumerable<SourceCode> Documents => _sources.Values;
+
+        /// <summary>
+        /// Ensure all sources are uptodated
+        /// </summary>
+        public void EnsureUptodated()
+        {
+
+            foreach (var item in _sources)
+                if (item.Value.HasUpdated())
+                {
+                    if (item.Value.IsDeleted)
+                        _sources.Remove(item.Key);
+                    else
+                        item.Value.Reload();
+                }
+         
+        }
+
+        /// <summary>
+        /// A hash code for the current object.
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
         {
             uint key = 0;
             this.EnsureUptodated();
-            foreach (var item in _sources.Values)
+            foreach (var item in _sources.OrderBy(c => c.Key))
             {
-                key ^= item.Name.CalculateCrc32();
-                key ^= item.Datas.CalculateCrc32();
+                key ^= item.Value.Name.CalculateCrc32();
+                key ^= item.Value.Source.CalculateCrc32();
             }
-
-            return "assembly_" + key.ToString();
-
-        }
-
-        public IEnumerable<SourceCode> Documents => _sources.Values;
-
-        public void EnsureUptodated()
-        {
-            foreach (var item in _sources)
-            {
-                item.Value.HasUpdated();
-            }
+            return (int)key;
         }
 
         public Func<SourceCode, bool> Filter { get; internal set; }
