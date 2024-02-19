@@ -25,7 +25,7 @@ namespace Bb.Compilers
         public RoslynCompiler(AssemblyReferences assemblies, Bb.Analysis.Diagnostics diagnostics)
         {
 
-            this._diagnostics = diagnostics;
+            this._diagnostics = diagnostics ?? new Analysis.Diagnostics();
             this._assemblies = assemblies;
             this.LanguageVersion = assemblies.Sdk.LanguageVersion;
 
