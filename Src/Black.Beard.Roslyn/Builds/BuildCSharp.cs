@@ -184,6 +184,8 @@ namespace Bb.Builds
         {
             this.References.Sdk = null;
             this.Framework.Reset();
+            foreach (var item in this._children.Children)
+                item.Value.ResetSdk();
             return this;
         }
 
