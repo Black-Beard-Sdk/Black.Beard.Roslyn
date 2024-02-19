@@ -35,7 +35,7 @@ namespace Black.Beard.Roslyn.BuildProjects
         public static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug = false, Action<CSharpCompilationOptions> configureCompilation = null)
         {
 
-            
+
             file.Refresh();
             if (!file.Exists)
                 throw new FileNotFoundException(file.FullName);
@@ -44,9 +44,8 @@ namespace Black.Beard.Roslyn.BuildProjects
 
             BuildCSharp builder = new BuildCSharp(configureCompilation)
             {
-
                 Debug = debug,
-
+                AssemblyName = Path.GetFileNameWithoutExtension(file.Name),
             }
             .LoadSources(file)
             .Visit(docProject.DocumentElement, file.Directory);
@@ -97,10 +96,6 @@ namespace Black.Beard.Roslyn.BuildProjects
                     switch (e2.Name.ToLower())
                     {
 
-                        case "projectreference":
-
-                            break;
-
                         case "none":
                             break;
 
@@ -127,6 +122,18 @@ namespace Black.Beard.Roslyn.BuildProjects
                             var nugetName = e2.Attributes["Include"].Value.ToString();
                             var version = e2.Attributes["Version"].Value.ToString();
                             builder.Nugets.AddReference(nugetName, version);
+                            break;
+
+                        case "projectreference":
+                            var projectPath = e2.Attributes["Include"].Value.ToString();
+                            var path = new FileInfo(Path.Combine(dir.FullName, projectPath));
+                            if (path.Exists)
+                                builder.AppendProject(path);
+                            else
+                            {
+
+                            }
+
                             break;
 
                         default:

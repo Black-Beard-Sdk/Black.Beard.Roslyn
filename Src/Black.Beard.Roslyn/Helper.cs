@@ -1,9 +1,11 @@
 ﻿using Bb.Http;
+using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static Refs.System.Private;
@@ -14,6 +16,27 @@ namespace Bb
 
     internal static class Helper
     {
+
+
+        /// <summary>
+        /// resolve version
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static Version ResolveVersion(this string text)
+        {
+
+            Match m = Regex.Match(text, @"(?<version>\d+\.\d+(\.\d+((\.|-)\d+)?)?)", RegexOptions.IgnoreCase);
+            var versionValue = m.Groups["version"].Value;
+            if (!string.IsNullOrEmpty(versionValue))
+                versionValue = versionValue.Trim(Path.DirectorySeparatorChar);
+            if (Version.TryParse(versionValue.Replace("-", "."), out Version version))
+                return version;
+
+            return null;
+
+        }
+
 
         public static (string,  Version) ResolveIdAndVersion(this string file, string tempPath)
         {
@@ -67,8 +90,11 @@ namespace Bb
             return targetFolder;
         }
 
-        public static string Download(this Url url, DirectoryInfo targetFolder)
+        public static string Download(this Url url, DirectoryInfo targetFolder = null)
         {
+
+            if (targetFolder == null)
+                targetFolder = GetTempDir();
 
             var w = url.DownloadFileAsync(targetFolder.FullName);
             w.Wait();

@@ -29,7 +29,8 @@ namespace Bb.Builds
             foreach (var item in this._path.GetDirectories())
             {
                 var l = new FileNugetVersion(item) { Parent = this };
-                _versions.Add(l.Version.ToString(), l);
+                if ( !_versions.ContainsKey(l.Version.ToString()))
+                    _versions.Add(l.Version.ToString(), l);
             }
 
             return this;
@@ -76,6 +77,11 @@ namespace Bb.Builds
             
             return _versions.Values.GetEnumerator();
 
+        }
+
+        internal void Refresh()
+        {
+            _initializd = false;
         }
 
         public string Name { get; }

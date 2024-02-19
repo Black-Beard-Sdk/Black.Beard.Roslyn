@@ -19,9 +19,8 @@ namespace Bb.Builds
         public FileNugetVersion(DirectoryInfo dir)
         {
             _list = new List<(string, string, string, Version)>();
-            
-            this._path = new DirectoryInfo(Path.Combine(dir.FullName, "lib"));
-            this.Version = new Version(dir.Name);
+            this._path = dir;
+            this.Version = Helper.ResolveVersion(dir.Name);
         }
 
 
@@ -38,38 +37,24 @@ namespace Bb.Builds
 
         internal FileNugetVersion Initialize()
         {
+
             _initialized = true;
             foreach (var file in this._path.GetFiles("*.dll", SearchOption.AllDirectories))
-            {
-
-                //var sdkcanditats = file.FullName
-                //   .Substring(this._path.FullName.Length)
-                //   .Trim(Path.DirectorySeparatorChar)
-                //   .Split(Path.DirectorySeparatorChar);
-
-                //var sdk = sdkcanditats
-                //    .Where(c => _frameworkVersionList.Contains(c))
-                //    .FirstOrDefault();
-                //    ;
-
-                //if (sdk == null)
-                //{
-
-                //}
-                
                 try
                 {
-                    var lib = new PEFile(file.FullName);
-                    var n = lib.Name;
-                    _list.Add((file.FullName, file.Directory.Name, n, lib.Version));
+                    using (var lib = new PEFile(file.FullName))
+                    {
+                        var n = lib.Name;
+                        _list.Add((file.FullName, file.Directory.Name, n, lib.Version));
+                    }
                 }
                 catch (Exception)
                 {
 
                 }
-            }
 
             return this;
+
         }
 
         public Version Version { get; }

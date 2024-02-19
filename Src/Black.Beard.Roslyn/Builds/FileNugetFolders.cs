@@ -49,7 +49,6 @@ namespace Bb.Builds
 
         }
 
-
         internal FileNugetVersion Resolve((string, Version) item)
         {
 
@@ -99,8 +98,11 @@ namespace Bb.Builds
                 {
 
                     var l = new FileNugetFolder(targetfolder.Parent);
-                    if (!_folders.TryGetValue(l.Name, out var f))
+                    if (!_folders.TryGetValue(l.Name.ToLower(), out var f))
                         _folders.Add(l.Name.ToLower(), l);
+                    else                    
+                        f.Refresh();
+                    
 
                     return true;
 
@@ -115,6 +117,7 @@ namespace Bb.Builds
         public DirectoryInfo Path { get; }
 
         public string[] Hosts => _hosts.ToArray();
+
 
 
         private readonly List<string> _hosts;

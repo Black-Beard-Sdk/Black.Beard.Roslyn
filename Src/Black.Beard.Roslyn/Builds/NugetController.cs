@@ -136,11 +136,11 @@ namespace Bb.Builds
 
                 var list = TryToResolve(item, framework);
 
-                if (list == null)   // If missing try to download
+                if (list.Count == 0)   // If missing try to download
                     if (TryToDownload(item.Item1, item.Item2))
                         list = TryToResolve(item, framework);
 
-                if (list != null)   // Append references
+                if (list.Count > 0)   // Append references
                     foreach (var c in list.OrderBy(c => c.Item4))
                     {
                         references.AddAssemblyLocation(c.Item1, c.Item3);
@@ -171,11 +171,16 @@ namespace Bb.Builds
         {
 
             var lst = new List<(string, string, string, Version)>();
-         
+
             foreach (var nugetFolder in _folders)
                 foreach (var version in nugetFolder.ResolveAll(item))
                 {
                     var libs = version.GetLibs();
+                    if (libs.Count == 0)
+                    { 
+                        continue;
+                    }
+
                     var lst2 = libs.Where(c => string.IsNullOrEmpty(framework) || c.Item2 == framework).ToList();
                     lst.AddRange(lst2);
                 }

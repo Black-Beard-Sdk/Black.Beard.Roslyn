@@ -285,21 +285,7 @@ namespace Bb.Builds
             this.Location = location;
             this.AssemblyName = assemblyName;
 
-            this.Version = ResolveVersion(location);
-
-        }
-
-        private Version ResolveVersion(string location)
-        {
-
-            Match m = Regex.Match(location, @"(?<version>\d+\.\d+.\d?.\d?)", RegexOptions.IgnoreCase);
-            var versionValue = m.Groups["version"].Value;
-            if (!string.IsNullOrEmpty(versionValue))
-                versionValue = versionValue.Trim(Path.DirectorySeparatorChar);
-            if (Version.TryParse(versionValue, out Version version))
-                return version;
-
-            return null;
+            this.Version = Helper.ResolveVersion(location);
 
         }
 
@@ -315,7 +301,7 @@ namespace Bb.Builds
         internal void SelectLastest(string location)
         {
 
-            var newVersion = ResolveVersion(location);
+            var newVersion = Helper.ResolveVersion(location);
             if (newVersion > this.Version)
             {
                 this.Location = location;
