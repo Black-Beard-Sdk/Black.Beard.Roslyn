@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿
 
 namespace Bb.Builds
 {
 
+
     public class NugetController : IAssemblyReferenceResolver
     {
-
-        public static string NugetOrgHost = "www.nuget.org";
 
 
         /// <summary>
@@ -25,8 +23,19 @@ namespace Bb.Builds
         /// <returns></returns>
         public NugetController AddDefaultWindowsFolder()
         {
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
-            AddFolder(path, NugetOrgHost);
+            return AddFolder(DefaultWindowsLocalFolder);
+        }
+
+
+        /// <summary>
+        /// Add the default repository to resolve nuget for windows
+        /// </summary>
+        /// <param name="path">path to store the package downloaded</param>
+        /// <param name="host">host where search package on line</param>
+        /// <returns></returns>
+        public NugetController AddFolder(string path)
+        {
+            AddFolder(DefaultWindowsLocalFolder, HostNugetOrg);
             return this;
         }
 
@@ -35,28 +44,29 @@ namespace Bb.Builds
         /// Add the default repository to resolve nuget for windows
         /// </summary>
         /// <param name="path">path to store the package downloaded</param>
-        /// <param name="host">host where search pacha obline</param>
+        /// <param name="host">host where search package on line</param>
         /// <returns></returns>
-        public NugetController AddFolder(string path, string host)
+        public NugetController AddFolder(string path, params string[] hosts)
         {
-            var l = new FileNugetFolders(path, host);
-            _folders.Add(l.Initialize());
+
+            if (!_folders.Any(c => c.Path.FullName == path))
+                _folders.Add(new FileNugetFolders(path, hosts).Initialize());
+
             return this;
-        }
 
+        }     
+        
 
-        /// <summary>
-        /// Add a new repository to resolve nuget
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public NugetController AddFolder(string path)
+        public NugetController CopyFrom(NugetController source)
         {
-            var l = new FileNugetFolders(path, null);
-            _folders.Add(l.Initialize());
-            return this;
-        }
 
+            foreach (var item in source._folders)
+                if (!_folders.Any(c => c.Path.FullName == item.Path.FullName))
+                    _folders.Add(item);
+
+            return this;
+
+        }
 
 
         /// <summary>
@@ -131,18 +141,7 @@ namespace Bb.Builds
         {
 
             var lst = new List<(string, string, string, Version)>();
-
-            //foreach (var nugetFolder in _folders)
-            //{
-            //    var version = nugetFolder.Resolve(item);
-            //    if (version != null)
-            //    {
-            //        var libs = version.GetLibs();
-            //        lst.AddRange(libs.Where(c => string.IsNullOrEmpty(framework) || c.Item2 == framework).ToList());
-            //    }
-            //}
-
-            //if (lst.Count == 0)            
+         
             foreach (var nugetFolder in _folders)
                 foreach (var version in nugetFolder.ResolveAll(item))
                 {
@@ -163,6 +162,11 @@ namespace Bb.Builds
             else
                 _next.Next(next);
         }
+
+
+        public static string HostNugetOrg = "https://www.nuget.org/api/v2/package";
+        public static string DefaultWindowsLocalFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
+
 
         private IAssemblyReferenceResolver _next;
         private List<(string, Version)> _references = new List<(string, Version)>();

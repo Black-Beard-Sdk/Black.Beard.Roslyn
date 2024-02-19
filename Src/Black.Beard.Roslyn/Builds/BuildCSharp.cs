@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Bb.Compilers.CommentHelper;
@@ -30,34 +31,41 @@ namespace Bb.Builds
         public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
         {
 
-            this.Nugets = new NugetController().AddDefaultWindowsFolder();
+            _compiledAssemblies = new Dictionary<string, AssemblyResult>();
+            _suppress = new Dictionary<string, ReportDiagnostic>();
+            
+            this.Nugets = new NugetController();
             Framework = new Framework();
-
             ConfigureCompilations = new List<Action<CSharpCompilationOptions>>(2);
+            this.References = new AssemblyReferences();
+            Sources = new SourceCodes();
+            OutputPath = Path.Combine(Path.GetTempPath(), "_builds");
 
+
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                this.Nugets.AddDefaultWindowsFolder();
+            
             if (configureCompilation != null)
                 this.ConfigureCompilations.Add(configureCompilation);
 
-            this.References = new AssemblyReferences();
-            Sources = new SourceCodes();
-
-            _compiledAssemblies = new Dictionary<string, AssemblyResult>();
-
-            OutputPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "_builds");
-
-            if (!System.IO.Directory.Exists(OutputPath))
-                System.IO.Directory.CreateDirectory(OutputPath);
-
-            this._suppress = new Dictionary<string, ReportDiagnostic>();
-
-            //ResolveAssembliesInCode = false;
+            if (!Directory.Exists(OutputPath))
+                Directory.CreateDirectory(OutputPath);
 
         }
 
+
+        /// <summary>
+        /// Load the sources from the project file.
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
         public BuildCSharp AddSource(params FileInfo[] paths)
         {
+            
             foreach (var file in paths)
                 this.Sources.Add(file.FullName);
+
             return this;
 
         }
@@ -75,6 +83,7 @@ namespace Bb.Builds
             return this;
         }
 
+
         /// <summary>
         /// Gets or sets the output path of the build.
         /// </summary>
@@ -82,6 +91,7 @@ namespace Bb.Builds
         /// The output path.
         /// </value>
         public string OutputPath { get; set; }
+
 
         /// <summary>
         /// Gets the file name's list of sources code.
@@ -137,7 +147,11 @@ namespace Bb.Builds
         /// </value>
         public AssemblyReferences References { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public NugetController Nugets { get; }
+
 
         public Framework Framework { get; internal set; }
 

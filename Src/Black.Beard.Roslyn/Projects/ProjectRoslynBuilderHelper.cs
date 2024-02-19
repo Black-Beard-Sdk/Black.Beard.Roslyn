@@ -1,9 +1,7 @@
 ﻿using Bb;
 using Bb.Builds;
-using System.IO;
-using System.Linq;
-using System.Xml;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Xml;
 
 namespace Black.Beard.Roslyn.BuildProjects
 {
@@ -13,33 +11,51 @@ namespace Black.Beard.Roslyn.BuildProjects
     public static class ProjectRoslynBuilderHelper
     {
 
-        public static BuildCSharp CreateCsharpBuild(string path, bool debug = false)
+        /// <summary>
+        /// Create a new instance of <see cref="BuildCSharp"/> from project file 
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="debug"></param>
+        /// <param name="configureCompilation"></param>
+        /// <returns></returns>
+        public static BuildCSharp CreateCsharpBuild(this string path, bool debug = false, Action<CSharpCompilationOptions> configureCompilation = null)
+        {
+            var file = new FileInfo(path);
+            return CreateCsharpBuild(file, debug, configureCompilation);
+        }
+
+        /// <summary>
+        /// Create a new instance of <see cref="BuildCSharp"/> from project file
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="debug"></param>
+        /// <param name="configureCompilation"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
+        public static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug = false, Action<CSharpCompilationOptions> configureCompilation = null)
         {
 
-            var file = new FileInfo(path);
+            
             file.Refresh();
-
             if (!file.Exists)
-                throw new FileNotFoundException(path);
+                throw new FileNotFoundException(file.FullName);
 
-            BuildCSharp builder = new BuildCSharp()
+            var docProject = LoadXml(file.FullName);
+
+            BuildCSharp builder = new BuildCSharp(configureCompilation)
             {
-                //ResolveAssembliesInCode = true,
+
                 Debug = debug,
-            };
 
-            LoadSources(file, builder);
-
-            XmlDocument docProject = LoadXml(path);
-            Visit(builder, docProject.DocumentElement, file.Directory);
+            }
+            .LoadSources(file)
+            .Visit(docProject.DocumentElement, file.Directory);
 
             return builder;
 
         }
 
-
-
-        private static void Visit(BuildCSharp builder, XmlElement e, DirectoryInfo dir)
+        private static BuildCSharp Visit(this BuildCSharp builder, XmlElement e, DirectoryInfo dir)
         {
 
             switch (e.Name.ToLower())
@@ -69,6 +85,8 @@ namespace Black.Beard.Roslyn.BuildProjects
 
             }
 
+            return builder;
+
         }
 
         private static void VisitItemGroup(BuildCSharp builder, XmlElement e, DirectoryInfo dir)
@@ -96,13 +114,13 @@ namespace Black.Beard.Roslyn.BuildProjects
                                     var name = e3.Name.ToLower();
                                     var value = e3.InnerText;
                                     if (name == "alias")
-                                        c.Alias = value;                                    
+                                        c.Alias = value;
                                     else if (name == "static")
-                                        c.IsStatic = value.ToLower().Trim() ==  "true";
+                                        c.IsStatic = value.ToLower().Trim() == "true";
                                 });
                             }
                             else
-                                builder.Using(us);                            
+                                builder.Using(us);
                             break;
 
                         case "packagereference":
@@ -162,7 +180,7 @@ namespace Black.Beard.Roslyn.BuildProjects
 
         }
 
-        private static void LoadSources(FileInfo fileProject, BuildCSharp builder)
+        private static BuildCSharp LoadSources(this BuildCSharp builder, FileInfo fileProject)
         {
             fileProject.Directory.Refresh();
             var p = Path.Combine(fileProject.Directory.FullName, "obj");
@@ -170,6 +188,9 @@ namespace Black.Beard.Roslyn.BuildProjects
             foreach (var item in files)
                 if (!item.FullName.StartsWith(p))
                     builder.AddSource(item);
+
+            return builder;
+
         }
 
         private static XmlDocument LoadXml(string path)

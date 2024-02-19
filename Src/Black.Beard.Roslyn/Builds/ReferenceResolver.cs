@@ -1,6 +1,4 @@
-﻿using Bb.ComponentModel;
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.DependencyModel;
+﻿using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 
 namespace Bb.Builds

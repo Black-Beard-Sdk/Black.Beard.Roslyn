@@ -64,19 +64,21 @@ namespace Bb.Roslyn.XTests
         public void TestProject()
         {
 
+
             var projects = _directoryProject.GetFiles("*.csproj", SearchOption.AllDirectories);
+
 
             foreach (var item in projects)
             {
 
-                var builder = ProjectRoslynBuilderHelper.CreateCsharpBuild(item.FullName, true)
-                                                        .ResetSdk();
+                var builder = item.CreateCsharpBuild(true)
+                                  .ResetSdk()
+                                  ;
 
                 var result = builder.Build();
 
                 if (result.Success)
                 {
-
 
                     var assembly = result.LoadAssembly();
                     var types = assembly.GetExportedTypes();

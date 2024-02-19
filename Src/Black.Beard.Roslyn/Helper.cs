@@ -92,7 +92,7 @@ namespace Bb
 
         }
 
-        public static Url Url(this System.Uri uri, params string[] segments)
+        public static Url Url(this string uri, params string[] segments)
         {
 
             var u = new Url(uri);

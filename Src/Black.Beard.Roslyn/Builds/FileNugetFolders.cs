@@ -7,21 +7,24 @@ namespace Bb.Builds
     public class FileNugetFolders
     {
 
+
         /// <summary>
         /// Create a new instance of <see cref="FileNugetFolders"/>
         /// </summary>
         /// <param name="path"></param>
         /// <param name="host"></param>
-        public FileNugetFolders(string path, string host)
+        public FileNugetFolders(string path, params string[] hosts)
         {
 
-            this._path = new DirectoryInfo(path);
+            this.Path = new DirectoryInfo(path);
 
-            if (!_path.Exists)
-                _path.Create();
+            if (!Path.Exists)
+                Path.Create();
 
-            if (!string.IsNullOrEmpty(host))
-                this._host = "https://" + host;
+            if (hosts != null && hosts.Length > 0)
+                this._hosts = new List<string>(hosts);
+            else
+                this._hosts = new List<string>(0);
 
         }
 
@@ -29,13 +32,13 @@ namespace Bb.Builds
         /// <summary>
         /// return true if the resolver can used for download nuget
         /// </summary>
-        public bool WithResolver => !string.IsNullOrEmpty(_host);
+        public bool WithResolver => Hosts.Length > 0;
 
 
         internal FileNugetFolders Initialize()
         {
 
-            foreach (var item in this._path.GetDirectories())
+            foreach (var item in this.Path.GetDirectories())
             {
                 var l = new FileNugetFolder(item);
                 if (!_folders.TryGetValue(l.Name, out var f))
@@ -73,29 +76,34 @@ namespace Bb.Builds
         public bool TryToDownload(string name, Version? version = null)
         {
 
-            // Url
-            var uri = new Uri(_host).Url("api", "v2", "package", name, version?.ToString());
-
-            // target path
-            var tempPath = Helper.GetTempDir();
-
-            // download
-            var file = uri.Download(tempPath);
-
-
-            (name, version) = file.ResolveIdAndVersion(Path.Combine(tempPath.FullName, "unzip"));
-
-
-            // unzipping
-            var targetfolder = file.Unzip(Path.Combine(_path.FullName, name, version.ToString()));
-
-            if (targetfolder.Exists)
+            foreach (var host in Hosts)
             {
-                var l = new FileNugetFolder(targetfolder.Parent);
-                if (!_folders.TryGetValue(l.Name, out var f))
-                    _folders.Add(l.Name.ToLower(), l);
 
-                return true;
+                // Url
+                var uri = host.Url(name, version?.ToString());
+
+                // target path
+                var tempPath = Helper.GetTempDir();
+
+                // download
+                var file = uri.Download(tempPath);
+
+                // resolve id & version
+                (name, version) = file.ResolveIdAndVersion(System.IO.Path.Combine(tempPath.FullName, "unzip"));
+
+                // unzipping
+                var targetfolder = file.Unzip(System.IO.Path.Combine(Path.FullName, name, version.ToString()));
+
+                if (targetfolder.Exists)
+                {
+
+                    var l = new FileNugetFolder(targetfolder.Parent);
+                    if (!_folders.TryGetValue(l.Name, out var f))
+                        _folders.Add(l.Name.ToLower(), l);
+
+                    return true;
+
+                }
 
             }
 
@@ -103,17 +111,14 @@ namespace Bb.Builds
 
         }
 
+        public DirectoryInfo Path { get; }
 
-        private readonly DirectoryInfo _path;
-        private readonly string _host;
+        public string[] Hosts => _hosts.ToArray();
+
+
+        private readonly List<string> _hosts;
+
         private Dictionary<string, FileNugetFolder> _folders = new Dictionary<string, FileNugetFolder>();
-
-        /*
-         * {host} : www.nuget.org
-         * {package} : Black.Beard.Analysis
-         * {version}
-         https://{host}/api/v2/package/{package}/{version}
-        */
 
     }
 

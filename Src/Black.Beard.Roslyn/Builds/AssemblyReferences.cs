@@ -1,15 +1,6 @@
-﻿using Bb.Analysis;
-using Bb.ComponentModel;
-using Microsoft.CodeAnalysis;
-using System;
+﻿using Microsoft.CodeAnalysis;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using Microsoft.Extensions.DependencyModel;
-using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Specialized;
 using Refs;
 using ICSharpCode.Decompiler.Metadata;
 using System.Text.RegularExpressions;
