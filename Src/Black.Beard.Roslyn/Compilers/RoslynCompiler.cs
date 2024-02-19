@@ -22,9 +22,10 @@ namespace Bb.Compilers
     public class RoslynCompiler
     {
 
-        public RoslynCompiler(AssemblyReferences assemblies)
+        public RoslynCompiler(AssemblyReferences assemblies, Bb.Analysis.Diagnostics diagnostics)
         {
 
+            this._diagnostics = diagnostics;
             this._assemblies = assemblies;
             this.LanguageVersion = assemblies.Sdk.LanguageVersion;
 
@@ -32,7 +33,7 @@ namespace Bb.Compilers
             assemblies.ResolveFilename(Refs.mscorlib.AssemblyFile, Refs.mscorlib.AssemblyName);
             assemblies.ResolveFilename(Refs.System.Runtime.AssemblyFile, Refs.System.Runtime.AssemblyName);
 
-            _resolver = new ReferenceResolver(assemblies);
+            _resolver = new ReferenceResolver(assemblies, diagnostics);
 
         }
 
@@ -92,8 +93,6 @@ namespace Bb.Compilers
 
         public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
 
-        private readonly AssemblyReferences _assemblies;
-
         public LanguageVersion LanguageVersion { get; set; }
 
         public bool ResolveObjects { get; set; }
@@ -125,6 +124,8 @@ namespace Bb.Compilers
                 var date = DateTime.Now;
                 this._assemblyName = assemblyName ?? $"assembly_{h}_{date.Year.ToString().Substring(2)}{date.Month.ToString("D2")}{date.Day}_{date.Hour.ToString("D2")}{date.Minute.ToString("D2")}{date.Second.ToString("D2")}";
             }
+            else
+                _assemblyName = assemblyName;
 
             AssemblyResult result = GetAssemblyResult();
             CSharpCompilation compilation = GetCsharpContext(result);
@@ -148,6 +149,8 @@ namespace Bb.Compilers
 
                 if (System.Diagnostics.Debugger.IsAttached)
                     System.Diagnostics.Debugger.Break();
+
+                _diagnostics.AddError("Compilation", ex.Message);
 
                 Trace.WriteLine(new { Message = $"Compilation of {result.AssemblyName} return : ", Exception = ex });
 
@@ -247,7 +250,7 @@ namespace Bb.Compilers
             if (!Directory.Exists(_outputPah))
                 Directory.CreateDirectory(_outputPah);
 
-            var result = new AssemblyResult()
+            var result = new AssemblyResult(_diagnostics)
             {
                 AssemblyName = _assemblyName,
                 AssemblyFile = Path.Combine(_outputPah, $"{_assemblyName}.dll"),
@@ -380,6 +383,8 @@ namespace Bb.Compilers
 
         #endregion Methods
 
+        private readonly Bb.Analysis.Diagnostics _diagnostics;
+        private readonly AssemblyReferences _assemblies;
         private readonly ReferenceResolver _resolver;
         private List<FileCode> _sources = new List<FileCode>();
         private string _assemblyName;

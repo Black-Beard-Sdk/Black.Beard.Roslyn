@@ -34,6 +34,7 @@ namespace Bb.Builds
         public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
         {
 
+            _diagnostics = new Diagnostics();
             _compiledAssemblies = new Dictionary<int, AssemblyResult>();
             _suppress = new Dictionary<string, ReportDiagnostic>();
 
@@ -320,7 +321,7 @@ namespace Bb.Builds
             return this;
         }
 
-        public List<Action<CSharpCompilationOptions>> ConfigureCompilations { get; private set; }
+        public List<Action<CSharpCompilationOptions>> ConfigureCompilations { get; internal set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [resolve objects].
@@ -372,12 +373,12 @@ namespace Bb.Builds
         }
 
         /// <summary>
-        /// Sets the diagnostic.
+        /// suppress diagnostic items.
         /// </summary>
         /// <param name="reportMode">The report mode.</param>
         /// <param name="ids">The ids.</param>
         /// <returns></returns>
-        public BuildCSharp SetDiagnostic(ReportDiagnostic reportMode, params string[] ids)
+        public BuildCSharp SuppressDiagnostic(ReportDiagnostic reportMode, params string[] ids)
         {
 
             foreach (var idKey in ids)
@@ -405,7 +406,7 @@ namespace Bb.Builds
             try
             {
 
-                PreBuild();
+                BuildDependencies();
 
                 var key = Sources.GetHashCode();
 
@@ -422,7 +423,19 @@ namespace Bb.Builds
                             References.Sdk = FrameworkVersion.CurrentVersion;
                     }
 
-                    Nugets.Resolve(References);
+                    foreach (var item in _dependencies)
+                    {
+                        if (item.LastBuild == null || !item.LastBuild.Success)
+                        {
+                            _diagnostics.AddError(item.AssemblyName, $"Dependency {item.AssemblyName} not builded");
+                            return null;
+                        }
+                        else
+                            References.AddAssemblyLocation(item.LastBuild.AssemblyFile, item.LastBuild.AssemblyName);
+                    }
+
+
+                    Nugets.Resolve(References, this._diagnostics);
 
                     RoslynCompiler compiler = CreateBuilder();
 
@@ -447,25 +460,52 @@ namespace Bb.Builds
 
         }
 
-        private void PreBuild()
+        private void BuildDependencies()
         {
 
             if (_children.Children.Any())
+            {
                 foreach (var item in _children.Children)
-                {
-                    var build = item.Value;
-                    if (!build._inBuild && (build.LastBuild == null || !build.LastBuild.Success))
+                    if (item.Value.CanBeBuilded())
                     {
 
-                        foreach (var subBuild in _dependencies)
-                            if (!subBuild._inBuild && subBuild.LastBuild == null)
+                        var build = item.Value;
+
+                        foreach (var subBuild in build._dependencies)
+                            if (subBuild.CanBeBuilded())
                                 subBuild.Build();
 
-                        if (!_dependencies.Any(c => c._inBuild) && !_dependencies.Any(c => c.LastBuild != null))
+                        if (build.CanBeBuilded())
                             build.Build();
 
+
                     }
+            }
+
+        }
+
+
+        public bool CanBeBuilded()
+        {
+
+            if (this.LastBuild != null && this.LastBuild.Success)
+                return false;
+
+            if (this._inBuild)
+                return false;
+
+            if (_dependencies.Count == 0)
+                return true;
+
+            bool result = true;
+            foreach (var item in _dependencies)
+                if (item.LastBuild == null || !item.LastBuild.Success)
+                {
+                    result = false;
+                    break;
                 }
+
+            return result;
 
         }
 
@@ -474,7 +514,7 @@ namespace Bb.Builds
 
             References.Next(Nugets);
 
-            var compiler = new RoslynCompiler(References)
+            var compiler = new RoslynCompiler(References, _diagnostics)
             {
                 ConfigureCompilation = Configure,
                 DocumentationMode = this.DocumentationMode,
@@ -521,26 +561,17 @@ namespace Bb.Builds
 
         #region subBuild
 
-        internal BuildCSharp SetConfigureCompilation(List<Action<CSharpCompilationOptions>> configureCompilations)
-        {
-            this.ConfigureCompilations = configureCompilations;
-            return this;
-        }
-
-
-        internal BuildCSharp SetChildren(BuildList children)
-        {
-            _children = children;
-            return this;
-        }
-
-
         internal BuildCSharp SetCompiledAssemblies(Dictionary<int, AssemblyResult> compiledAssemblies)
         {
             _compiledAssemblies = compiledAssemblies;
             return this;
         }
 
+        internal BuildCSharp SetDiagnostics(Diagnostics diagnostics)
+        {
+            _diagnostics = diagnostics;
+            return this;
+        }
 
         internal void AppendProject(FileInfo path)
         {
@@ -548,13 +579,16 @@ namespace Bb.Builds
             if (!_children.Children.TryGetValue(path.FullName, out BuildCSharp builder))
             {
 
-                builder = path.CreateCsharpBuild(this.Debug)
+                builder = path.CreateCsharpBuild(this.Debug, this.ConfigureCompilations, _children)
                               .SetCompiledAssemblies(this._compiledAssemblies)
-                              .SetConfigureCompilation(this.ConfigureCompilations)
-                              .SetChildren(this._children)
+                              .SetDiagnostics(this._diagnostics)
                             ;
 
                 _children.Children.Add(path.FullName, builder);
+
+                var docProject = ProjectRoslynBuilderHelper.LoadXml(path.FullName);
+                builder.LoadSources(path)
+                       .Visit(docProject.DocumentElement, path.Directory);
 
             }
 
@@ -571,7 +605,8 @@ namespace Bb.Builds
 
 
         private List<BuildCSharp> _dependencies = new List<BuildCSharp>();
-        private BuildList _children = new BuildList();
+        internal BuildList _children = new BuildList();
+        private Diagnostics _diagnostics;
         private Dictionary<int, AssemblyResult> _compiledAssemblies;
         private readonly Dictionary<string, ReportDiagnostic> _suppress;
         private Dictionary<string, CSUsing> _usings = new Dictionary<string, CSUsing>();

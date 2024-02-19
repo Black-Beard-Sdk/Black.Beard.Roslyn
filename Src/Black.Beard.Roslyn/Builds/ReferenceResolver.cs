@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Bb.Analysis;
+using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 
 namespace Bb.Builds
@@ -10,9 +11,10 @@ namespace Bb.Builds
         /// Create a new instance of <see cref="ReferenceResolver"/>
         /// </summary>
         /// <param name="assemblies"></param>
-        public ReferenceResolver(AssemblyReferences assemblies)
+        public ReferenceResolver(AssemblyReferences assemblies, Bb.Analysis.Diagnostics diagnostics)
         {
             this._assemblies = assemblies;
+            this._diagnostics = diagnostics;
         }
 
         /// <summary>
@@ -48,6 +50,8 @@ namespace Bb.Builds
             if (result == null)
             {
 
+                _diagnostics.AddWarning(referenceIdentity.Name, $"assembly {referenceIdentity.Name} not resolved");
+
                 //var assembly = TypeDiscovery.Instance.GetAssemblies().FirstOrDefault(c => c.GetName().Name == referenceIdentity.Name);
                 //if (assembly != null)
                 //{
@@ -69,7 +73,7 @@ namespace Bb.Builds
 
         private readonly string[] _trustedAssembliesPaths;
         private readonly AssemblyReferences _assemblies;
-
+        private readonly Diagnostics _diagnostics;
     }
 
 

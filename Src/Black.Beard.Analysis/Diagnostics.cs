@@ -28,7 +28,6 @@ namespace Bb.Analysis
         /// <summary>
         /// Adds the information diagnostic.
         /// </summary>
-        /// <param name="filename">The filename.</param>
         /// <param name="location">The location.</param>
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
@@ -36,6 +35,17 @@ namespace Bb.Analysis
         public DiagnosticReport AddInformation(DiagnosticLocation location, string text, string message)
         {
             return this.Add(SeverityEnum.Information, location, text, message);
+        }
+
+        /// <summary>
+        /// Adds the information diagnostic.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="message">The message.</param>
+        /// <returns><see cref="T:DiagnosticReport"></returns>
+        public DiagnosticReport AddInformation(string text, string message)
+        {
+            return this.Add(SeverityEnum.Information, DiagnosticLocation.Empty, text, message);
         }
 
         /// <summary>
@@ -56,7 +66,6 @@ namespace Bb.Analysis
         /// <summary>
         /// Adds the warning diagnostic.
         /// </summary>
-        /// <param name="filename">The filename.</param>
         /// <param name="location">The location.</param>
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
@@ -65,6 +74,18 @@ namespace Bb.Analysis
         {
             return this.Add(SeverityEnum.Warning, location, text, message);
         }
+
+        /// <summary>
+        /// Adds the warning diagnostic.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="message">The message.</param>
+        /// <returns><see cref="T:DiagnosticReport"></returns>
+        public DiagnosticReport AddWarning(string text, string message)
+        {
+            return this.Add(SeverityEnum.Warning, DiagnosticLocation.Empty, text, message);
+        }
+
 
         /// <summary>
         /// Adds the error diagnostic.
@@ -84,7 +105,6 @@ namespace Bb.Analysis
         /// <summary>
         /// Adds the error diagnostic.
         /// </summary>
-        /// <param name="filename">The filename.</param>
         /// <param name="location">The location.</param>
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
@@ -92,6 +112,17 @@ namespace Bb.Analysis
         public DiagnosticReport AddError(DiagnosticLocation location, string text, string message)
         {
             return this.Add(SeverityEnum.Error, location, text, message);
+        }
+
+        /// <summary>
+        /// Adds the error diagnostic.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <param name="message">The message.</param>
+        /// <returns><see cref="T:DiagnosticReport"></returns>
+        public DiagnosticReport AddError( string text, string message)
+        {
+            return this.Add(SeverityEnum.Error, DiagnosticLocation.Empty, text, message);
         }
 
         /// <summary>

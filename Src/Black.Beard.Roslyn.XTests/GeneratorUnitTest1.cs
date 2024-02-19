@@ -77,7 +77,7 @@ namespace Bb.Roslyn.XTests
 
                 var result = builder.Build();
 
-                if (result.Success)
+                if (result != null && result.Success)
                 {
 
                     var assembly = result.LoadAssembly();

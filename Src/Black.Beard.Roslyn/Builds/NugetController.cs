@@ -1,5 +1,9 @@
 ﻿
 
+using Bb.Analysis;
+using ICSharpCode.Decompiler.Util;
+using System.Threading;
+
 namespace Bb.Builds
 {
 
@@ -112,11 +116,11 @@ namespace Bb.Builds
 
         public string ResolveAssemblyName(string assemblyName, FrameworkVersion framework)
         {
-            var result = TryToResolve((assemblyName, null), framework.Name).LastOrDefault();
+            var result = TryToResolve((assemblyName, null), out var empty, framework.Name).LastOrDefault();
             if ( string.IsNullOrEmpty(result.Item1))
                 foreach (var compatibility in framework.Compatibilities)
                 {
-                    result = TryToResolve((assemblyName, null), compatibility).LastOrDefault();
+                    result = TryToResolve((assemblyName, null), out empty, compatibility).LastOrDefault();
                     if (!string.IsNullOrEmpty(result.Item1))
                         break;
                 }
@@ -126,19 +130,28 @@ namespace Bb.Builds
         }
 
 
-        internal void Resolve(AssemblyReferences references)
+        internal void Resolve(AssemblyReferences references, Diagnostics diagnostics)
         {
 
             string framework = references.Sdk.Name;
-
             foreach (var item in _references)
             {
 
-                var list = TryToResolve(item, framework);
+                var list = TryToResolve(item, out var empty, framework);
 
                 if (list.Count == 0)   // If missing try to download
-                    if (TryToDownload(item.Item1, item.Item2))
-                        list = TryToResolve(item, framework);
+                {
+
+                    if (empty)                    
+                        diagnostics.AddInformation(item.Item1,  $"the package nuget {item.Item1} {item.Item2} not contains library.");
+                    
+                    else
+                    {
+                        if (TryToDownload(item.Item1, item.Item2))
+                            list = TryToResolve(item, out empty, framework);
+                    }
+
+                }
 
                 if (list.Count > 0)   // Append references
                     foreach (var c in list.OrderBy(c => c.Item4))
@@ -167,9 +180,9 @@ namespace Bb.Builds
 
         }
 
-        private List<(string, string, string, Version)> TryToResolve((string, Version) item, string framework = null)
+        private List<(string, string, string, Version)> TryToResolve((string, Version) item, out bool empty, string framework = null)
         {
-
+            empty = false;
             var lst = new List<(string, string, string, Version)>();
 
             foreach (var nugetFolder in _folders)
@@ -177,12 +190,13 @@ namespace Bb.Builds
                 {
                     var libs = version.GetLibs();
                     if (libs.Count == 0)
-                    { 
-                        continue;
-                    }
+                        empty = true;
 
-                    var lst2 = libs.Where(c => string.IsNullOrEmpty(framework) || c.Item2 == framework).ToList();
-                    lst.AddRange(lst2);
+                    else
+                    {
+                        var lst2 = libs.Where(c => string.IsNullOrEmpty(framework) || c.Item2 == framework).ToList();
+                        lst.AddRange(lst2);
+                    }
                 }
 
             return lst;

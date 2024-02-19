@@ -24,6 +24,25 @@ namespace Black.Beard.Roslyn.BuildProjects
             return CreateCsharpBuild(file, debug, configureCompilation);
         }
 
+        internal static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug, List< Action<CSharpCompilationOptions>> configureCompilations, BuildList children)
+        {
+
+            file.Refresh();
+            if (!file.Exists)
+                throw new FileNotFoundException(file.FullName);
+
+            BuildCSharp builder = new BuildCSharp()
+            {
+                Debug = debug,
+                AssemblyName = Path.GetFileNameWithoutExtension(file.Name),
+                _children = children,
+                ConfigureCompilations = configureCompilations,
+            };
+
+            return builder;
+        }
+
+
         /// <summary>
         /// Create a new instance of <see cref="BuildCSharp"/> from project file
         /// </summary>
@@ -34,7 +53,6 @@ namespace Black.Beard.Roslyn.BuildProjects
         /// <exception cref="FileNotFoundException"></exception>
         public static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug = false, Action<CSharpCompilationOptions> configureCompilation = null)
         {
-
 
             file.Refresh();
             if (!file.Exists)
@@ -54,7 +72,7 @@ namespace Black.Beard.Roslyn.BuildProjects
 
         }
 
-        private static BuildCSharp Visit(this BuildCSharp builder, XmlElement e, DirectoryInfo dir)
+        internal static BuildCSharp Visit(this BuildCSharp builder, XmlElement e, DirectoryInfo dir)
         {
 
             switch (e.Name.ToLower())
@@ -187,7 +205,7 @@ namespace Black.Beard.Roslyn.BuildProjects
 
         }
 
-        private static BuildCSharp LoadSources(this BuildCSharp builder, FileInfo fileProject)
+        internal static BuildCSharp LoadSources(this BuildCSharp builder, FileInfo fileProject)
         {
             fileProject.Directory.Refresh();
             var p = Path.Combine(fileProject.Directory.FullName, "obj");
@@ -200,7 +218,7 @@ namespace Black.Beard.Roslyn.BuildProjects
 
         }
 
-        private static XmlDocument LoadXml(string path)
+        internal static XmlDocument LoadXml(string path)
         {
             var txt = path.LoadFromFile();
             var doc = new XmlDocument();

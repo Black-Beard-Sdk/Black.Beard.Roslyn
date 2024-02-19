@@ -14,9 +14,9 @@ namespace Bb.Compilers
     public class AssemblyResult
     {
 
-        public AssemblyResult()
+        public AssemblyResult(Diagnostics diagnostics)
         {
-            Diagnostics = new Diagnostics();
+            Diagnostics = diagnostics ?? new Diagnostics();
             this.Documents = new List<string>();
         }
 

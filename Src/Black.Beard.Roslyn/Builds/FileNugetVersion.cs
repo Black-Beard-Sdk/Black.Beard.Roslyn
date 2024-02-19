@@ -35,6 +35,11 @@ namespace Bb.Builds
         }
 
 
+        /// <summary>
+        /// Return true if the folder has no library.
+        /// </summary>
+        public bool Empty => _list.Count == 0;
+
         internal FileNugetVersion Initialize()
         {
 
