@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 namespace Bb.Analysis
 {
 
-    public class Diagnostics : IList<DiagnosticReport>, System.Collections.Specialized.INotifyCollectionChanged
+    public class Diagnostics : IList<Diagnostic>, INotifyCollectionChanged
     {
 
         #region Add
@@ -20,10 +20,10 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddInformation(string filename, int line, int startIndex, int column, string text, string message)
+        public Diagnostic AddInformation(string filename, int line, int startIndex, int column, string text, string message)
         {
             return this.Add(SeverityEnum.Information, filename, line, startIndex, column, text, message);
-        }               
+        }
 
         /// <summary>
         /// Adds the information diagnostic.
@@ -32,7 +32,7 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddInformation(DiagnosticLocation location, string text, string message)
+        public Diagnostic AddInformation(SpanLocation location, string text, string message)
         {
             return this.Add(SeverityEnum.Information, location, text, message);
         }
@@ -43,9 +43,9 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddInformation(string text, string message)
+        public Diagnostic AddInformation(string text, string message)
         {
-            return this.Add(SeverityEnum.Information, DiagnosticLocation.Empty, text, message);
+            return this.Add(SeverityEnum.Information, SpanLocation.Empty, text, message);
         }
 
         /// <summary>
@@ -58,11 +58,11 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddWarning(string filename, int line, int startIndex, int column, string text, string message)
+        public Diagnostic AddWarning(string filename, int line, int startIndex, int column, string text, string message)
         {
             return this.Add(SeverityEnum.Warning, filename, line, startIndex, column, text, message);
         }
-                
+
         /// <summary>
         /// Adds the warning diagnostic.
         /// </summary>
@@ -70,7 +70,7 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddWarning(DiagnosticLocation location, string text, string message)
+        public Diagnostic AddWarning(SpanLocation location, string text, string message)
         {
             return this.Add(SeverityEnum.Warning, location, text, message);
         }
@@ -81,9 +81,9 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddWarning(string text, string message)
+        public Diagnostic AddWarning(string text, string message)
         {
-            return this.Add(SeverityEnum.Warning, DiagnosticLocation.Empty, text, message);
+            return this.Add(SeverityEnum.Warning, SpanLocation.Empty, text, message);
         }
 
 
@@ -97,11 +97,11 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddError(string filename, int line, int startIndex, int column, string text, string message)
+        public Diagnostic AddError(string filename, int line, int startIndex, int column, string text, string message)
         {
             return this.Add(SeverityEnum.Error, filename, line, startIndex, column, text, message);
         }
-                
+
         /// <summary>
         /// Adds the error diagnostic.
         /// </summary>
@@ -109,7 +109,7 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddError(DiagnosticLocation location, string text, string message)
+        public Diagnostic AddError(SpanLocation location, string text, string message)
         {
             return this.Add(SeverityEnum.Error, location, text, message);
         }
@@ -120,9 +120,9 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport AddError( string text, string message)
+        public Diagnostic AddError(string text, string message)
         {
-            return this.Add(SeverityEnum.Error, DiagnosticLocation.Empty, text, message);
+            return this.Add(SeverityEnum.Error, SpanLocation.Empty, text, message);
         }
 
         /// <summary>
@@ -136,18 +136,9 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport Add(SeverityEnum severityEnum, string filename, int line, int startIndex, int column, string text, string message)
+        public Diagnostic Add(SeverityEnum severityEnum, string filename, int line, int startIndex, int column, string text, string message)
         {
-            var d = new DiagnosticReport(new DiagnosticLocation(filename, startIndex, line, column))
-            {
-                Text = text,
-                Message = message,
-                Severity = severityEnum.ToString(),
-                SeverityLevel = (int)severityEnum,
-                IsSeverityAsError = severityEnum == SeverityEnum.Error,
-            };
-            this.Add(d);
-            return d;
+            return Add(severityEnum, new SpanLocation(line, column, startIndex) { Filename = filename }, text, message);
         }
 
         /// <summary>
@@ -158,10 +149,9 @@ namespace Bb.Analysis
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public DiagnosticReport Add(SeverityEnum severityEnum, DiagnosticLocation location, string text, string message)
+        public Diagnostic Add(SeverityEnum severityEnum, SpanLocation location, string text, string message)
         {
-
-            var d = new DiagnosticReport((DiagnosticLocation)location.Clone())
+            var d = new Diagnostic((SpanLocation)location)
             {
                 Text = text,
                 Message = message,
@@ -183,7 +173,7 @@ namespace Bb.Analysis
         /// <returns>
         /// An enumerator that can be used to iterate through the collection.
         /// </returns>
-        public IEnumerator<DiagnosticReport> GetEnumerator()
+        public IEnumerator<Diagnostic> GetEnumerator()
         {
             return this._list.GetEnumerator();
         }
@@ -204,7 +194,7 @@ namespace Bb.Analysis
         /// <returns>
         /// The index of <paramref name="item" /> if found in the list; otherwise, -1.
         /// </returns>
-        public int IndexOf(DiagnosticReport item)
+        public int IndexOf(Diagnostic item)
         {
             return this._list.IndexOf(item);
         }
@@ -213,7 +203,7 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="index">The zero-based index at which <paramref name="item" /> should be inserted.</param>
         /// <param name="item">The object to insert into the <see cref="T:System.Collections.Generic.IList`1" />.</param>
-        public void Insert(int index, DiagnosticReport item)
+        public void Insert(int index, Diagnostic item)
         {
             this._list.Insert(index, item);
         }
@@ -229,7 +219,7 @@ namespace Bb.Analysis
         /// Adds an item to the <see cref="T:System.Collections.Generic.ICollection`1" />.
         /// </summary>
         /// <param name="item">The object to add to the <see cref="T:System.Collections.Generic.ICollection`1" />.</param>
-        public void Add(DiagnosticReport item)
+        public void Add(Diagnostic item)
         {
             if (item != null)
             {
@@ -256,7 +246,7 @@ namespace Bb.Analysis
         /// <returns>
         ///   <see langword="true" /> if <paramref name="item" /> is found in the <see cref="T:System.Collections.Generic.ICollection`1" />; otherwise, <see langword="false" />.
         /// </returns>
-        public bool Contains(DiagnosticReport item)
+        public bool Contains(Diagnostic item)
         {
             return this._list.Contains(item);
         }
@@ -265,7 +255,7 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="array">The one-dimensional <see cref="T:System.Array" /> that is the destination of the elements copied from <see cref="T:System.Collections.Generic.ICollection`1" />. The <see cref="T:System.Array" /> must have zero-based indexing.</param>
         /// <param name="arrayIndex">The zero-based index in <paramref name="array" /> at which copying begins.</param>
-        public void CopyTo(DiagnosticReport[] array, int arrayIndex)
+        public void CopyTo(Diagnostic[] array, int arrayIndex)
         {
             this._list.CopyTo(array, arrayIndex);
         }
@@ -276,7 +266,7 @@ namespace Bb.Analysis
         /// <returns>
         ///   <see langword="true" /> if <paramref name="item" /> was successfully removed from the <see cref="T:System.Collections.Generic.ICollection`1" />; otherwise, <see langword="false" />. This method also returns <see langword="false" /> if <paramref name="item" /> is not found in the original <see cref="T:System.Collections.Generic.ICollection`1" />.
         /// </returns>
-        public bool Remove(DiagnosticReport item)
+        public bool Remove(Diagnostic item)
         {
             return this._list.Remove(item);
         }
@@ -289,7 +279,7 @@ namespace Bb.Analysis
         /// <value>
         /// The errors.
         /// </value>
-        public IEnumerable<DiagnosticReport> Errors { get => this._list.Where(c => c.IsSeverityAsError); }
+        public IEnumerable<Diagnostic> Errors { get => this._list.Where(c => c.IsSeverityAsError); }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="Diagnostics"/> is success. then the list of diagnostic don't contains error.
@@ -298,6 +288,14 @@ namespace Bb.Analysis
         ///   <c>true</c> if success; otherwise, <c>false</c>.
         /// </value>
         public bool Success { get => !this.Errors.Any(); }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="Diagnostics"/> is in error. then the list of diagnostic contains error.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if success; otherwise, <c>false</c>.
+        /// </value>
+        public bool InError { get => this.Errors.Any(); }
 
         /// <summary>
         /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" />.
@@ -310,21 +308,21 @@ namespace Bb.Analysis
         public bool IsReadOnly => false;
 
         /// <summary>
-        /// Gets or sets the <see cref="DiagnosticReport"/> at the specified index.
+        /// Gets or sets the <see cref="Diagnostic"/> at the specified index.
         /// </summary>
         /// <value>
-        /// The <see cref="DiagnosticReport"/>.
+        /// The <see cref="Diagnostic"/>.
         /// </value>
         /// <param name="index">The index.</param>
         /// <returns></returns>
-        public DiagnosticReport this[int index] { get => _list[index]; set => _list[index] = value; }
+        public Diagnostic this[int index] { get => _list[index]; set => _list[index] = value; }
 
         /// <summary>
         /// Occurs when the collection changes.
         /// </summary>
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
-        private List<DiagnosticReport> _list = new List<DiagnosticReport>();
+        private List<Diagnostic> _list = new List<Diagnostic>();
 
     }
 

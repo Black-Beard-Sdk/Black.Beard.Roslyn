@@ -1,7 +1,9 @@
 ﻿
+using System.Text;
+
 namespace Bb.Analysis
 {
-    public class SpanLocation : ICloneable
+    public class SpanLocation : TextCodeLocation
     {
 
         #region Ctors
@@ -13,8 +15,8 @@ namespace Bb.Analysis
         /// <param name="locationStart">The location start.</param>
         public SpanLocation()
         {
-            this.Start = CodeLocation.Empty;
-            this.End = CodeLocation.Empty;
+            base.Filename = string.Empty;
+            this.Stop = TextLocation.Empty;
         }
 
         /// <summary>
@@ -22,9 +24,12 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <param name="locationStart">The location start.</param>
-        public SpanLocation(CodeLocation locationStart) : this()
+        public SpanLocation((int, int) start)
+            : base(start)
         {
-            this.Start = locationStart;
+            this.Line = start.Item1;
+            this.Column = start.Item2;
+            this.Stop = TextLocation.Empty;
         }
 
         /// <summary>
@@ -32,8 +37,10 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <param name="locationStart">The location start.</param>
-        public SpanLocation(int startIndex, int startLine, int startColumn) : this(new CodePositionLocation(startLine, startColumn, startIndex))
+        public SpanLocation(TextLocation start)
+            : base(start)
         {
+            this.Stop = TextLocation.Empty;
         }
 
         /// <summary>
@@ -41,8 +48,11 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <param name="locationStart">The location start.</param>
-        public SpanLocation(string path) : this(new CodePathLocation(path))
+        public SpanLocation(int startIndex, int startLine, int startColumn) : base(startIndex)
         {
+            this.Line = startLine;
+            this.Column = startColumn;
+            this.Stop = TextLocation.Empty;
         }
 
         /// <summary>
@@ -50,21 +60,57 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="filename">The filename.</param>
         /// <param name="locationStart">The location start.</param>
-        public SpanLocation(CodeLocation locationStart, CodeLocation locationEnd) : this(locationStart)
+        public SpanLocation(int startIndex, int startLine, int startColumn, int stopIndex, int stoptLine, int stopColumn) : base(startIndex)
         {
-            this.End = locationEnd;
+            this.Line = startLine;
+            this.Column = startColumn;
+            this.Stop = new SpanLocation(stopIndex, stoptLine, stopColumn);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpanLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="locationStart">The location start.</param>
+        public SpanLocation(int startIndex, int startLine, int startColumn, SpanLocation stop) : base(startIndex)
+        {
+            this.Line = startLine;
+            this.Column = startColumn;
+            this.Stop = stop;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpanLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="locationStart">The location start.</param>
+        public SpanLocation(string path) : base(path)
+        {
+            this.Stop = TextLocation.Empty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpanLocation"/> class.
+        /// </summary>
+        /// <param name="filename">The filename.</param>
+        /// <param name="locationStart">The location start.</param>
+        public SpanLocation(TextLocation locationStart, TextLocation locationEnd) : this(locationStart)
+        {
+            this.Stop = locationEnd ?? TextLocation.Empty;
         }
 
         #endregion Ctors
 
 
-        public static readonly SpanLocation Empty = new SpanLocation(CodeLocation.Empty);
+        public static readonly SpanLocation Empty = new SpanLocation(-1, -1, -1);
 
-        public CodeLocation Start { get; }
 
-        public CodeLocation End { get; }
+        public TextLocation Stop { get; protected set; }
 
-        public bool IsEmpty => (Start == null || Start.IsEmpty) && (End == null || End.IsEmpty);
+
+        public bool IsEmpty =>
+            (this.Line == -1 && this.Column == -1 && this.Index == -1)
+            && (Stop == null || Stop.IsEmpty);
 
 
         /// <summary>
@@ -76,19 +122,29 @@ namespace Bb.Analysis
         public override string ToString()
         {
 
-            if (this.End != null && !this.End.IsEmpty)
-                return $"{this.Start} to {this.End}";
+            StringBuilder sb = new StringBuilder();
 
-            if (this.Start != null)
-                return this.Start.ToString();
+            Write(sb);
 
-            return "unknown location";
+            if (this.Stop != null && !this.Stop.IsEmpty)
+            {
+                sb.Append(" - ");
+                this.Stop.Write(sb);
+            }
+
+            if (!string.IsNullOrEmpty(this.Filename))
+            {
+                if (sb.Length > 1)
+                    sb.Append(" ");
+                sb.Append("file:" + this.Filename);
+            }
+            return sb.ToString();
 
         }
 
         public virtual object Clone()
         {
-            return new SpanLocation((CodeLocation)Start.Clone(), (CodeLocation)End.Clone());
+            return new SpanLocation(this, (TextLocation)Stop.Clone()) { Path = this.Path, Filename = this.Filename };
         }
 
     }

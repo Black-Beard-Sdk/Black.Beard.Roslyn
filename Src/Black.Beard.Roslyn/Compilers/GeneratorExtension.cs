@@ -16,25 +16,25 @@ namespace Bb.Compilers
         /// </summary>
         /// <param name="self">The self.</param>
         /// <returns></returns>
-        public static DiagnosticReport Map(this Diagnostic self)
+        public static Analysis.Diagnostic Map(this Microsoft.CodeAnalysis.Diagnostic self)
         {
 
             var locations = GetLocations(self);
 
-            var result = new DiagnosticReport(locations)
-            {                   
+            var result = new Analysis.Diagnostic(locations)
+            {
                 Id = self.Id,
                 Message = self.GetMessage(),
                 IsSeverityAsError = self.IsWarningAsError || self.Severity == DiagnosticSeverity.Error,
                 Severity = self.Severity.ToString(),
-                SeverityLevel =  self.IsWarningAsError ? (int)SeverityEnum.Error : (int)self.Severity,
+                SeverityLevel = self.IsWarningAsError ? (int)SeverityEnum.Error : (int)self.Severity,
             };
-            
+
             return result;
 
         }
 
-        private static SpanLocation[] GetLocations(Diagnostic self)
+        private static SpanLocation[] GetLocations(Microsoft.CodeAnalysis.Diagnostic self)
         {
 
             List<SpanLocation> result = new List<SpanLocation>(self.AdditionalLocations.Count + 1)
@@ -54,28 +54,27 @@ namespace Bb.Compilers
         /// </summary>
         /// <param name="location">The location.</param>
         /// <returns></returns>
-        private static DiagnosticLocation Map(Location location)
+        private static SpanLocation Map(Location location)
         {
 
             var lineSpan = location.GetLineSpan();
-            return new DiagnosticLocation
-             (
-            
-                location?.SourceTree?.FilePath ?? string.Empty,
 
-                new CodePositionLocation(
-                    lineSpan.StartLinePosition.Line + 1,
-                    lineSpan.StartLinePosition.Character,
-                    location?.SourceSpan.Start ?? 0
-                 ),
+            var index = location?.SourceSpan.Start ?? 0;
+            var line = lineSpan.StartLinePosition.Line + 1;
+            var col = lineSpan.StartLinePosition.Character;
+
+            return new SpanLocation(
                 
-                new CodePositionLocation(
-                 lineSpan.EndLinePosition.Line + 1,
-                 lineSpan.EndLinePosition.Character,
-                 location?.SourceSpan.End ?? 0
-                )                               
+                index, line, col, 
+                
+                location?.SourceSpan.End ?? 0,
+                lineSpan.EndLinePosition.Line + 1,
+                lineSpan.EndLinePosition.Character
+)
+            {
+                Filename = location?.SourceTree?.FilePath ?? string.Empty,
 
-            );
+            };
 
         }
 

@@ -5,23 +5,23 @@ namespace Bb.Analysis
 
 
     [System.Diagnostics.DebuggerDisplay("[{Severity}] {Message}")]
-    public class DiagnosticReport
+    public class Diagnostic
     {
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticReport"/> class.
+        /// Initializes a new instance of the <see cref="Diagnostic"/> class.
         /// </summary>
         /// <param name="locations">The list of locations.</param>
-        public DiagnosticReport(params SpanLocation[] locations) : this()
+        public Diagnostic(params SpanLocation[] locations) : this()
         {
             if (locations.Length > 0)
                 this.Locations.AddRange(locations);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DiagnosticReport"/> class.
+        /// Initializes a new instance of the <see cref="Diagnostic"/> class.
         /// </summary>
-        public DiagnosticReport()
+        public Diagnostic()
         {
 
             Id = Guid.NewGuid().ToString("N");
@@ -41,7 +41,7 @@ namespace Bb.Analysis
         /// <value>
         /// The filename.
         /// </value>
-        public string? Filename => (Location as DiagnosticLocation)?.Filename ?? string.Empty;
+        public string? Filename => Location?.Filename ?? string.Empty;
 
         /// <summary>
         /// Gets the start index of the first Diagnostic location
@@ -49,7 +49,7 @@ namespace Bb.Analysis
         /// <value>
         /// The start index.
         /// </value>
-        public int? StartIndex => (Location?.Start as CodePositionLocation)?.Index;
+        public int? StartIndex => Location?.Index;
 
         /// <summary>
         /// Gets the start column of the first Diagnostic location
@@ -57,7 +57,7 @@ namespace Bb.Analysis
         /// <value>
         /// The start column.
         /// </value>
-        public int? StartColumn => (Location?.Start as CodePositionLocation)?.Column;
+        public int? StartColumn => Location?.Column;
 
         /// <summary>
         /// Gets the start line of the first Diagnostic location
@@ -65,7 +65,7 @@ namespace Bb.Analysis
         /// <value>
         /// The start line.
         /// </value>
-        public int? StartLine => (Location?.Start as CodePositionLocation)?.Line;
+        public int? StartLine => Location?.Line;
 
         /// <summary>
         /// Gets the path
@@ -73,15 +73,7 @@ namespace Bb.Analysis
         /// <value>
         /// The path location.
         /// </value>
-        public string Path => (Location?.Start as CodePathLocation)?.Path ?? string.Empty;
-
-        /// <summary>
-        /// Gets or sets the locations items.
-        /// </summary>
-        /// <value>
-        /// The locations.
-        /// </value>
-        // public List<DiagnosticLocation> Locations { get; set; }
+        public string Path => Location?.Path ?? string.Empty;
 
         /// <summary>
         /// Gets or sets the text that causes the diagnostic item
@@ -120,7 +112,7 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="severity">The severity.</param>
         /// <returns></returns>
-        public DiagnosticReport SetSeverity(SeverityEnum severity)
+        public Diagnostic SetSeverity(SeverityEnum severity)
         {
             this.Severity = severity.ToString();
             this.SeverityLevel = (int)severity;
@@ -154,9 +146,6 @@ namespace Bb.Analysis
         public List<SpanLocation> Locations { get; }
 
         public SpanLocation Location => Locations.Count > 0 ? Locations[0] : SpanLocation.Empty;
-
-
-        // public string Location => $"({StartLine}, {StartColumn})";
 
         public override string ToString()
         {
