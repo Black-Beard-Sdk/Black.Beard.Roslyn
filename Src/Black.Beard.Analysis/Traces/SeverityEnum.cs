@@ -1,4 +1,4 @@
-﻿namespace Bb.Analysis
+﻿namespace Bb.Analysis.Traces
 {
     public enum SeverityEnum
     {

@@ -1,4 +1,5 @@
 ﻿using Bb.Analysis;
+using Bb.Analysis.Traces;
 using Bb.Codings;
 using Bb.Compilers;
 using Black.Beard.Roslyn.BuildProjects;
@@ -34,7 +35,7 @@ namespace Bb.Builds
         public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
         {
 
-            _diagnostics = new Diagnostics();
+            _diagnostics = new CodeDiagnostics();
             _compiledAssemblies = new Dictionary<int, AssemblyResult>();
             _suppress = new Dictionary<string, ReportDiagnostic>();
 
@@ -429,7 +430,7 @@ namespace Bb.Builds
                     {
                         if (item.LastBuild == null || !item.LastBuild.Success)
                         {
-                            _diagnostics.AddError(item.AssemblyName, $"Dependency {item.AssemblyName} not builded");
+                            _diagnostics.Error(item.AssemblyName, $"Dependency {item.AssemblyName} not builded");
                             return null;
                         }
                         else
@@ -569,7 +570,7 @@ namespace Bb.Builds
             return this;
         }
 
-        internal BuildCSharp SetDiagnostics(Diagnostics diagnostics)
+        internal BuildCSharp SetDiagnostics(CodeDiagnostics diagnostics)
         {
             _diagnostics = diagnostics;
             return this;
@@ -608,7 +609,7 @@ namespace Bb.Builds
 
         private List<BuildCSharp> _dependencies = new List<BuildCSharp>();
         internal BuildList _children = new BuildList();
-        private Diagnostics _diagnostics;
+        private CodeDiagnostics _diagnostics;
         private Dictionary<int, AssemblyResult> _compiledAssemblies;
         private readonly Dictionary<string, ReportDiagnostic> _suppress;
         private Dictionary<string, CSUsing> _usings = new Dictionary<string, CSUsing>();

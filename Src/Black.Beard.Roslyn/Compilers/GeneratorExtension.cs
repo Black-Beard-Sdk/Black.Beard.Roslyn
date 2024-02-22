@@ -1,9 +1,6 @@
-﻿using Bb.Analysis;
+﻿using Bb.Analysis.Traces;
 using Bb.Compilers.Exceptions;
 using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Bb.Compilers
 {
@@ -16,12 +13,12 @@ namespace Bb.Compilers
         /// </summary>
         /// <param name="self">The self.</param>
         /// <returns></returns>
-        public static Analysis.Diagnostic Map(this Microsoft.CodeAnalysis.Diagnostic self)
+        public static Analysis.Traces.CodeDiagnostic Map(this Diagnostic self)
         {
 
             var locations = GetLocations(self);
 
-            var result = new Analysis.Diagnostic(locations)
+            var result = new CodeDiagnostic(locations)
             {
                 Id = self.Id,
                 Message = self.GetMessage(),
@@ -34,10 +31,10 @@ namespace Bb.Compilers
 
         }
 
-        private static SpanLocation[] GetLocations(Microsoft.CodeAnalysis.Diagnostic self)
+        private static TextLocation[] GetLocations(Diagnostic self)
         {
 
-            List<SpanLocation> result = new List<SpanLocation>(self.AdditionalLocations.Count + 1)
+            List<TextLocation> result = new List<TextLocation>(self.AdditionalLocations.Count + 1)
             {
                 Map(self.Location)
             };
@@ -54,23 +51,24 @@ namespace Bb.Compilers
         /// </summary>
         /// <param name="location">The location.</param>
         /// <returns></returns>
-        private static SpanLocation Map(Location location)
+        private static TextLocation Map(Location location)
         {
 
-            var lineSpan = location.GetLineSpan();
+            FileLinePositionSpan lineSpan = location.GetLineSpan();
 
-            var index = location?.SourceSpan.Start ?? 0;
-            var line = lineSpan.StartLinePosition.Line + 1;
-            var col = lineSpan.StartLinePosition.Character;
+            var index1 = location?.SourceSpan.Start ?? 0;
+            var line1 = lineSpan.StartLinePosition.Line + 1;
+            var col1 = lineSpan.StartLinePosition.Character;
 
-            return new SpanLocation(
-                
-                index, line, col, 
-                
-                location?.SourceSpan.End ?? 0,
-                lineSpan.EndLinePosition.Line + 1,
-                lineSpan.EndLinePosition.Character
-)
+            var index2 = location?.SourceSpan.End ?? 0;
+            var line2 = lineSpan.EndLinePosition.Line + 1;
+            var col2 = lineSpan.EndLinePosition.Character;
+
+            return new SpanLocation<LocationLineAndIndex, LocationLineAndIndex>
+            (
+                (index1, line1, col1), 
+                (index2, line2, col2)
+            )
             {
                 Filename = location?.SourceTree?.FilePath ?? string.Empty,
 

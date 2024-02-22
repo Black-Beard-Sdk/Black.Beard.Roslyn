@@ -1,4 +1,5 @@
 using Bb.Analysis;
+using Bb.Analysis.Traces;
 using Bb.Process;
 using System.Diagnostics;
 using System.IO;
@@ -12,49 +13,50 @@ namespace Black.Beard.UnitTests
         [Fact]
         public void SerializeDiagnosticLocation1()
         {
-            var loc = new SpanLocation(1, 1, 1) { Filename = "filename" };
+            TextLocation loc = new LocationLineAndIndex((1, 1, 1)); //  { Filename = "filename" };
             var txt = loc.ToString();
-            Assert.Equal("(line:1, col:1, index:1) file:filename", txt);
+            Assert.Equal("(Line:1, col:1, index:1)", txt);
         }
 
         [Fact]
         public void SerializeDiagnosticLocation2()
         {
-            var loc = new SpanLocation("path") { Filename = "filename" };
+            var loc = new LocationPath("path");
             var txt = loc.ToString();
-            Assert.Equal("(path:path) file:filename", txt);
+            Assert.Equal("path:path", txt);
         }
 
         [Fact]
         public void SerializeDiagnosticReport1()
         {
-            var d = new Diagnostic(new SpanLocation("path") { Filename = "filename" })
+            var d = new CodeDiagnostic(("path".AsLocation(c => c.Filename = "filename" )))
             {
                 Text = "text",
                 Message = "Message",
             };
             var txt = d.ToString();
-            Assert.Equal("[Other] (path:path) file:filename 'text' 'Message'", txt);
+            Assert.Equal("[Other] (path:path) in filename 'text' 'Message'", txt);
         }
 
         [Fact]
         public void SerializeDiagnosticReport2()
         {
-            var d = new Diagnostic(new SpanLocation(1, 1, 1) { Filename = "filename" })
+
+            var d = new CodeDiagnostic((1, 1, 1).AsSpan((LocationIndex)1, c => c.Filename = "filename"))
             {
                 Text = "text",
                 Message = "Message",
             };
             var txt = d.ToString();
-            Assert.Equal("[Other] (line:1, col:1, index:1) file:filename 'text' 'Message'", txt);
+            Assert.Equal("[Other] (Line:1, col:1, index:1 - index:1) in filename 'text' 'Message'", txt);
         }
 
         [Fact]
         public void SerializeDiagnostics()
         {
-            var diag = new Diagnostics();
-            var txt = diag.AddError("filename", 1, 1, 1, "text", "message").ToString();
-            Assert.Equal("[Error] (line:1, col:1, index:1) file:filename 'text' 'message'", txt);
+            var diag = new CodeDiagnostics();
+            var txt = diag.Error("filename", 1, 1, 1, "text", "message").ToString();
+            Assert.Equal("[Error] (Line:1, col:1, index:1) in filename 'text' 'message'", txt);
         }
 
     }

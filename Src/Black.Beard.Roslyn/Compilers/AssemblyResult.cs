@@ -1,4 +1,4 @@
-﻿using Bb.Analysis;
+﻿using Bb.Analysis.Traces;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
@@ -14,9 +14,9 @@ namespace Bb.Compilers
     public class AssemblyResult
     {
 
-        public AssemblyResult(Diagnostics diagnostics)
+        public AssemblyResult(CodeDiagnostics diagnostics)
         {
-            Diagnostics = diagnostics ?? new Diagnostics();
+            Diagnostics = diagnostics ?? new CodeDiagnostics();
             this.Documents = new List<string>();
         }
 
@@ -26,11 +26,11 @@ namespace Bb.Compilers
 
         public string AssemblyFilePdb { get; internal set; }
 
-        public Diagnostics Diagnostics { get; internal set; }
+        public CodeDiagnostics Diagnostics { get; internal set; }
 
-        public IEnumerable<Analysis.Diagnostic> Errors { get => Diagnostics.Where(c => c.Severity == "Error"); }
+        public IEnumerable<Analysis.Traces.CodeDiagnostic> Errors { get => Diagnostics.Where(c => c.Severity == "Error"); }
 
-        public IEnumerable<Analysis.Diagnostic> Warnings { get => Diagnostics.Where(c => c.Severity == "Warning"); }
+        public IEnumerable<Analysis.Traces.CodeDiagnostic> Warnings { get => Diagnostics.Where(c => c.Severity == "Warning"); }
 
         public List<string> Documents { get; }
 

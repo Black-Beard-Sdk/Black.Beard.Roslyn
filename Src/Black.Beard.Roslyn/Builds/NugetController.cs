@@ -1,6 +1,4 @@
-﻿
-
-using Bb.Analysis;
+﻿using Bb.Analysis.Traces;
 using ICSharpCode.Decompiler.Util;
 using System.Threading;
 
@@ -130,7 +128,7 @@ namespace Bb.Builds
         }
 
 
-        internal void Resolve(AssemblyReferences references, Diagnostics diagnostics)
+        internal void Resolve(AssemblyReferences references, CodeDiagnostics diagnostics)
         {
 
             string framework = references.Sdk.Name;
@@ -143,7 +141,7 @@ namespace Bb.Builds
                 {
 
                     if (empty)                    
-                        diagnostics.AddInformation(item.Item1,  $"the package nuget {item.Item1} {item.Item2} not contains library.");
+                        diagnostics.Information(item.Item1,  $"the package nuget {item.Item1} {item.Item2} not contains library.");
                     
                     else
                     {

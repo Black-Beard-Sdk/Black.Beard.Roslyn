@@ -1,27 +1,27 @@
 ﻿using System.Text;
 
-namespace Bb.Analysis
+namespace Bb.Analysis.Traces
 {
 
 
     [System.Diagnostics.DebuggerDisplay("[{Severity}] {Message}")]
-    public class Diagnostic
+    public class CodeDiagnostic
     {
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Diagnostic"/> class.
+        /// Initializes a new instance of the <see cref="CodeDiagnostic"/> class.
         /// </summary>
         /// <param name="locations">The list of locations.</param>
-        public Diagnostic(params SpanLocation[] locations) : this()
+        public CodeDiagnostic(params TextLocation[] locations) : this()
         {
             if (locations.Length > 0)
-                this.Locations.AddRange(locations);
+                Locations.AddRange(locations);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Diagnostic"/> class.
+        /// Initializes a new instance of the <see cref="CodeDiagnostic"/> class.
         /// </summary>
-        public Diagnostic()
+        public CodeDiagnostic()
         {
 
             Id = Guid.NewGuid().ToString("N");
@@ -31,7 +31,7 @@ namespace Bb.Analysis
             Message = string.Empty;
             Text = string.Empty;
 
-            Locations = new List<SpanLocation>();
+            Locations = new List<TextLocation>();
 
         }
 
@@ -42,38 +42,6 @@ namespace Bb.Analysis
         /// The filename.
         /// </value>
         public string? Filename => Location?.Filename ?? string.Empty;
-
-        /// <summary>
-        /// Gets the start index of the first Diagnostic location
-        /// </summary>
-        /// <value>
-        /// The start index.
-        /// </value>
-        public int? StartIndex => Location?.Index;
-
-        /// <summary>
-        /// Gets the start column of the first Diagnostic location
-        /// </summary>
-        /// <value>
-        /// The start column.
-        /// </value>
-        public int? StartColumn => Location?.Column;
-
-        /// <summary>
-        /// Gets the start line of the first Diagnostic location
-        /// </summary>
-        /// <value>
-        /// The start line.
-        /// </value>
-        public int? StartLine => Location?.Line;
-
-        /// <summary>
-        /// Gets the path
-        /// </summary>
-        /// <value>
-        /// The path location.
-        /// </value>
-        public string Path => Location?.Path ?? string.Empty;
 
         /// <summary>
         /// Gets or sets the text that causes the diagnostic item
@@ -112,10 +80,10 @@ namespace Bb.Analysis
         /// </summary>
         /// <param name="severity">The severity.</param>
         /// <returns></returns>
-        public Diagnostic SetSeverity(SeverityEnum severity)
+        public CodeDiagnostic SetSeverity(SeverityEnum severity)
         {
-            this.Severity = severity.ToString();
-            this.SeverityLevel = (int)severity;
+            Severity = severity.ToString();
+            SeverityLevel = (int)severity;
             IsSeverityAsError = severity == SeverityEnum.Error;
             return this;
         }
@@ -126,7 +94,7 @@ namespace Bb.Analysis
         public SeverityEnum GetSeverity()
         {
 
-            if (Enum.TryParse<SeverityEnum>(this.Severity, out var s))
+            if (Enum.TryParse<SeverityEnum>(Severity, out var s))
                 return s;
 
             return SeverityEnum.Other;
@@ -143,9 +111,9 @@ namespace Bb.Analysis
 
         public string Id { get; set; }
 
-        public List<SpanLocation> Locations { get; }
+        public List<TextLocation> Locations { get; }
 
-        public SpanLocation Location => Locations.Count > 0 ? Locations[0] : SpanLocation.Empty;
+        public TextLocation Location => Locations.Count > 0 ? Locations[0] : TextLocation.Empty;
 
         public override string ToString()
         {
@@ -155,12 +123,18 @@ namespace Bb.Analysis
             sb.Append(Severity);
             sb.Append("] ");
 
-            if (!this.Location.IsEmpty)
-                foreach (SpanLocation location in Locations)
-                {
-                    sb.Append(location.ToString());
-                    sb.Append(" ");
-                }
+            bool t = false;
+            foreach (TextLocation location in Locations)
+            {
+
+                if (t)
+                    sb.Append(", ");
+
+                location.WriteTo(sb);
+                sb.Append(" ");
+                t = true;
+
+            }
 
             sb.Append("'");
             sb.Append(Text);
