@@ -18,7 +18,7 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public CodeDiagnostic AddArror(TextLocation location, string text, string message)
+        public CodeDiagnostic AddError(TextLocation location, string text, string message)
         {
 
             var severityEnum = SeverityEnum.Error;
