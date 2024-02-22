@@ -18,6 +18,106 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
+        public CodeDiagnostic AddArror(TextLocation location, string text, string message)
+        {
+
+            var severityEnum = SeverityEnum.Error;
+
+            var d = new CodeDiagnostic(location)
+            {
+                Text = text,
+                Message = message,
+                Severity = severityEnum.ToString(),
+                SeverityLevel = (int)severityEnum,
+                IsSeverityAsError = true,
+            };
+            Add(d);
+            return d;
+        }
+
+        /// <summary>
+        /// Creates & adds a new diagnostic and return the diagnostic
+        /// </summary>
+        /// <param name="severityEnum">The severity enum.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="text">The text.</param>
+        /// <param name="message">The message.</param>
+        /// <returns><see cref="T:DiagnosticReport"></returns>
+        public CodeDiagnostic AddWarning(TextLocation location, string text, string message)
+        {
+
+            var severityEnum = SeverityEnum.Warning;
+
+            var d = new CodeDiagnostic(location)
+            {
+                Text = text,
+                Message = message,
+                Severity = severityEnum.ToString(),
+                SeverityLevel = (int)severityEnum,
+                IsSeverityAsError = false,
+            };
+            Add(d);
+            return d;
+        }
+
+        /// <summary>
+        /// Creates & adds a new diagnostic and return the diagnostic
+        /// </summary>
+        /// <param name="severityEnum">The severity enum.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="text">The text.</param>
+        /// <param name="message">The message.</param>
+        /// <returns><see cref="T:DiagnosticReport"></returns>
+        public CodeDiagnostic AddInformation(TextLocation location, string text, string message)
+        {
+
+            var severityEnum = SeverityEnum.Information;
+
+            var d = new CodeDiagnostic(location)
+            {
+                Text = text,
+                Message = message,
+                Severity = severityEnum.ToString(),
+                SeverityLevel = (int)severityEnum,
+                IsSeverityAsError = severityEnum == SeverityEnum.Information,
+            };
+            Add(d);
+            return d;
+        }
+
+        /// <summary>
+        /// Creates & adds a new diagnostic and return the diagnostic
+        /// </summary>
+        /// <param name="severityEnum">The severity enum.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="text">The text.</param>
+        /// <param name="message">The message.</param>
+        /// <returns><see cref="T:DiagnosticReport"></returns>
+        public CodeDiagnostic AddOther(TextLocation location, string text, string message)
+        {
+
+            var severityEnum = SeverityEnum.Other;
+
+            var d = new CodeDiagnostic(location)
+            {
+                Text = text,
+                Message = message,
+                Severity = severityEnum.ToString(),
+                SeverityLevel = (int)severityEnum,
+                IsSeverityAsError = severityEnum == SeverityEnum.Information,
+            };
+            Add(d);
+            return d;
+        }
+
+        /// <summary>
+        /// Creates & adds a new diagnostic and return the diagnostic
+        /// </summary>
+        /// <param name="severityEnum">The severity enum.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="text">The text.</param>
+        /// <param name="message">The message.</param>
+        /// <returns><see cref="T:DiagnosticReport"></returns>
         public CodeDiagnostic Add(SeverityEnum severityEnum, TextLocation location, string text, string message)
         {
             var d = new CodeDiagnostic(location)
