@@ -14,7 +14,7 @@ namespace Bb.Analysis.Traces
         /// <param name="locations">The list of locations.</param>
         public CodeDiagnostic(params TextLocation[] locations) : this()
         {
-            if (locations.Length > 0)
+            if (locations != null && locations.Length > 0)
                 Locations.AddRange(locations);
         }
 
