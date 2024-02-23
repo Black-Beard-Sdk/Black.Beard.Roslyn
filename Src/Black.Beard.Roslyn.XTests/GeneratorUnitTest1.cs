@@ -1,3 +1,4 @@
+using Bb.Analysis.Traces;
 using Bb.Builds;
 using Bb.Codings;
 using Black.Beard.Roslyn.BuildProjects;
@@ -54,7 +55,7 @@ namespace Bb.Roslyn.XTests
             var dirSystem = new DirectoryInfo(lst2).Parent.Parent;
             FrameworkVersion.Initialize(dirSystem);
 
-            var version = FrameworkVersion.Resolve("6.0", "net");
+            var version = FrameworkVersion.Resolve("6.0", ".NETCore.App");
             var references = version.GetReferences();
 
         }
@@ -110,6 +111,69 @@ namespace Bb.Roslyn.XTests
 
         }
 
+        [Fact]
+        public void StartBeforeTest1()
+        {
+
+            var left = TextLocation.Create(1);
+            var right = TextLocation.Create(10);
+
+            Assert.True(left.StartBefore(right));
+            Assert.True(right.StartAfter(left));
+            Assert.True(left.StartEndBefore(right));
+            Assert.True(left.StopEndBefore(right));
+            Assert.True(right.StartEndAfter(left));
+            Assert.True(right.StopEndAfter(left));
+
+        }
+
+        [Fact]
+        public void StartBeforeTest2()
+        {
+
+            var left = TextLocation.Create((1, 1));
+            var right = TextLocation.Create(2, 1);
+
+            Assert.True(left.StartBefore(right));
+            Assert.True(right.StartAfter(left));
+            Assert.True(left.StartEndBefore(right));
+            Assert.True(right.StopEndAfter(left));
+            Assert.True(left.StartEndBefore(right));
+            Assert.True(right.StopEndAfter(left));
+        }
+
+        [Fact]
+        public void StartBeforeTest3()
+        {
+
+            var left = TextLocation.Create(1, new LocationIndex(10));
+            var right = TextLocation.Create(2);
+
+            Assert.True(left.StartBefore(right));
+            Assert.True(right.StartAfter(left));
+            Assert.True(left.StartEndBefore(right));
+            Assert.True(right.StopEndAfter(left));
+            Assert.True(left.StartEndBefore(right));
+            Assert.True(right.StopEndAfter(left));
+        }
+
+
+        [Fact]
+        public void StartBeforeTest4()
+        {
+
+            var left = TextLocation.Create(1, new LocationIndex(10));
+            var right = TextLocation.Create(2, new LocationIndex(10));
+
+            Assert.True(left.StartBefore(right));
+            Assert.True(right.StartAfter(left));
+            Assert.True(left.StartEndBefore(right));
+            Assert.True(right.StopEndAfter(left));
+            Assert.True(left.StartEndBefore(right));
+            Assert.True(right.StopEndAfter(left));
+        }
+
+ 
 
         //[Fact]
         //public void GetAllReferences()

@@ -26,9 +26,5 @@
 		</None>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Analysis\" />
-	</ItemGroup>
-
 
 </Project>

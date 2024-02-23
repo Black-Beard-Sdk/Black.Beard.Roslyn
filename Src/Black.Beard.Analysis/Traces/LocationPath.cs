@@ -28,6 +28,7 @@ namespace Bb.Analysis.Traces
             return new LocationPath(Path);
         }
 
+
         /// <summary>
         /// Writes message to specified <see cref="StringBuilder"/>.
         /// </summary>
@@ -39,11 +40,41 @@ namespace Bb.Analysis.Traces
 
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is the empty instance.
+        /// </summary>
+        public bool IsEmpty => Object.Equals(LocationDefault.Empty, this);
+
         override public string ToString()
         {
             StringBuilder sb = new StringBuilder();
             WriteTo(sb);
             return sb.ToString();
+        }
+
+        public bool CanBeCompare(ILocation location)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool StartAfter(ILocation location)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool EndBefore(ILocation location)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool EndAfter(ILocation location)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool StartBefore(ILocation location)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -74,6 +105,11 @@ namespace Bb.Analysis.Traces
         public static implicit operator TextLocation<LocationPath>(LocationPath position)
         {
             return new TextLocation<LocationPath>(position);
+        }
+
+        public override int GetHashCode()
+        {
+            return Path.GetHashCode();
         }
 
     }

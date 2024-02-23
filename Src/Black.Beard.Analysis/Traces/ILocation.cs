@@ -7,6 +7,21 @@ namespace Bb.Analysis.Traces
     {
 
         /// <summary>
+        /// Gets a value indicating whether this instance is the empty instance.
+        /// </summary>
+        bool IsEmpty { get; }
+
+        bool CanBeCompare(ILocation location);
+
+        bool StartAfter(ILocation location);
+
+        bool EndBefore(ILocation location);
+
+        bool EndAfter(ILocation location);
+
+        bool StartBefore(ILocation location);
+
+        /// <summary>
         /// Writes message to specified <see cref="StringBuilder"/>.
         /// </summary>
         /// <param name="sb"></param>

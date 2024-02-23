@@ -7,6 +7,8 @@ namespace Bb.Analysis.Traces
     public class LocationLine : ILocation
     {
 
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LocationIndex"/> struct.
         /// </summary>
@@ -28,6 +30,10 @@ namespace Bb.Analysis.Traces
             Column = column;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is the empty instance.
+        /// </summary>
+        public bool IsEmpty => Object.Equals(LocationDefault.Empty, this);
 
         /// <summary>
         /// Line position
@@ -40,6 +46,63 @@ namespace Bb.Analysis.Traces
         /// </summary>
         public int Column { get; }
 
+        public bool StartAfter(ILocation location)
+        {
+            var l = location as LocationLine;
+            if (l != null)
+            {
+                if (Line > l.Line)
+                    return true;
+                else if (Line == l.Line)
+                    return Column > l.Column;
+            }
+            
+            return false;
+        }
+
+        public bool StartBefore(ILocation location)
+        {
+            var l = location as LocationLine;
+            if (l != null)
+            {
+                if (Line < l.Line)
+                    return true;
+                else if (Line == l.Line)
+                    return Column < l.Column;
+            }
+            
+            return false;
+
+        }
+
+        public bool EndBefore(ILocation location)
+        {
+            var l = location as LocationLine;
+            if (l != null)
+            {
+                if (l.Line > Line)
+                    return true;
+                else if (Line == l.Line)
+                    return l.Column > Column;
+
+            }
+            
+            return false;
+        }
+
+        public bool EndAfter(ILocation location)
+        {
+            var l = location as LocationLine;
+            if (l != null)
+            {
+                if (l.Line < Line)
+                    return true;
+                else if (Line == l.Line)
+                    return l.Column < Column;
+            }
+             
+            return false;
+        }
 
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
@@ -66,6 +129,11 @@ namespace Bb.Analysis.Traces
             StringBuilder sb = new StringBuilder();
             WriteTo(sb);
             return sb.ToString();
+        }
+
+        public bool CanBeCompare(ILocation location)
+        {
+            return location is LocationLine;
         }
 
         /// <summary>
@@ -97,6 +165,11 @@ namespace Bb.Analysis.Traces
         public static implicit operator TextLocation<LocationLine>(LocationLine position)
         {
             return new TextLocation<LocationLine>(position);
+        }
+
+        public override int GetHashCode()
+        {
+            return Line.GetHashCode() ^Column.GetHashCode();
         }
 
     }

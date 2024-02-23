@@ -13,13 +13,8 @@ namespace Bb.Analysis.Traces
         /// <summary>
         /// Initializes a new instance of the <see cref="SpanLocation"/> class.
         /// </summary>
-        public SpanLocation(T start, U stop) : base(start)
+        public SpanLocation(T start, U stop) : base(start, stop)
         {
-
-            if (stop == null)
-                throw new ArgumentNullException(nameof(stop));
-
-            Stop = stop;
             Filename = string.Empty;
         }
 
@@ -29,7 +24,7 @@ namespace Bb.Analysis.Traces
         /// <summary>
         /// Gets the right location
         /// </summary>
-        public new U Stop { get => (U)base.Stop; protected set => base.Stop = value; }
+        public new U Stop { get => (U)base.Stop; }
 
 
         internal override void WriteTo(StringBuilder sb)
@@ -45,29 +40,35 @@ namespace Bb.Analysis.Traces
 
         }
 
+
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
         /// </summary>
         /// <returns>
         /// A new object that is a copy of this instance.
         /// </returns>
-        public virtual object Clone() => new SpanLocation<T, U>((T) Start.Clone(), (U) Stop.Clone()) { Filename = Filename }.Add(Datas);
+        public virtual object Clone() => new SpanLocation<T, U>((T)Start.Clone(), (U)Stop.Clone()) { Filename = Filename }.Add(Datas);
 
 
 
-    /// <summary>
-    /// Performs an implicit conversion from <see cref="ValueTuple{int, int}"/> to <see cref="TextLocation"/>.
-    /// </summary>
-    /// <param name="position">The position.</param>
-    /// <returns>
-    /// The result of the conversion.
-    /// </returns>
-    public static implicit operator SpanLocation<T, U>((T, U) position)
-    {
-        return new SpanLocation<T, U>(position.Item1, position.Item2);
+        /// <summary>
+        /// Performs an implicit conversion from <see cref="ValueTuple{int, int}"/> to <see cref="TextLocation"/>.
+        /// </summary>
+        /// <param name="position">The position.</param>
+        /// <returns>
+        /// The result of the conversion.
+        /// </returns>
+        public static implicit operator SpanLocation<T, U>((T, U) position)
+        {
+            return new SpanLocation<T, U>(position.Item1, position.Item2);
+        }
+             
+        public virtual bool IsAfter(TextLocation location)
+        {
+            return location.Stop.StartAfter(location.Start);
+        }
+
     }
-
-}
 
 
 }

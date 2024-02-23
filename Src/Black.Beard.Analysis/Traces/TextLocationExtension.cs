@@ -8,6 +8,7 @@ namespace Bb.Analysis.Traces
     public static partial class TextLocationExtension
     {
 
+            
 
         /// <summary>
         /// Copy the location and set the document name

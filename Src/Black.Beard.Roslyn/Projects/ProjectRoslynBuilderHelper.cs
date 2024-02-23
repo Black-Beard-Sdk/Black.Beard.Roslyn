@@ -114,6 +114,7 @@ namespace Black.Beard.Roslyn.BuildProjects
                     switch (e2.Name.ToLower())
                     {
 
+                        case "folder":
                         case "none":
                             break;
 

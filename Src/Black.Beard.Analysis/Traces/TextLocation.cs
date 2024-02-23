@@ -12,16 +12,18 @@ namespace Bb.Analysis.Traces
         /// <summary>
         /// The empty value
         /// </summary>
-        public static readonly TextLocation Empty = new TextLocation();
+        public static readonly TextLocation Empty = new TextLocation(LocationDefault.Empty, LocationDefault.Empty);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextLocation"/> struct.
         /// </summary>
         /// <param name="position">The position.</param>
-        public TextLocation()
+        public TextLocation(ILocation start, ILocation stop)
         {
             Filename = string.Empty;
             Datas = new Dictionary<string, object>();
+            this._start = start ?? throw new ArgumentNullException(nameof(start));
+            this._stop = stop ?? Start;
         }
 
         /// <summary>
@@ -29,20 +31,69 @@ namespace Bb.Analysis.Traces
         /// </summary>
         public ILocation Start
         {
-            get => _start; protected set
-            {
-                _start = value;
-            }
+            get => _start; 
+            
         }
 
         /// <summary>
         /// Gets the right location
         /// </summary>
-        public ILocation Stop { get => _stop; protected set => _stop = value; }
+        public ILocation Stop { get => _stop; }
 
 
+        public virtual bool StartBefore(TextLocation location)
+        {
+            return Start.StartBefore(location.Start);
+        }
+
+        public virtual bool StartAfter(TextLocation location)
+        {
+            return Start.StartAfter(location.Start);
+        }
+             
+        public virtual bool StartEndBefore(TextLocation location)
+        {
+            return Start.EndBefore(location.Start);
+        }
+
+        public virtual bool StartEndAfter(TextLocation location)
+        {
+            return Start.EndAfter(location.Start);
+        }
+
+        public virtual bool StopEndBefore(TextLocation location)
+        {
+            return Stop.EndBefore(location.Start);
+        }
+
+        public virtual bool StopEndAfter(TextLocation location)
+        {
+            return Stop.EndAfter(location.Start);
+        }
+
+        //public virtual bool Intersect(TextLocation location)
+        //{
+        //    if (Start.StartBefore(location.Start))
+        //    {
+        //        return Stop.EndBefore(location.Stop);
+        //    }
+        //    else if (Start.StartBefore(location.Stop))
+        //    {
+        //        return Stop.StartBefore(location.Stop);
+        //    }
+        //    else if (Stop.StartBefore(location.Start))
+        //    {
+        //    }
+        //    else if (Stop.StartBefore(location.Stop))
+        //    {
+        //    }
+        //    return false;
+        //}
+
+        /// <summary>
+        /// Filename document
+        /// </summary>
         public string Filename { get; set; }
-
 
         /// <summary>
         /// Datas dictionary
@@ -58,10 +109,8 @@ namespace Bb.Analysis.Traces
         /// </returns>
         public virtual object Clone()
         {
-            return new TextLocation()
+            return new TextLocation((ILocation)Start.Clone(), (ILocation)Stop.Clone())
             {
-                Start = (ILocation)Start.Clone(),
-                Stop = (ILocation)Stop.Clone(),
                 Filename = Filename
             }.Add(this.Datas);
         }

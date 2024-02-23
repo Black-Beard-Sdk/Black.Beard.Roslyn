@@ -7,16 +7,23 @@ namespace Bb.Analysis.Traces
         where T : ILocation
     {
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TextLocation"/> struct.
         /// </summary>
         /// <param name="start">The position.</param>
-        public TextLocation(T start) : base()
+        protected TextLocation(T start, ILocation stop) : base(start, stop)
         {
-            if (start == null)
-                throw new ArgumentNullException(nameof(start));
 
-            Start = start;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextLocation"/> struct.
+        /// </summary>
+        /// <param name="start">The position.</param>
+        public TextLocation(T start) : base(start, start)
+        {
+         
         }
 
 
@@ -26,7 +33,7 @@ namespace Bb.Analysis.Traces
         /// <value>
         /// The index.
         /// </value>
-        public new T Start { get => (T)base.Start; protected set => base.Start = value; }
+        public new T Start { get => (T)base.Start; }
 
 
         /// <summary>
@@ -39,7 +46,6 @@ namespace Bb.Analysis.Traces
         {
             return new TextLocation<T>((T)Start.Clone())
             {
-                Stop = (ILocation)Stop.Clone(),
                 Filename = Filename
             }.Add(this.Datas);
         }

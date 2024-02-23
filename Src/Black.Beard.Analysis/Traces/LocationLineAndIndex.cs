@@ -43,6 +43,11 @@ namespace Bb.Analysis.Traces
 
 
         /// <summary>
+        /// Gets a value indicating whether this instance is the empty instance.
+        /// </summary>
+        public bool IsEmpty => Object.Equals(LocationDefault.Empty, this);
+
+        /// <summary>
         /// Line position
         /// </summary>
         public int Line { get; }
@@ -59,6 +64,42 @@ namespace Bb.Analysis.Traces
         /// </summary>
         public int Index { get; }
 
+        public bool StartAfter(ILocation location)
+        {
+            var l = location as ILocationIndex;
+            if (l != null)
+                return Index > l.Index;
+            return false;
+        }
+
+        public bool StartBefore(ILocation location)
+        {
+            var l = location as ILocationIndex;
+            if (l != null)
+                return Index < l.Index;
+            return false;
+        }
+
+        public bool EndBefore(ILocation location)
+        {
+            var l = location as ILocationIndex;
+            if (l != null)
+                return l.Index > Index;
+            return false;
+        }
+
+        public bool EndAfter(ILocation location)
+        {
+            var l = location as ILocationIndex;
+            if (l != null)
+                return l.Index < Index;
+            return false;
+        }
+
+        public bool CanBeCompare(ILocation location)
+        {
+            return location is ILocationIndex;
+        }
 
         /// <summary>
         /// Creates a new object that is a copy of the current instance.
@@ -116,6 +157,11 @@ namespace Bb.Analysis.Traces
         public static implicit operator TextLocation<LocationLineAndIndex>(LocationLineAndIndex position)
         {
             return new TextLocation<LocationLineAndIndex>(position);
+        }
+
+        public override int GetHashCode()
+        {
+            return Line.GetHashCode() ^Column.GetHashCode() ^Index.GetHashCode();
         }
 
     }
