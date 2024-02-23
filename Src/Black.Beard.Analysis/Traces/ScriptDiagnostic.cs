@@ -5,23 +5,23 @@ namespace Bb.Analysis.Traces
 
 
     [System.Diagnostics.DebuggerDisplay("[{Severity}] {Message}")]
-    public class CodeDiagnostic
+    public class ScriptDiagnostic
     {
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CodeDiagnostic"/> class.
+        /// Initializes a new instance of the <see cref="ScriptDiagnostic"/> class.
         /// </summary>
         /// <param name="locations">The list of locations.</param>
-        public CodeDiagnostic(params TextLocation[] locations) : this()
+        public ScriptDiagnostic(params TextLocation[] locations) : this()
         {
             if (locations != null && locations.Length > 0)
                 Locations.AddRange(locations);
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CodeDiagnostic"/> class.
+        /// Initializes a new instance of the <see cref="ScriptDiagnostic"/> class.
         /// </summary>
-        public CodeDiagnostic()
+        public ScriptDiagnostic()
         {
 
             Id = Guid.NewGuid().ToString("N");
@@ -80,7 +80,7 @@ namespace Bb.Analysis.Traces
         /// </summary>
         /// <param name="severity">The severity.</param>
         /// <returns></returns>
-        public CodeDiagnostic SetSeverity(SeverityEnum severity)
+        public ScriptDiagnostic SetSeverity(SeverityEnum severity)
         {
             Severity = severity.ToString();
             SeverityLevel = (int)severity;

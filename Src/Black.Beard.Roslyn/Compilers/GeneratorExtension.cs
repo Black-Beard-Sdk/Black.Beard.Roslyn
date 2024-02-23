@@ -13,12 +13,12 @@ namespace Bb.Compilers
         /// </summary>
         /// <param name="self">The self.</param>
         /// <returns></returns>
-        public static Analysis.Traces.CodeDiagnostic Map(this Diagnostic self)
+        public static Analysis.Traces.ScriptDiagnostic Map(this Diagnostic self)
         {
 
             var locations = GetLocations(self);
 
-            var result = new CodeDiagnostic(locations)
+            var result = new ScriptDiagnostic(locations)
             {
                 Id = self.Id,
                 Message = self.GetMessage(),

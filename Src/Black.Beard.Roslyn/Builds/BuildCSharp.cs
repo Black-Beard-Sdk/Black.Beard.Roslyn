@@ -35,7 +35,7 @@ namespace Bb.Builds
         public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
         {
 
-            _diagnostics = new CodeDiagnostics();
+            _diagnostics = new ScriptDiagnostics();
             _compiledAssemblies = new Dictionary<int, AssemblyResult>();
             _suppress = new Dictionary<string, ReportDiagnostic>();
 
@@ -570,7 +570,7 @@ namespace Bb.Builds
             return this;
         }
 
-        internal BuildCSharp SetDiagnostics(CodeDiagnostics diagnostics)
+        internal BuildCSharp SetDiagnostics(ScriptDiagnostics diagnostics)
         {
             _diagnostics = diagnostics;
             return this;
@@ -609,7 +609,7 @@ namespace Bb.Builds
 
         private List<BuildCSharp> _dependencies = new List<BuildCSharp>();
         internal BuildList _children = new BuildList();
-        private CodeDiagnostics _diagnostics;
+        private ScriptDiagnostics _diagnostics;
         private Dictionary<int, AssemblyResult> _compiledAssemblies;
         private readonly Dictionary<string, ReportDiagnostic> _suppress;
         private Dictionary<string, CSUsing> _usings = new Dictionary<string, CSUsing>();

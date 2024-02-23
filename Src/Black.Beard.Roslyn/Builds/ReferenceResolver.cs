@@ -11,7 +11,7 @@ namespace Bb.Builds
         /// Create a new instance of <see cref="ReferenceResolver"/>
         /// </summary>
         /// <param name="assemblies"></param>
-        public ReferenceResolver(AssemblyReferences assemblies, CodeDiagnostics diagnostics)
+        public ReferenceResolver(AssemblyReferences assemblies, ScriptDiagnostics diagnostics)
         {
             this._assemblies = assemblies;
             this._diagnostics = diagnostics;
@@ -73,7 +73,7 @@ namespace Bb.Builds
 
         private readonly string[] _trustedAssembliesPaths;
         private readonly AssemblyReferences _assemblies;
-        private readonly CodeDiagnostics _diagnostics;
+        private readonly ScriptDiagnostics _diagnostics;
     }
 
 

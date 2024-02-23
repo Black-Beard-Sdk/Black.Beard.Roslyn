@@ -23,10 +23,10 @@ namespace Bb.Compilers
     public class RoslynCompiler
     {
 
-        public RoslynCompiler(AssemblyReferences assemblies, Analysis.Traces.CodeDiagnostics diagnostics)
+        public RoslynCompiler(AssemblyReferences assemblies, Analysis.Traces.ScriptDiagnostics diagnostics)
         {
 
-            this._diagnostics = diagnostics ?? new Analysis.Traces.CodeDiagnostics();
+            this._diagnostics = diagnostics ?? new Analysis.Traces.ScriptDiagnostics();
             this._assemblies = assemblies;
             this.LanguageVersion = assemblies.Sdk.LanguageVersion;
 
@@ -384,7 +384,7 @@ namespace Bb.Compilers
 
         #endregion Methods
 
-        private readonly Analysis.Traces.CodeDiagnostics _diagnostics;
+        private readonly Analysis.Traces.ScriptDiagnostics _diagnostics;
         private readonly AssemblyReferences _assemblies;
         private readonly ReferenceResolver _resolver;
         private List<FileCode> _sources = new List<FileCode>();

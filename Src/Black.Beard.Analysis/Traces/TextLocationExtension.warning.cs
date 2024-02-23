@@ -15,7 +15,7 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Warning(this CodeDiagnostics self, string text, string message)
+        public static ScriptDiagnostic Warning(this ScriptDiagnostics self, string text, string message)
         {
             return self.Add(SeverityEnum.Warning, TextLocation.Empty, text, message);
         }
@@ -27,7 +27,7 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Warning(this CodeDiagnostics self, string filename, string text, string message)
+        public static ScriptDiagnostic Warning(this ScriptDiagnostics self, string filename, string text, string message)
         {
             return self.Add(SeverityEnum.Warning,
             new TextLocation<LocationLine>(new LocationLine(0, 0))
@@ -44,7 +44,7 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Warning(this CodeDiagnostics self, string filename, string path, string text, string message)
+        public static ScriptDiagnostic Warning(this ScriptDiagnostics self, string filename, string path, string text, string message)
         {
             return self.Add(SeverityEnum.Warning,
                 new TextLocation<LocationPath>(new LocationPath(path))
@@ -62,7 +62,7 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Warning(this CodeDiagnostics self, string filename, int index, string text, string message)
+        public static ScriptDiagnostic Warning(this ScriptDiagnostics self, string filename, int index, string text, string message)
         {
             return self.Add(SeverityEnum.Warning,
                 new TextLocation<LocationIndex>(new LocationIndex(index))
@@ -81,7 +81,7 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Warning(this CodeDiagnostics self, string filename, int line, int column, string text, string message)
+        public static ScriptDiagnostic Warning(this ScriptDiagnostics self, string filename, int line, int column, string text, string message)
         {
             return self.Add(SeverityEnum.Warning,
                 new TextLocation<LocationLine>(new LocationLine(line, column))
@@ -101,7 +101,7 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Warning(this CodeDiagnostics self, string filename, int line, int column, int index, string text, string message)
+        public static ScriptDiagnostic Warning(this ScriptDiagnostics self, string filename, int line, int column, int index, string text, string message)
         {
             return self.Add(SeverityEnum.Warning,
                 new TextLocation<LocationLineAndIndex>(new LocationLineAndIndex(line, column, index))
@@ -124,7 +124,7 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Warning(this CodeDiagnostics self, string filename, 
+        public static ScriptDiagnostic Warning(this ScriptDiagnostics self, string filename, 
             int startLine, int startColumn, int startIndex,
             int stopLine, int StopColumn, int StopIndex,
             string text, string message)
@@ -150,7 +150,7 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Warning(this CodeDiagnostics self, string filename,
+        public static ScriptDiagnostic Warning(this ScriptDiagnostics self, string filename,
             int startLine, int startColumn,
             int stopLine, int StopColumn,
             string text, string message)

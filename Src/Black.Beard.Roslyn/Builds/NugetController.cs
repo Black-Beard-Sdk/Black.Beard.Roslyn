@@ -128,7 +128,7 @@ namespace Bb.Builds
         }
 
 
-        internal void Resolve(AssemblyReferences references, CodeDiagnostics diagnostics)
+        internal void Resolve(AssemblyReferences references, ScriptDiagnostics diagnostics)
         {
 
             string framework = references.Sdk.Name;

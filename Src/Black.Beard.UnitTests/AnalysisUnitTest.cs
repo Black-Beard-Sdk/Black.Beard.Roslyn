@@ -29,7 +29,7 @@ namespace Black.Beard.UnitTests
         [Fact]
         public void SerializeDiagnosticReport1()
         {
-            var d = new CodeDiagnostic(("path".AsLocation(c => c.Filename = "filename" )))
+            var d = new ScriptDiagnostic(("path".AsLocation(c => c.Filename = "filename" )))
             {
                 Text = "text",
                 Message = "Message",
@@ -42,7 +42,7 @@ namespace Black.Beard.UnitTests
         public void SerializeDiagnosticReport2()
         {
 
-            var d = new CodeDiagnostic((1, 1, 1).AsSpan((LocationIndex)1, c => c.Filename = "filename"))
+            var d = new ScriptDiagnostic((1, 1, 1).AsSpan((LocationIndex)1, c => c.Filename = "filename"))
             {
                 Text = "text",
                 Message = "Message",
@@ -54,7 +54,7 @@ namespace Black.Beard.UnitTests
         [Fact]
         public void SerializeDiagnostics()
         {
-            var diag = new CodeDiagnostics();
+            var diag = new ScriptDiagnostics();
             var txt = diag.Error("filename", 1, 1, 1, "text", "message").ToString();
             Assert.Equal("[Error] (Line:1, col:1, index:1) in filename 'text' 'message'", txt);
         }

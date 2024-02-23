@@ -2,7 +2,7 @@
 
 namespace Bb.Analysis.Traces
 {
-    public class LocationLineAndIndex : ILocation
+    public class LocationLineAndIndex : ILocationIndex
     {
 
         /// <summary>
