@@ -60,14 +60,14 @@ namespace Bb.Analysis.Traces
         /// <summary>
         /// convert location of type <see cref="TextLocation<LocationPath>"/> in <see cref="SpanLocation<LocationPath, U>"/>"/>
         /// </summary>
-        /// <param name="location">source to convert in <see cref="TextLocation<LocationPath, U>"/></param>
+        /// <param name="path">source to convert in <see cref="TextLocation<LocationPath, U>"/></param>
         /// <param name="right">source to convert in <see cref="T:U"/></param>
         /// <param name="initializer">initialize <see cref="TextLocation<LocationPath, U>"/></param>
         /// <returns></returns>
-        public static SpanLocation<LocationPath, U> AsSpan<U>(this string location, U right, Action<SpanLocation<LocationPath, U>> initializer = null)
+        public static SpanLocation<LocationPath, U> AsSpan<U>(this string path, U right, Action<SpanLocation<LocationPath, U>> initializer = null)
             where U : ILocation
         {
-            var result = new SpanLocation<LocationPath, U>(location, right);
+            var result = new SpanLocation<LocationPath, U>(path, right);
             if (initializer != null)
                 initializer(result);
             return result;

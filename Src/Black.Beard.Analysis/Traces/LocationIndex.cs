@@ -4,6 +4,7 @@ namespace Bb.Analysis.Traces
 {
 
 
+
     public class LocationIndex : ILocation
     {
 

@@ -26,7 +26,10 @@ namespace Bb.Analysis.Traces
         #endregion Ctors
 
 
-        public U Stop { get; protected set; }
+        /// <summary>
+        /// Gets the right location
+        /// </summary>
+        public new U Stop { get => (U)base.Stop; protected set => base.Stop = value; }
 
 
         internal override void WriteTo(StringBuilder sb)
@@ -42,29 +45,29 @@ namespace Bb.Analysis.Traces
 
         }
 
-        public virtual object Clone()
-        {
-            return new SpanLocation<T, U>((T)Start.Clone(), (U)Stop.Clone())
-            {
-                Filename = Filename
-            }
-            .Add(Datas);
-        }
-
-
         /// <summary>
-        /// Performs an implicit conversion from <see cref="ValueTuple{int, int}"/> to <see cref="TextLocation"/>.
+        /// Creates a new object that is a copy of the current instance.
         /// </summary>
-        /// <param name="position">The position.</param>
         /// <returns>
-        /// The result of the conversion.
+        /// A new object that is a copy of this instance.
         /// </returns>
-        public static implicit operator SpanLocation<T, U>((T, U) position)
-        {
-            return new SpanLocation<T, U>(position.Item1, position.Item2);
-        }
+        public virtual object Clone() => new SpanLocation<T, U>((T) Start.Clone(), (U) Stop.Clone()) { Filename = Filename }.Add(Datas);
 
+
+
+    /// <summary>
+    /// Performs an implicit conversion from <see cref="ValueTuple{int, int}"/> to <see cref="TextLocation"/>.
+    /// </summary>
+    /// <param name="position">The position.</param>
+    /// <returns>
+    /// The result of the conversion.
+    /// </returns>
+    public static implicit operator SpanLocation<T, U>((T, U) position)
+    {
+        return new SpanLocation<T, U>(position.Item1, position.Item2);
     }
+
+}
 
 
 }

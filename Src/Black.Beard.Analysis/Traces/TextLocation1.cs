@@ -21,12 +21,12 @@ namespace Bb.Analysis.Traces
 
 
         /// <summary>
-        /// Gets the index.
+        /// Gets the left location.
         /// </summary>
         /// <value>
         /// The index.
         /// </value>
-        public T Start { get; protected set; }
+        public new T Start { get => (T)base.Start; protected set => base.Start = value; }
 
 
         /// <summary>
@@ -39,10 +39,9 @@ namespace Bb.Analysis.Traces
         {
             return new TextLocation<T>((T)Start.Clone())
             {
+                Stop = (ILocation)Stop.Clone(),
                 Filename = Filename
-            }
-            .Add(Datas)
-            ;
+            }.Add(this.Datas);
         }
 
         /// <summary>

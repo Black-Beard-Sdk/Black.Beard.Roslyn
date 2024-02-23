@@ -5,31 +5,31 @@ using Bb.Analysis.Traces;
 namespace Bb.Analysis.Traces
 {
 
-    public static partial class TextLocationExtension
+    public static partial class CodeDiagnosticExtension
     {
 
 
         /// <summary>
-        /// Adds the Error diagnostic.
+        /// Adds the information diagnostic.
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Error(this CodeDiagnostics self, string text, string message)
+        public static CodeDiagnostic Information(this CodeDiagnostics self, string text, string message)
         {
-            return self.Add(SeverityEnum.Error, TextLocation.Empty, text, message);
+            return self.Add(SeverityEnum.Information, TextLocation.Empty, text, message);
         }
 
 
         /// <summary>
-        /// Adds the Error diagnostic.
+        /// Adds the information diagnostic.
         /// </summary>
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Error(this CodeDiagnostics self, string filename, string text, string message)
+        public static CodeDiagnostic Information(this CodeDiagnostics self, string filename, string text, string message)
         {
-            return self.Add(SeverityEnum.Error,
+            return self.Add(SeverityEnum.Information,
             new TextLocation<LocationLine>(new LocationLine(0, 0))
             {
                 Filename = filename
@@ -37,16 +37,16 @@ namespace Bb.Analysis.Traces
         }
 
         /// <summary>
-        /// Adds the Error diagnostic.
+        /// Adds the information diagnostic.
         /// </summary>
         /// <param name="filename">The filename of the file.</param>
         /// <param name="path">The index where the text start.</param>
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Error(this CodeDiagnostics self, string filename, string path, string text, string message)
+        public static CodeDiagnostic Information(this CodeDiagnostics self, string filename, string path, string text, string message)
         {
-            return self.Add(SeverityEnum.Error,
+            return self.Add(SeverityEnum.Information,
                 new TextLocation<LocationPath>(new LocationPath(path))
                 {
                     Filename = filename
@@ -55,16 +55,16 @@ namespace Bb.Analysis.Traces
 
 
         /// <summary>
-        /// Adds the Error diagnostic.
+        /// Adds the information diagnostic.
         /// </summary>
         /// <param name="filename">The filename of the file.</param>
         /// <param name="path">The index where the text start.</param>
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Error(this CodeDiagnostics self, string filename, int index, string text, string message)
+        public static CodeDiagnostic Information(this CodeDiagnostics self, string filename, int index, string text, string message)
         {
-            return self.Add(SeverityEnum.Error,
+            return self.Add(SeverityEnum.Information,
                 new TextLocation<LocationIndex>(new LocationIndex(index))
                 {
                     Filename = filename
@@ -73,7 +73,7 @@ namespace Bb.Analysis.Traces
 
 
         /// <summary>
-        /// Adds the Error diagnostic.
+        /// Adds the information diagnostic.
         /// </summary>
         /// <param name="filename">The filename of the file.</param>
         /// <param name="line">The line.</param>
@@ -81,9 +81,9 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Error(this CodeDiagnostics self, string filename, int line, int column, string text, string message)
+        public static CodeDiagnostic Information(this CodeDiagnostics self, string filename, int line, int column, string text, string message)
         {
-            return self.Add(SeverityEnum.Error,
+            return self.Add(SeverityEnum.Information,
                 new TextLocation<LocationLine>(new LocationLine(line, column))
                 {
                     Filename = filename
@@ -92,7 +92,7 @@ namespace Bb.Analysis.Traces
 
 
         /// <summary>
-        /// Adds the Error diagnostic.
+        /// Adds the information diagnostic.
         /// </summary>
         /// <param name="filename">The filename of the file.</param>
         /// <param name="line">The line.</param>
@@ -101,9 +101,9 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Error(this CodeDiagnostics self, string filename, int line, int column, int index, string text, string message)
+        public static CodeDiagnostic Information(this CodeDiagnostics self, string filename, int line, int column, int index, string text, string message)
         {
-            return self.Add(SeverityEnum.Error,
+            return self.Add(SeverityEnum.Information,
                 new TextLocation<LocationLineAndIndex>(new LocationLineAndIndex(line, column, index))
                 {
                     Filename = filename
@@ -112,7 +112,7 @@ namespace Bb.Analysis.Traces
 
 
         /// <summary>
-        /// Adds the Error diagnostic.
+        /// Adds the information diagnostic.
         /// </summary>
         /// <param name="filename">The filename of the file.</param>
         /// <param name="startLine">The start line.</param>
@@ -124,12 +124,12 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Error(this CodeDiagnostics self, string filename, 
+        public static CodeDiagnostic Information(this CodeDiagnostics self, string filename, 
             int startLine, int startColumn, int startIndex,
             int stopLine, int StopColumn, int StopIndex,
             string text, string message)
         {
-            return self.Add(SeverityEnum.Error,
+            return self.Add(SeverityEnum.Information,
                 new SpanLocation<LocationLineAndIndex, LocationLineAndIndex>(
                     new LocationLineAndIndex(startLine, startColumn, startIndex),
                     new LocationLineAndIndex(stopLine, StopColumn, StopIndex))
@@ -140,7 +140,7 @@ namespace Bb.Analysis.Traces
 
 
         /// <summary>
-        /// Adds the Error diagnostic.
+        /// Adds the information diagnostic.
         /// </summary>
         /// <param name="filename">The filename of the file.</param>
         /// <param name="startLine">The start line.</param>
@@ -150,12 +150,12 @@ namespace Bb.Analysis.Traces
         /// <param name="text">The text.</param>
         /// <param name="message">The message.</param>
         /// <returns><see cref="T:DiagnosticReport"></returns>
-        public static CodeDiagnostic Error(this CodeDiagnostics self, string filename,
+        public static CodeDiagnostic Information(this CodeDiagnostics self, string filename,
             int startLine, int startColumn,
             int stopLine, int StopColumn,
             string text, string message)
         {
-            return self.Add(SeverityEnum.Error,
+            return self.Add(SeverityEnum.Information,
                 new SpanLocation<LocationLine, LocationLine>(
                     new LocationLine(startLine, startColumn),
                     new LocationLine(stopLine, StopColumn))

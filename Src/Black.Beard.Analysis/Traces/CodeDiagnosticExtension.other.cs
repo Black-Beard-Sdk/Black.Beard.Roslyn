@@ -5,7 +5,7 @@ using Bb.Analysis.Traces;
 namespace Bb.Analysis.Traces
 {
 
-    public static partial class TextLocationExtension
+    public static partial class CodeDiagnosticExtension
     {
 
 

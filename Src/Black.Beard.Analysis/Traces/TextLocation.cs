@@ -6,7 +6,7 @@ namespace Bb.Analysis.Traces
 {
 
 
-    public class TextLocation : ICloneable
+    public partial class TextLocation : ICloneable
     {
 
         /// <summary>
@@ -24,10 +24,29 @@ namespace Bb.Analysis.Traces
             Datas = new Dictionary<string, object>();
         }
 
+        /// <summary>
+        /// get the left location
+        /// </summary>
+        public ILocation Start
+        {
+            get => _start; protected set
+            {
+                _start = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the right location
+        /// </summary>
+        public ILocation Stop { get => _stop; protected set => _stop = value; }
+
 
         public string Filename { get; set; }
 
 
+        /// <summary>
+        /// Datas dictionary
+        /// </summary>
         public Dictionary<string, object> Datas { get; }
 
 
@@ -39,7 +58,12 @@ namespace Bb.Analysis.Traces
         /// </returns>
         public virtual object Clone()
         {
-            throw new NotImplementedException();
+            return new TextLocation()
+            {
+                Start = (ILocation)Start.Clone(),
+                Stop = (ILocation)Stop.Clone(),
+                Filename = Filename
+            }.Add(this.Datas);
         }
 
         /// <summary>
@@ -99,6 +123,10 @@ namespace Bb.Analysis.Traces
         {
 
         }
+
+        private ILocation _start = LocationDefault.Empty;
+
+        private ILocation _stop = LocationDefault.Empty;
 
     }
 
