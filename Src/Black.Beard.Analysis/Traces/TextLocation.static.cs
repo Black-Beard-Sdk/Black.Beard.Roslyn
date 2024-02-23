@@ -90,6 +90,14 @@ namespace Bb.Analysis.Traces
             return result;
         }
 
+        public static SpanLocation<LocationLineAndIndex, LocationLineAndIndex> Create((int, int, int) location, (int, int, int) right, Action<SpanLocation<LocationLineAndIndex, LocationLineAndIndex>> initializer = null)
+        {
+            var result = new SpanLocation<LocationLineAndIndex, LocationLineAndIndex>(location, right);
+            if (initializer != null)
+                initializer(result);
+            return result;
+        }
+
     }
 
 }
