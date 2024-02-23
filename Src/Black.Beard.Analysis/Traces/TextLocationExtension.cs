@@ -16,7 +16,7 @@ namespace Bb.Analysis.Traces
         /// <param name="self"></param>
         /// <param name="documentName"></param>
         /// <returns></returns>
-        public static T InDocument<T>(T self, string documentName)
+        public static T InDocument<T>(this T self, string documentName)
             where T : TextLocation
         {
             var location = (T)self.Clone();
@@ -31,7 +31,7 @@ namespace Bb.Analysis.Traces
         /// <typeparam name="T"></typeparam>
         /// <param name="self"></param>
         /// <returns></returns>
-        public static T Copy<T>(T self)
+        public static T Copy<T>(this T self)
             where T : TextLocation
         {
             var location = (T)self.Clone();
