@@ -73,6 +73,21 @@ namespace Bb.Analysis.Traces
         /// <param name="right">source to convert in <see cref="T:U"/></param>
         /// <param name="initializer">initialize <see cref="TextLocation<LocationLine, U>"/></param>
         /// <returns></returns>
+        public static TextLocation<LocationIndex> Create(int index, Action<TextLocation<LocationIndex>> initializer = null)
+        {
+            var result = new TextLocation<LocationIndex>(index);
+            if (initializer != null)
+                initializer(result);
+            return result;
+        }
+
+        /// <summary>
+        /// convert location of type <see cref="TextLocation<LocationLine>"/> in <see cref="SpanLocation<LocationLine, U>"/>"/>
+        /// </summary>
+        /// <param name="location">source to convert in <see cref="TextLocation<LocationLine, U>"/></param>
+        /// <param name="right">source to convert in <see cref="T:U"/></param>
+        /// <param name="initializer">initialize <see cref="TextLocation<LocationLine, U>"/></param>
+        /// <returns></returns>
         public static SpanLocation<LocationPath, U> Create<U>(string path, U right, Action<SpanLocation<LocationPath, U>> initializer = null)
             where U : ILocation
         {
@@ -90,6 +105,13 @@ namespace Bb.Analysis.Traces
             return result;
         }
 
+        /// <summary>
+        /// Create a new instance of <see cref="SpanLocation{LocationLineAndIndex, LocationLineAndIndex}"/>
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="right"></param>
+        /// <param name="initializer"></param>
+        /// <returns></returns>
         public static SpanLocation<LocationLineAndIndex, LocationLineAndIndex> Create((int, int, int) location, (int, int, int) right, Action<SpanLocation<LocationLineAndIndex, LocationLineAndIndex>> initializer = null)
         {
             var result = new SpanLocation<LocationLineAndIndex, LocationLineAndIndex>(location, right);
