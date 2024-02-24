@@ -48,7 +48,15 @@ namespace Bb.Analysis.Traces
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static T Add<T>(this T self, string key, object value) => self.Add(key, value);
+        public static T Add<T>(this T self, string key, object value)
+        where T : TextLocation
+        {
+            if (self.Datas.ContainsKey(key))
+                self.Datas[key] = value;
+            else
+                self.Datas.Add(key, value);
+            return self;
+        }
 
 
         /// <summary>
