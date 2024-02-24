@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using System.Reflection;
 using System.Xml;
 
 namespace Bb.Builds
@@ -22,7 +24,7 @@ namespace Bb.Builds
             return CreateCsharpBuild(file, debug, configureCompilation);
         }
 
-        internal static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug, List< Action<CSharpCompilationOptions>> configureCompilations, BuildList children)
+        internal static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug, List<Action<CSharpCompilationOptions>> configureCompilations, BuildList children)
         {
 
             file.Refresh();
@@ -95,7 +97,7 @@ namespace Bb.Builds
                     break;
 
                 default:
-                    Stop();
+                    //Stop();
                     break;
 
             }
@@ -112,6 +114,10 @@ namespace Bb.Builds
                     switch (e2.Name.ToLower())
                     {
 
+                        case "compile":
+                            //var toRemove = e2.Attributes["Remove"].Value.ToString();
+                        case "content":
+                        case "embeddedresource":
                         case "folder":
                         case "none":
                             break;
@@ -154,7 +160,7 @@ namespace Bb.Builds
                             break;
 
                         default:
-                            Stop();
+                            //Stop();
                             break;
 
                     }
@@ -168,6 +174,32 @@ namespace Bb.Builds
                 if (item is XmlElement e2)
                     switch (e2.Name.ToLower())
                     {
+
+                        case "title": 
+                            builder.AddAssemblyAttribute("System.Reflection.AssemblyTitleAttribute", "RepositoryUrl", e2.InnerText);
+                            builder.AddReferences(typeof(AssemblyCompanyAttribute));
+                            break;
+
+                        case "repositoryurl":
+                            builder.AddAssemblyAttribute(typeof(AssemblyMetadataAttribute), "RepositoryUrl", e2.InnerText);
+                            break;
+                        case "version":
+                            builder.AddAssemblyAttribute(typeof(AssemblyVersionAttribute), e2.InnerText);
+                            break;
+                        case "description":
+                            builder.AddAssemblyAttribute(typeof(AssemblyDescriptionAttribute), e2.InnerText);
+                            break;
+                        case "assemblytitle":
+                            builder.AddAssemblyAttribute(typeof(AssemblyTitleAttribute), e2.InnerText);
+                            break;
+                        case "company":
+                            builder.AddAssemblyAttribute(typeof(AssemblyCompanyAttribute), e2.InnerText);
+                            break;
+
+                        case "startupobject":
+                            builder.MainTypeName = e2.InnerText;
+                            builder.SetKindAssembly(OutputKind.ConsoleApplication);
+                            break;
 
                         case "targetframework":
 
@@ -184,13 +216,14 @@ namespace Bb.Builds
                                 builder.EnableImplicitUsings();
                             break;
 
+                        case "generatedocumentationfile":
+                        case "usersecretsid":
+                        case "dockerdefaulttargetos":
                         case "packagereadmefile":
                         case "nullable":
                         case "rootnamespace":
-                        case "description":
                         case "packageprojecturl":
                         case "generatepackageonbuild":
-                        case "repositoryurl":
                         case "preservecompilationcontext":
                         case "ispackable":
                             break;

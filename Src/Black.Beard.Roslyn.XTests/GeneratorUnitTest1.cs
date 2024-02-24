@@ -64,6 +64,7 @@ namespace Bb.Roslyn.XTests
         public void TestProject()
         {
 
+            // C:\Src\Parrot\Src\Black.Beard.ParrotServices\Black.Beard.ParrotServices.csproj
 
             var projects = _directoryProject.GetFiles("*.csproj", SearchOption.AllDirectories);
 
@@ -95,6 +96,7 @@ namespace Bb.Roslyn.XTests
             }
 
         }
+            
 
         [Fact]
         public void TestDownload()
@@ -156,7 +158,6 @@ namespace Bb.Roslyn.XTests
             Assert.True(right.StopEndAfter(left));
         }
 
-
         [Fact]
         public void StartBeforeTest4()
         {
@@ -172,7 +173,7 @@ namespace Bb.Roslyn.XTests
             Assert.True(right.StopEndAfter(left));
         }
 
- 
+
 
         //[Fact]
         //public void GetAllReferences()

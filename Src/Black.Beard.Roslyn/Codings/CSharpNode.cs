@@ -18,6 +18,46 @@ namespace Bb.Codings
 
         internal abstract SyntaxNode Build();
 
+        public static LiteralExpressionSyntax Literal(object value)
+        {
+
+            if (value == null)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression);   
+
+            else if (value is bool b)
+                return SyntaxFactory.LiteralExpression(b ? SyntaxKind.TrueLiteralExpression : SyntaxKind.FalseLiteralExpression);
+
+            else if (value is int i)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(i));
+
+            else if (value is uint ui)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ui));
+
+            else if (value is long l)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(l));
+
+            else if (value is ulong ul)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ul));
+
+            else if (value is float f)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(f));
+
+            else if (value is double d)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(d));
+
+            else if (value is decimal de)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(de));
+
+            else if (value is char c)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.CharacterLiteralExpression, SyntaxFactory.Literal(c));
+
+            else if (value is string s)
+                return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(s));
+
+            throw new NotSupportedException();
+
+        }
+
         /// <summary>
         /// Creates a token corresponding to a syntax kind. This method can be used for token syntax kinds whose text
         /// can be inferred by the kind alone.
@@ -46,6 +86,9 @@ namespace Bb.Codings
         {
             System.Diagnostics.Debugger.Break();
         }
+
+
+
 
     }
 

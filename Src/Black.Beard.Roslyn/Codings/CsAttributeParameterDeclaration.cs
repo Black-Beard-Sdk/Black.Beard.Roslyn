@@ -14,9 +14,9 @@ namespace Bb.Codings
         }
 
         public CsAttributeParameterDeclaration(string value)
-            : this(null, SyntaxFactory.ParseExpression(value))
+            : this(null, Literal(value))
         {
-            
+
         }
 
         public CsAttributeParameterDeclaration(ExpressionSyntax value)
@@ -26,7 +26,7 @@ namespace Bb.Codings
         }
 
         public CsAttributeParameterDeclaration(string name, string value)
-            : this(name, SyntaxFactory.ParseExpression(value))
+            : this(name, Literal(value))
         {
 
         }

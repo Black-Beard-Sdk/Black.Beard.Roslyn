@@ -1,11 +1,20 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.CodeDom.Compiler;
 
 namespace Bb.Codings
 {
+
     public class CsAttributeDeclaration : CSMemberDeclaration
     {
+
+        static CsAttributeDeclaration()
+        {
+            _attribute = "Attribute";
+            _attributeLength = _attribute.Length;
+
+        }
 
         public CsAttributeDeclaration(Type type)
             : base(FormatName(type))
@@ -14,19 +23,18 @@ namespace Bb.Codings
 
         private static string FormatName(Type type)
         {
+            return FormatName(type.Name);
+        }
 
-            var e = "Attribute";
-            var n = type.Name;
-
-            if (n != null && n.EndsWith(e))
-                n = n.Substring(0, n.Length - e.Length);
-
+        private static string FormatName(string n)
+        {
+            if (n != null && n.EndsWith(_attribute))
+                n = n.Substring(0, n.Length - _attributeLength);
             return n;
-
         }
 
         public CsAttributeDeclaration(string typeName)
-            : base(typeName)
+            : base(FormatName(typeName))
         {
 
         }
@@ -80,7 +88,7 @@ namespace Bb.Codings
         {
 
             AttributeSyntax attribute = SyntaxFactory.Attribute(Name.Identifier());
-
+            
             var _parameters = Members.ToList();
 
             if (_parameters.Count > 0)
@@ -108,6 +116,9 @@ namespace Bb.Codings
             return attribute;
 
         }
+
+        private static readonly string _attribute;
+        private static readonly int _attributeLength;
 
     }
 

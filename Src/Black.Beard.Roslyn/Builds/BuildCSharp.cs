@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace Bb.Builds
 {
@@ -25,7 +26,8 @@ namespace Bb.Builds
         /// <param name="configureCompilation">The configure compilation.</param>
         public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
         {
-
+            Platform = Platform.AnyCpu;
+            this.OutputKind = OutputKind.DynamicallyLinkedLibrary;
             _diagnostics = new ScriptDiagnostics();
             _compiledAssemblies = new Dictionary<int, AssemblyResult>();
             _suppress = new Dictionary<string, ReportDiagnostic>();
@@ -57,7 +59,7 @@ namespace Bb.Builds
         /// <returns></returns>
         public BuildCSharp AddReferences(params Type[] types)
         {
-            this.References.AddByTypes(types); 
+            this.References.AddByTypes(types);
             return this;
         }
 
@@ -385,6 +387,8 @@ namespace Bb.Builds
         /// </summary>
         public AssemblyResult LastBuild { get; private set; }
 
+        public OutputKind OutputKind { get; private set; }
+
         /// <summary>
         /// Suppresses the specified ids.
         /// </summary>
@@ -537,12 +541,22 @@ namespace Bb.Builds
 
         }
 
+        public string MainTypeName { get; set; }
+
+        public Platform Platform { get; set; }
+
+        public BuildCSharp SetKindAssembly(OutputKind kind)
+        {
+            this.OutputKind = kind;
+            return this;
+        }
+
         private RoslynCompiler CreateBuilder()
         {
 
             References.Next(Nugets);
 
-            var compiler = new RoslynCompiler(References, _diagnostics)
+            var compiler = new RoslynCompiler(this.OutputKind, References, _diagnostics)
             {
                 ConfigureCompilation = Configure,
                 DocumentationMode = this.DocumentationMode,
@@ -552,6 +566,9 @@ namespace Bb.Builds
                 ResolveObjects = this.ResolveObjects,
                 Debug = this.Debug,
                 Usings = _usings.Values.ToArray(),
+                AssemblyAttributes = this._attributes,
+                MainTypeName = this.MainTypeName,
+                Platform = this.Platform
             }
 
             .AddCodeSource(Sources)
@@ -629,6 +646,24 @@ namespace Bb.Builds
             _dependencies.Add(buildCSharp);
         }
 
+        public BuildCSharp AddAssemblyAttribute(string attributeName, params object[] arguments)
+        {
+            if (_attributes.ContainsKey(attributeName))
+                _attributes.Remove(attributeName);
+            _attributes.Add(attributeName, arguments);
+            return this;
+        }
+
+        public BuildCSharp AddAssemblyAttribute(Type attribute, params object[] arguments)
+        {
+            var attributeName = attribute.Name;
+            if (_attributes.ContainsKey(attributeName))
+                _attributes.Remove(attributeName);
+            _attributes.Add(attributeName, arguments);
+            this.References.AddByTypes(attribute);
+            return this;
+        }
+
         #endregion subBuild
 
 
@@ -638,6 +673,8 @@ namespace Bb.Builds
         private Dictionary<int, AssemblyResult> _compiledAssemblies;
         private readonly Dictionary<string, ReportDiagnostic> _suppress;
         private Dictionary<string, CSUsing> _usings = new Dictionary<string, CSUsing>();
+        private Dictionary<string, object[]> _attributes = new Dictionary<string, object[]>();
+
         private bool _inBuild = false;
     }
 

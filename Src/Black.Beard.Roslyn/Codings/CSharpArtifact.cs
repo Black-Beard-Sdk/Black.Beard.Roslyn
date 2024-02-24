@@ -99,15 +99,13 @@ namespace Bb.Codings
         /// <param name="usings">The usings to append.</param>
         /// <param name="action">action to execute for every namespace.</param>
         /// <returns></returns>
-        public CSharpArtifact Using(string @using, Action<CSUsing> action)
+        public CSharpArtifact Using(string @using, Action<CSUsing> action = null)
         {
-
-            if (action is null)
-                throw new ArgumentNullException(nameof(action));
 
             var u = new CSUsing(@using);
 
-            action(u);
+            if (action != null)
+                action(u);
 
             Using(u);
 
@@ -127,7 +125,7 @@ namespace Bb.Codings
                 _usings[@using.NamespaceOrType] = @using;
             else
                 _usings.Add(@using.NamespaceOrType, @using);
-                  
+
             return this;
         }
 
@@ -192,6 +190,7 @@ namespace Bb.Codings
 
             CompilationUnitSyntax syntaxFactory = SyntaxFactory.CompilationUnit();
             syntaxFactory = AppendUsings(syntaxFactory);
+            syntaxFactory = AppendAttributes(syntaxFactory);
 
             foreach (var @namespace in Members)
             {
@@ -250,6 +249,15 @@ namespace Bb.Codings
 
             return self;
         }
+        private CompilationUnitSyntax AppendAttributes(CompilationUnitSyntax self)
+        {
+
+            var a = this.GetAttributes();
+            if (a.Any())
+                self = self.AddAttributeLists(a.ToArray());
+            return self;
+        }
+
 
         private readonly Dictionary<string, CSUsing> _usings;
 

@@ -53,17 +53,26 @@ namespace Bb.Codings
         protected List<AttributeListSyntax> GetAttributes()
         {
 
+            var isAssembly = this.GetType() == typeof(CSharpArtifact);
+
             List<AttributeListSyntax> attributes = new List<AttributeListSyntax>();
             if (_attributes.Count > 0)
             {
 
                 for (int i = 0; i < _attributes.Count; i++)
                 {
+
+                    var attr = _attributes[i];
+
                     var lst = new List<AttributeSyntax>
                     {
-                        (AttributeSyntax)_attributes[i].Build()
+                        (AttributeSyntax)attr.Build()
                     };
+
                     AttributeListSyntax result = SyntaxFactory.AttributeList(SyntaxFactory.SeparatedList(lst.ToArray()));
+
+                    if (isAssembly)
+                        result = result.WithTarget(SyntaxFactory.AttributeTargetSpecifier(Token(SyntaxKind.AssemblyKeyword)));
 
                     attributes.Add(result);
 
@@ -79,7 +88,7 @@ namespace Bb.Codings
         #endregion attributes
 
         #region Modifiers
-               
+
         protected List<SyntaxNodeOrToken> GetParameters()
         {
 

@@ -8,6 +8,7 @@ using System.Text;
 using System.Collections.Immutable;
 using Bb.Codings;
 using Bb.Analysis.Traces;
+using SharpCompress.Common;
 
 namespace Bb.Compilers
 {
@@ -17,9 +18,11 @@ namespace Bb.Compilers
     public class RoslynCompiler
     {
 
-        public RoslynCompiler(AssemblyReferences assemblies, ScriptDiagnostics diagnostics)
+        public RoslynCompiler(OutputKind kind, AssemblyReferences assemblies, ScriptDiagnostics diagnostics)
         {
 
+            this.Platform = Platform.AnyCpu;
+            this.AssemblyKind = kind;
             this._diagnostics = diagnostics ?? new ScriptDiagnostics();
             this._assemblies = assemblies;
             this.LanguageVersion = assemblies.Sdk.LanguageVersion;
@@ -182,11 +185,23 @@ namespace Bb.Compilers
             return objects;
         }
 
+        public OutputKind AssemblyKind { get; }
+
+        public string MainTypeName { get; set; }
+
+        public Platform Platform { get; set; }
+
+        /// <summary>
+        /// Add attributes in the assembly
+        /// </summary>
+        public Dictionary<string, object[]> AssemblyAttributes { get; set; }
+
         private CSharpCompilationOptions GetCompilationOptions(AssemblyResult result)
         {
 
             CSharpCompilationOptions compilationOptions = new CSharpCompilationOptions
-                (OutputKind.DynamicallyLinkedLibrary,
+                (
+                    AssemblyKind,
                     allowUnsafe: true,
                     xmlReferenceResolver: null, // no support for permission set and doc includes in interactive
                     metadataReferenceResolver: _resolver,
@@ -194,9 +209,12 @@ namespace Bb.Compilers
                 )
                 .WithModuleName($"{_assemblyName}.dll")
                 .WithOptimizationLevel(this.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release)
-                .WithPlatform(Platform.AnyCpu)
+                .WithPlatform(this.Platform)
                 //.WithUsings(result.Usings)
                 ;
+
+            if (!string.IsNullOrEmpty(this.MainTypeName))
+                compilationOptions.WithMainTypeName(this.MainTypeName);
 
             if (this.KeyFile != null)
                 AddSignature(compilationOptions);
@@ -256,6 +274,63 @@ namespace Bb.Compilers
 
             var sources = new List<SyntaxTree>();
 
+            ManageUsings(sources);
+            ManageAssembliesAttributes(sources);
+
+            Parse(result, sources);
+
+            //// Try to resolve assemblies
+            //CSharpVisitor visitor = new CSharpVisitor();
+            //foreach (var item in sources)
+            //    visitor.Visit(item.GetRoot());
+            //var usings = visitor.GetUsings();
+            //var _references = ResolveAsemblies(usings);
+
+            return result;
+
+        }
+        private void ManageAssembliesAttributes(List<SyntaxTree> sources)
+        {
+
+            if (this.AssemblyAttributes.Any())
+            {
+
+                var builder = new CSharpArtifact();
+
+
+                AddUsingIfNotInGlobal(builder, "System");
+                AddUsingIfNotInGlobal(builder, "System.Reflection");
+
+                foreach (var item in this.AssemblyAttributes)
+                {
+
+                    var attribute = builder.Attribute(item.Key);
+                    foreach (var arg in item.Value)
+                    {
+                        if (arg is Version v)
+                            attribute.Argument(CSharpNode.Literal(arg.ToString()));
+                        else
+                            attribute.Argument(CSharpNode.Literal(arg));
+                    }
+                }
+
+                var src = builder.Code().ToString();
+
+                sources.Add(builder.Build().SyntaxTree);
+
+            }
+
+        }
+
+        private void AddUsingIfNotInGlobal(CSharpArtifact builder, string @namespace)
+        {
+            if (!this.Usings.Where(c => c.IsGlobal && c.NamespaceOrType == @namespace).Any())
+                builder.Using(@namespace);
+        }
+
+        private void ManageUsings(List<SyntaxTree> sources)
+        {
+
             if (this.Usings.Any())
             {
 
@@ -293,7 +368,7 @@ namespace Bb.Compilers
                     builder.Using(item);
                 }
 
-                var src = builder.Code().ToString();
+                //var src = builder.Code().ToString();
 
                 sources.Add(builder.Build().SyntaxTree);
 
@@ -301,17 +376,6 @@ namespace Bb.Compilers
                     LanguageVersion = LanguageVersion.CSharp12;
 
             }
-
-            Parse(result, sources);
-
-            //// Try to resolve assemblies
-            //CSharpVisitor visitor = new CSharpVisitor();
-            //foreach (var item in sources)
-            //    visitor.Visit(item.GetRoot());
-            //var usings = visitor.GetUsings();
-            //var _references = ResolveAsemblies(usings);
-
-            return result;
 
         }
 
