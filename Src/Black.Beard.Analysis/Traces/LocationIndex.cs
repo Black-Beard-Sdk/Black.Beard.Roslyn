@@ -42,18 +42,25 @@ namespace Bb.Analysis.Traces
         /// <param name="sb"></param>
         public void WriteTo(StringBuilder sb)
         {
-
             sb.Append("index:" + Index);
-
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns></returns>
         override public string ToString()
         {
             StringBuilder sb = new StringBuilder();
             WriteTo(sb);
             return sb.ToString();
         }
-   
+
+        /// <summary>
+        /// return true if the current position start before the specified location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool StartAfter(ILocation location)
         {
             var l = location as ILocationIndex;
@@ -62,6 +69,11 @@ namespace Bb.Analysis.Traces
             return false;
         }
 
+        /// <summary>
+        /// return true if the current location start before the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool StartBefore(ILocation location)
         {
             var l = location as ILocationIndex;
@@ -70,6 +82,11 @@ namespace Bb.Analysis.Traces
             return false;
         }
 
+        /// <summary>
+        /// return true if the current location end before the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool EndBefore(ILocation location)
         {
             var l = location as ILocationIndex;
@@ -78,6 +95,11 @@ namespace Bb.Analysis.Traces
             return false;
         }
 
+        /// <summary>
+        /// return true if the current location end after the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool EndAfter(ILocation location)
         {
             var l = location as ILocationIndex;
@@ -86,13 +108,15 @@ namespace Bb.Analysis.Traces
             return false;
         }
 
-
-
+        /// <summary>
+        /// return true if the current location can be compared with another location
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
         public bool CanBeCompare(ILocation location)
         {
             return location is ILocationIndex;
         }
-
 
         /// <summary>
         /// Performs an implicit conversion from <see cref="int"/> to <see cref="LocationIndex"/>.

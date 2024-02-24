@@ -46,6 +46,11 @@ namespace Bb.Analysis.Traces
         /// </summary>
         public int Column { get; }
 
+        /// <summary>
+        /// return true if the current position start before the specified location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool StartAfter(ILocation location)
         {
             var l = location as LocationLine;
@@ -60,6 +65,11 @@ namespace Bb.Analysis.Traces
             return false;
         }
 
+        /// <summary>
+        /// return true if the current location start before the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool StartBefore(ILocation location)
         {
             var l = location as LocationLine;
@@ -75,6 +85,11 @@ namespace Bb.Analysis.Traces
 
         }
 
+        /// <summary>
+        /// return true if the current location end before the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool EndBefore(ILocation location)
         {
             var l = location as LocationLine;
@@ -90,6 +105,11 @@ namespace Bb.Analysis.Traces
             return false;
         }
 
+        /// <summary>
+        /// return true if the current location end after the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool EndAfter(ILocation location)
         {
             var l = location as LocationLine;
@@ -113,7 +133,6 @@ namespace Bb.Analysis.Traces
             return new LocationLine(Line, Column);
         }
 
-
         /// <summary>
         /// Writes message to specified <see cref="StringBuilder"/>.
         /// </summary>
@@ -124,6 +143,10 @@ namespace Bb.Analysis.Traces
             sb.Append(", col:" + Column);
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns></returns>
         override public string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -131,6 +154,11 @@ namespace Bb.Analysis.Traces
             return sb.ToString();
         }
 
+        /// <summary>
+        /// return true if the current location can be compared with another location
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
         public bool CanBeCompare(ILocation location)
         {
             return location is LocationLine;

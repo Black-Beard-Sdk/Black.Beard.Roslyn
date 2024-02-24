@@ -102,6 +102,19 @@ namespace Bb.Analysis.Traces
 
 
         /// <summary>
+        /// get a value from the dictionary
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public object Get(string key)
+        {
+            _ = Datas.TryGetValue(key, out var value);
+            return value;
+        }
+
+
+        /// <summary>
         /// Creates a new object that is a copy of the current instance.
         /// </summary>
         /// <returns>

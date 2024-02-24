@@ -64,6 +64,11 @@ namespace Bb.Analysis.Traces
         /// </summary>
         public int Index { get; }
 
+        /// <summary>
+        /// return true if the current position start before the specified location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool StartAfter(ILocation location)
         {
             var l = location as ILocationIndex;
@@ -72,6 +77,11 @@ namespace Bb.Analysis.Traces
             return false;
         }
 
+        /// <summary>
+        /// return true if the current location start before the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool StartBefore(ILocation location)
         {
             var l = location as ILocationIndex;
@@ -80,6 +90,11 @@ namespace Bb.Analysis.Traces
             return false;
         }
 
+        /// <summary>
+        /// return true if the current location end before the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool EndBefore(ILocation location)
         {
             var l = location as ILocationIndex;
@@ -88,6 +103,11 @@ namespace Bb.Analysis.Traces
             return false;
         }
 
+        /// <summary>
+        /// return true if the current location end after the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         public bool EndAfter(ILocation location)
         {
             var l = location as ILocationIndex;

@@ -11,14 +11,39 @@ namespace Bb.Analysis.Traces
         /// </summary>
         bool IsEmpty { get; }
 
+        /// <summary>
+        /// return true if the current location can be compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         bool CanBeCompare(ILocation location);
 
+        /// <summary>
+        /// return true if the current position start before the specified location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         bool StartAfter(ILocation location);
 
+        /// <summary>
+        /// return true if the current location end before the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         bool EndBefore(ILocation location);
 
+        /// <summary>
+        /// return true if the current location end after the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         bool EndAfter(ILocation location);
 
+        /// <summary>
+        /// return true if the current location start before the compared with another location
+        /// </summary>
+        /// <param name="location">the location to compare</param>
+        /// <returns></returns>
         bool StartBefore(ILocation location);
 
         /// <summary>
@@ -26,26 +51,6 @@ namespace Bb.Analysis.Traces
         /// </summary>
         /// <param name="sb"></param>
         void WriteTo(StringBuilder sb);
-
-    }
-
-    public interface ILocationIndex : ILocation
-    {
-
-        /// <summary>
-        /// index position
-        /// </summary>
-        int Index { get; }
-
-    }
-
-    public interface ILocationPath : ILocation
-    {
-
-        /// <summary>
-        /// Path position
-        /// </summary>
-        string Path { get; }
 
     }
 

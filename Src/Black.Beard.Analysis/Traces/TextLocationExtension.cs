@@ -58,20 +58,6 @@ namespace Bb.Analysis.Traces
             return self;
         }
 
-
-        /// <summary>
-        /// get a value to the dictionary
-        /// </summary>
-        /// <param name="self"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static object Get(this TextLocation self, string key)
-        {
-            self.Datas.TryGetValue(key, out object value);
-            return value;
-        }
-
-
     }
 
 }
