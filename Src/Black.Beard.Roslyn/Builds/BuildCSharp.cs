@@ -11,6 +11,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -57,6 +58,40 @@ namespace Bb.Builds
             if (!Directory.Exists(OutputPath))
                 Directory.CreateDirectory(OutputPath);
 
+        }
+
+        /// <summary>
+        /// Add references to the build.
+        /// </summary>
+        /// <param name="types"></param>
+        /// <returns></returns>
+        public BuildCSharp AddReferences(params Type[] types)
+        {
+            this.References.AddByTypes(types); 
+            return this;
+        }
+
+        /// <summary>
+        /// Add references to the build.
+        /// </summary>
+        /// <param name="types"></param>
+        /// <returns></returns>
+        public BuildCSharp AddReferences(params Assembly[] types)
+        {
+            this.References.AddByAssemblies(types);
+            return this;
+        }
+
+        /// <summary>
+        /// Add references to the build.
+        /// </summary>
+        /// <param name="assemblyLocation"></param>
+        /// <param name="assemblyName"></param>
+        /// <returns></returns>
+        public BuildCSharp AddReferences(string assemblyLocation, string assemblyName = null)
+        {
+            this.References.AddAssemblyLocation(assemblyLocation, assemblyName);
+            return this;
         }
 
 
