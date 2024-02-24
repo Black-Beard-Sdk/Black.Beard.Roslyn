@@ -1,9 +1,7 @@
-﻿using Bb;
-using Bb.Builds;
-using Microsoft.CodeAnalysis.CSharp;
+﻿using Microsoft.CodeAnalysis.CSharp;
 using System.Xml;
 
-namespace Black.Beard.Roslyn.BuildProjects
+namespace Bb.Builds
 {
 
 

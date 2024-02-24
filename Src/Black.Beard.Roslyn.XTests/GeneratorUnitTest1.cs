@@ -1,7 +1,6 @@
 using Bb.Analysis.Traces;
 using Bb.Builds;
 using Bb.Codings;
-using Black.Beard.Roslyn.BuildProjects;
 using System;
 using System.IO;
 using System.Linq;
@@ -19,7 +18,7 @@ namespace Bb.Roslyn.XTests
         }
 
         [Fact]
-        public void TestReseverdNames()
+        public void TestReservedNames()
         {
 
             var artifact = new CSharpArtifact("test1")

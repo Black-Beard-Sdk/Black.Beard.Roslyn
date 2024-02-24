@@ -1,6 +1,4 @@
-﻿using Bb.Http;
-using System.Xml.Linq;
-
+﻿
 namespace Bb.Builds
 {
 

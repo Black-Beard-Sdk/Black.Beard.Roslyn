@@ -7,12 +7,6 @@ using System.Diagnostics;
 using System.Text;
 using System.Collections.Immutable;
 using Bb.Codings;
-using System.Reflection;
-using System.Linq;
-using Refs;
-using static Refs.System;
-using ICSharpCode.Decompiler.Metadata;
-using System.IO;
 using Bb.Analysis.Traces;
 
 namespace Bb.Compilers
@@ -23,10 +17,10 @@ namespace Bb.Compilers
     public class RoslynCompiler
     {
 
-        public RoslynCompiler(AssemblyReferences assemblies, Analysis.Traces.ScriptDiagnostics diagnostics)
+        public RoslynCompiler(AssemblyReferences assemblies, ScriptDiagnostics diagnostics)
         {
 
-            this._diagnostics = diagnostics ?? new Analysis.Traces.ScriptDiagnostics();
+            this._diagnostics = diagnostics ?? new ScriptDiagnostics();
             this._assemblies = assemblies;
             this.LanguageVersion = assemblies.Sdk.LanguageVersion;
 
@@ -384,7 +378,7 @@ namespace Bb.Compilers
 
         #endregion Methods
 
-        private readonly Analysis.Traces.ScriptDiagnostics _diagnostics;
+        private readonly ScriptDiagnostics _diagnostics;
         private readonly AssemblyReferences _assemblies;
         private readonly ReferenceResolver _resolver;
         private List<FileCode> _sources = new List<FileCode>();

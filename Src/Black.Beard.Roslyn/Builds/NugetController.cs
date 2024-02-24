@@ -1,6 +1,5 @@
 ﻿using Bb.Analysis.Traces;
 using ICSharpCode.Decompiler.Util;
-using System.Threading;
 
 namespace Bb.Builds
 {

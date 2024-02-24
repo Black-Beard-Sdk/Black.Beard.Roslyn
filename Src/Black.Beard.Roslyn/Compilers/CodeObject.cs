@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace Bb.Compilers
 {
     public class CodeObject

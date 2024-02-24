@@ -1,11 +1,5 @@
-﻿using ICSharpCode.Decompiler.Metadata;
-using Microsoft.CodeAnalysis;
-using System;
+﻿using Microsoft.CodeAnalysis;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace Bb.Builds
 {

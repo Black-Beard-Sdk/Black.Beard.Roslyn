@@ -3,7 +3,6 @@ using System.Collections;
 using System.Reflection;
 using Refs;
 using ICSharpCode.Decompiler.Metadata;
-using System.Text.RegularExpressions;
 
 namespace Bb.Builds
 {

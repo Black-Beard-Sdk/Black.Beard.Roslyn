@@ -1,10 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
-using System.Xml.Linq;
-using System.Collections.Generic;
-using System;
-using System.Linq;
 using Bb.Compilers;
 using System.Diagnostics;
 

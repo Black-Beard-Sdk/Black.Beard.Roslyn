@@ -1,5 +1,4 @@
-﻿using System.Text;
-
+﻿
 namespace Bb.Compilers
 {
     internal class FileCode
