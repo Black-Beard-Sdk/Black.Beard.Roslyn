@@ -1,6 +1,8 @@
-﻿using Bb.Analysis.Traces;
+﻿using Bb.Analysis;
+using Bb.Analysis.Traces;
 using Bb.Codings;
 using Bb.Compilers;
+using Bb.Nugets;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
@@ -33,7 +35,7 @@ namespace Bb.Builds
             _suppress = new Dictionary<string, ReportDiagnostic>();
 
             this.Nugets = new NugetController();
-            Framework = new Framework();
+            Framework = new Frameworks();
             ConfigureCompilations = new List<Action<CSharpCompilationOptions>>(2);
             this.References = new AssemblyReferences();
             Sources = new SourceCodes();
@@ -179,24 +181,24 @@ namespace Bb.Builds
         /// </summary>
         public NugetController Nugets { get; }
 
-        public Framework Framework { get; internal set; }
+        public Frameworks Framework { get; internal set; }
 
         public BuildCSharp AddAvailableVersion(string[] frameworkVersions)
         {
 
             var type = this.Framework.Sdk;
 
-            List<Version> versions = new List<Version>();
+            List<FrameworkKey> versions = new List<FrameworkKey>();
             foreach (var item in frameworkVersions)
             {
-                var version = Helper.ResolveVersion(item);
+                var version = FrameworkKeys.Resolve(item);
                 if (version != null)
                     versions.Add(version);
             }
 
-            var v = versions.OrderBy(c => c).Last();
+            FrameworkKey key = versions.OrderBy(c => c).Last();
 
-            this.Framework.Versions.Add(FrameworkVersion.Resolve(v, type));
+            this.Framework.Versions.Add(FrameworkVersion.Resolve(key, type));
 
             return this;
 
@@ -204,7 +206,7 @@ namespace Bb.Builds
 
         public BuildCSharp SetVersion(string frameworkVersion)
         {
-            this.Framework.Versions.Add(FrameworkVersion.Resolve(frameworkVersion));
+            this.Framework.Versions.Add(FrameworkVersion.Resolve(FrameworkKeys.Resolve(frameworkVersion)));
             return this;
         }
 

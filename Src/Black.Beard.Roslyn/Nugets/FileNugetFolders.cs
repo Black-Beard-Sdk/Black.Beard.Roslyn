@@ -1,5 +1,6 @@
-﻿
-namespace Bb.Builds
+﻿using static Bb.Nugets.NugetDocument;
+
+namespace Bb.Nugets
 {
 
     public class FileNugetFolders
@@ -14,15 +15,15 @@ namespace Bb.Builds
         public FileNugetFolders(string path, params string[] hosts)
         {
 
-            this.Path = new DirectoryInfo(path);
+            Path = new DirectoryInfo(path);
 
             if (!Path.Exists)
                 Path.Create();
 
             if (hosts != null && hosts.Length > 0)
-                this._hosts = new List<string>(hosts);
+                _hosts = new List<string>(hosts);
             else
-                this._hosts = new List<string>(0);
+                _hosts = new List<string>(0);
 
         }
 
@@ -33,10 +34,10 @@ namespace Bb.Builds
         public bool WithResolver => Hosts.Length > 0;
 
 
-        internal FileNugetFolders Initialize()
+        public FileNugetFolders Refresh()
         {
 
-            foreach (var item in this.Path.GetDirectories())
+            foreach (var item in Path.GetDirectories())
             {
                 var l = new FileNugetFolder(item);
                 if (!_folders.TryGetValue(l.Name, out var f))
@@ -47,7 +48,36 @@ namespace Bb.Builds
 
         }
 
-        internal FileNugetVersion Resolve((string, Version) item)
+        /// <summary>
+        /// Resolve by name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public FileNugetFolder Resolve(string name)
+        {
+            _folders.TryGetValue(name.ToLower(), out FileNugetFolder folder);
+            return folder;
+        }              
+
+        /// <summary>
+        /// resolve by name and version
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="version"></param>
+        /// <returns></returns>
+        public LocalFileNugetVersion Resolve(string name, Version version)
+        {
+            if (_folders.TryGetValue(name.ToLower(), out FileNugetFolder folder))
+                return folder.Resolve(version);
+            return default;
+        }
+
+        /// <summary>
+        /// resolve by name and version
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public LocalFileNugetVersion Resolve((string, Version) item)
         {
 
             if (_folders.TryGetValue(item.Item1.ToLower(), out FileNugetFolder folder))
@@ -57,7 +87,12 @@ namespace Bb.Builds
 
         }
 
-        internal IEnumerable<FileNugetVersion> ResolveAll((string, Version) item)
+        /// <summary>
+        /// resolve all version by name
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public IEnumerable<LocalFileNugetVersion> ResolveAll((string, Version) item)
         {
             if (_folders.TryGetValue(item.Item1.ToLower(), out FileNugetFolder folder))
                 foreach (var version in folder)
@@ -66,12 +101,17 @@ namespace Bb.Builds
         }
 
 
+        public bool TryToDownload(NugetDependency dependency)
+        {
+            return TryToDownload(dependency.Id, dependency.Version);
+        }
+
         /// <summary>
         /// Try to download the package nuget
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool TryToDownload(string name, Version? version = null)
+        public bool TryToDownload(string name, Version version = null)
         {
 
             foreach (var host in Hosts)
@@ -86,6 +126,9 @@ namespace Bb.Builds
                 // download
                 var file = uri.Download(tempPath);
 
+                //NugetCompressedDocument docZip = NugetCompressedDocument.Create(file);
+                //var doc = docZip.Load();
+
                 // resolve id & version
                 (name, version) = file.ResolveIdAndVersion(System.IO.Path.Combine(tempPath.FullName, "unzip"));
 
@@ -98,9 +141,9 @@ namespace Bb.Builds
                     var l = new FileNugetFolder(targetfolder.Parent);
                     if (!_folders.TryGetValue(l.Name.ToLower(), out var f))
                         _folders.Add(l.Name.ToLower(), l);
-                    else                    
-                        f.Refresh();
-                    
+                    else
+                        f.Reset();
+
 
                     return true;
 
@@ -111,7 +154,7 @@ namespace Bb.Builds
             return false;
 
         }
-
+           
         public DirectoryInfo Path { get; }
 
         public string[] Hosts => _hosts.ToArray();

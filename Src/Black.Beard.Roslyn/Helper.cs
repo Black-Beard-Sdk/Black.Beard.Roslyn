@@ -1,4 +1,6 @@
 ﻿using Bb.Http;
+using Bb.Nugets;
+using System;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -32,38 +34,11 @@ namespace Bb
 
         public static (string,  Version) ResolveIdAndVersion(this string file, string tempPath)
         {
-
-            Version version = null;
-            string name = null;
-
-            // unzipping
-            var targetfolder = file.Unzip(Path.Combine(tempPath, "unzip"));
-
-            var list = targetfolder.GetFiles("*.nuspec");
-            foreach (var c in list)
-            {
-                var root = c.LoadXmlFromFile().Root;
-                var ns = root.Name.NamespaceName;
-                var metadata = root.Element(XName.Get("metadata", ns));
-                if (metadata != null)
-                {
-
-                    name = metadata.Element(XName.Get("id", ns))?.Value;
-                    var _version = metadata.Element(XName.Get("version", ns))?.Value;
-                    if (_version != null)
-                    {
-                        version = new Version(_version);
-                        break;
-                    }
-                }
-
-            };
-
-            targetfolder.Delete(true);
-
-            return (name, version);
-
+            NugetCompressedDocument docZip = NugetCompressedDocument.Create(file, tempPath);
+            var doc = docZip.Load();
+            return (doc.Id, doc.Version);
         }
+               
 
         public static DirectoryInfo Unzip(this string filepath, string targetFolder)
         {

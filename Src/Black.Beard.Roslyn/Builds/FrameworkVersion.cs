@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Bb.Analysis;
+using Bb.Util;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Diagnostics;
 
@@ -9,7 +11,7 @@ namespace Bb.Builds
     /// <summary>
     /// Sdk installed on the system.
     /// </summary>
-    [DebuggerDisplay("{Version} : {Type}")]
+    [DebuggerDisplay("{Key} : {Type}")]
     public class FrameworkVersion
     {
 
@@ -53,15 +55,19 @@ namespace Bb.Builds
         private FrameworkVersion Intialize(DirectoryInfo directory)
         {
 
-            this.Version = new Version(directory.Name);
-            this.Name = GetName(this.Version);
+            var version = new Version(directory.Name);
+            //this.Name = GetName(this.Version);
+
+            this.Key = FrameworkKeys.Resolve(version);
+
+
             this.Directory = directory;
             this.Compatibilities = new List<string>();
 
-            
-            if (Version.Major >= 5)
+
+            if (Key.Version.Major >= 5)
                 this.Compatibilities.Add("netstandard2.0");
-            
+
 
             switch (this.Directory.Parent.Name)
             {
@@ -83,77 +89,9 @@ namespace Bb.Builds
                     break;
             }
 
-
-            switch (Version.Major)
-            {
-                case 2:
-                    LanguageVersion = LanguageVersion.CSharp8;
-                    break;
-
-                case 3:
-                case 5:
-                    LanguageVersion = LanguageVersion.CSharp9;
-                    break;
-
-                case 6:
-                    LanguageVersion = LanguageVersion.CSharp10;
-                    break;
-
-                case 7:
-                    LanguageVersion = LanguageVersion.CSharp11;
-                    break;
-
-                case 8:
-                    LanguageVersion = LanguageVersion.CSharp12;
-                    break;
-
-                default:
-                    Stop();
-                    break;
-
-            }
-
+            this.LanguageVersion = (LanguageVersion)Key.languageVersion;
 
             return this;
-
-        }
-
-
-        public static string GetName(Version version)
-        {
-
-            switch (version.Major.ToString() + "." + version.Minor.ToString())
-            {
-                case "2.0":
-                    return "netstandard2.0";
-
-                case "2.1":
-                    return "netcoreapp2.1";
-                case "2.2":
-                    return "netcoreapp2.2";
-                case "3.0":
-                    return "netcoreapp3.0";
-                case "3.1":
-                    return "netcoreapp3.1";
-
-                case "4.6":
-                    return "net4.6" + version.Build.ToString();
-                case "4.8":
-                    return "net4.8";
-                case "5.0":
-                    return "net5.0";
-                case "6.0":
-                    return "net6.0";
-                case "7.0":
-                    return "net7.0";
-                case "8.0":
-                    return "net8.0";
-                default:
-                    Stop();
-                    break;
-            }
-
-            return null;
 
         }
 
@@ -163,8 +101,9 @@ namespace Bb.Builds
         /// <value>
         /// The version.
         /// </value>
-        public Version Version { get; private set; }
-        public string Name { get; private set; }
+        //public Version Version { get; private set; }
+
+        public FrameworkKey Key { get; private set; }
 
 
         /// <summary>
@@ -189,39 +128,11 @@ namespace Bb.Builds
 
         #region Resolve
 
-        /// <summary>
-        /// Try to Resolve specified versions in the available version installed on system
-        /// </summary>
-        /// <param name="frameworkVersion">The framework version.</param>
-        /// <param name="type">The type of sdk.</param>
-        /// <returns></returns>
-        public static FrameworkVersion Resolve(string frameworkVersion, string type = null)
+        public static FrameworkVersion Resolve(FrameworkKey key, string type = null)
         {
-            return ResolveVersions(new Version(frameworkVersion), type).LastOrDefault();
+            return ResolveVersions(key, type).LastOrDefault();
         }
-
-        /// <summary>
-        /// Try to Resolve specified versions in the available version installed on system
-        /// </summary>
-        /// <param name="frameworkVersion">The framework version.</param>
-        /// <param name="type">The type of sdk.</param>
-        /// <returns></returns>
-        public static FrameworkVersion Resolve(Version frameworkVersion, string type = null)
-        {
-            return ResolveVersions(frameworkVersion, type).LastOrDefault();
-        }
-
-        /// <summary>
-        /// Try to Resolve specified versions in the available version installed on system
-        /// </summary>
-        /// <param name="frameworkVersion">The framework version.</param>
-        /// <param name="type">The type of sdk.</param>
-        /// <returns></returns>
-        public static IEnumerable<FrameworkVersion> ResolveVersions(string frameworkVersion, string type = null)
-        {
-            return ResolveVersions(new Version(frameworkVersion), type);
-        }
-
+                
         /// <summary>
         /// Try to Resolve specified versions in the available version installed on system.
         /// </summary>
@@ -235,7 +146,28 @@ namespace Bb.Builds
                 InitializeAllFrameworks();
 
             var major = frameworkVersion.Major;
-            var list = _versions.Where(c => c.Version.Major == major).ToList();
+            var list = _versions.Where(c => c.Key.Version.Major == major).ToList();
+
+            if (!string.IsNullOrEmpty(type))
+                list = list.Where(c => c.Type == type).ToList();
+
+            return list;
+
+        }
+
+        /// <summary>
+        /// Try to Resolve specified versions in the available version installed on system.
+        /// </summary>
+        /// <param name="frameworkVersion">The framework version.</param>
+        /// <param name="type">The type of sdk.</param>
+        /// <returns></returns>
+        public static IEnumerable<FrameworkVersion> ResolveVersions(FrameworkKey frameworkVersion, string type = null)
+        {
+
+            if (_versions == null)
+                InitializeAllFrameworks();
+
+            var list = _versions.Where(c => c.Key == frameworkVersion).ToList();
 
             if (!string.IsNullOrEmpty(type))
                 list = list.Where(c => c.Type == type).ToList();
@@ -348,7 +280,7 @@ namespace Bb.Builds
                     versions.Add(new FrameworkVersion().Intialize(version));
             }
 
-            _versions = versions.OrderBy(c => c.Version).ToList();
+            _versions = versions.OrderBy(c => c.Key.Version).ToList();
 
         }
 
@@ -390,6 +322,5 @@ namespace Bb.Builds
 
     }
 
-
-
+  
 }

@@ -127,7 +127,7 @@ namespace Bb.Builds
         /// <param name="assemblyName">Name of the assembly.</param>
         /// <exception cref="System.ArgumentNullException">assemblyName</exception>
         /// <exception cref="System.IO.FileLoadException"></exception>
-        public PortableExecutableReference AddResolveAssemblyName(string assemblyName)
+        public PortableExecutableReference ResolveAssemblyNameAndAddIfMissing(string assemblyName)
         {
 
             string lib = null;
@@ -156,7 +156,7 @@ namespace Bb.Builds
             if (_next != null)
             {
 
-                lib = _next.ResolveAssemblyName(assemblyName, this.Sdk);
+                lib = _next.ResolveAssemblyName(assemblyName, null, this.Sdk, true);
                 if (!string.IsNullOrEmpty(lib))
                     AddAssemblyLocation(lib, assemblyName);
 
@@ -169,6 +169,7 @@ namespace Bb.Builds
             return null;
 
         }
+
 
 
         /// <summary>
@@ -252,10 +253,10 @@ namespace Bb.Builds
         /// <param name="location">The key.</param>
         /// <param name="reference">The reference.</param>
         /// <exception cref="System.NullReferenceException">reference</exception>
-        public Reference SearchInRegistered(string assemblyName = null)
+        public Reference SearchInRegistered(string assemblyName)
         {
 
-            if (!_referencesByAssembly.TryGetValue(assemblyName, out var instance))
+            if (_referencesByAssembly.TryGetValue(assemblyName, out var instance))
                 return instance;
 
             return null;
@@ -305,6 +306,15 @@ namespace Bb.Builds
                 _next.Next(next);
         }
 
+        public string SearchNext(string name, Version version, bool download)
+        {
+            
+            if (_next != null)
+                return _next.ResolveAssemblyName(name, version, this.Sdk, download);
+
+            return null;
+
+        }         
 
         #endregion IEnumerable
 

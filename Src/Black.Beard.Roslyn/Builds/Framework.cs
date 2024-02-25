@@ -5,13 +5,13 @@ namespace Bb.Builds
 {
 
 
-    public class Framework
+    public class Frameworks
     {
 
-        public Framework()
+        public Frameworks()
         {
             this.Versions = new List<FrameworkVersion>();
-            Sdk = "Microsoft.NET.Sdk";
+            Sdk = ".NETCore.App";
         }
 
         /// <summary>
@@ -46,22 +46,22 @@ namespace Bb.Builds
             if (this.Versions.Count == 0)
             {
                 if (this.Version == null)
-                    this.Versions.Add(FrameworkVersion.ResolveSdk(this.Sdk).OrderBy(c => c.Version.Major).Last());
+                    this.Versions.Add(FrameworkVersion.ResolveSdk(this.Sdk).OrderBy(c => c.Key.Version.Major).Last());
                 else
                     this.Versions.Add(FrameworkVersion.ResolveVersions(this.Version, this.Sdk).Last());
             }
 
             if (this.Versions.Count > 1 && this.Version == null)
-                this.Version = this.Versions.OrderBy(c => c.Version)
-                                            .Last().Version;
+                this.Version = this.Versions.OrderBy(c => c.Key.Version)
+                                            .Last().Key.Version;
             else if (this.Version == null)
-                this.Version = this.Versions.FirstOrDefault().Version;
+                this.Version = this.Versions.FirstOrDefault().Key.Version;
 
             var m = this.Version.Major;
 
             var result = this.Versions
-                .Where(c => c.Version.Major == m)
-                .OrderBy(c => c.Version)
+                .Where(c => c.Key.Version.Major == m)
+                .OrderBy(c => c.Key.Version)
                 .LastOrDefault();
 
             return result;

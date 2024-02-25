@@ -1,7 +1,9 @@
 ﻿using Bb.Analysis.Traces;
+using Bb.Builds;
 using Microsoft.CodeAnalysis;
 using System.Diagnostics;
 using System.Reflection;
+using System.Reflection.Metadata;
 
 namespace Bb.Compilers
 {
@@ -50,7 +52,14 @@ namespace Bb.Compilers
             return assembly;
 
         }
-    }
 
+        public List<DependencyAssemblyNameResolver.AssemblyReference> ResolveDependencies(AssemblyReferences references, bool download)
+        {
+            return DependencyAssemblyNameResolver.Resolve(new FileInfo(AssemblyFile), references, download);
+
+        }
+
+
+    }
 
 }

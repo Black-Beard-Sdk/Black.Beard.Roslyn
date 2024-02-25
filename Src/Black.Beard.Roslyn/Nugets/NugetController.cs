@@ -1,7 +1,9 @@
-﻿using Bb.Analysis.Traces;
+﻿using Bb.Analysis;
+using Bb.Analysis.Traces;
+using Bb.Builds;
 using ICSharpCode.Decompiler.Util;
 
-namespace Bb.Builds
+namespace Bb.Nugets
 {
 
 
@@ -51,13 +53,17 @@ namespace Bb.Builds
         {
 
             if (!_folders.Any(c => c.Path.FullName == path))
-                _folders.Add(new FileNugetFolders(path, hosts).Initialize());
+                _folders.Add(new FileNugetFolders(path, hosts).Refresh());
 
             return this;
 
-        }     
-        
+        }
 
+        /// <summary>
+        /// Copy the nuget folder from the source
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public NugetController CopyFrom(NugetController source)
         {
 
@@ -96,7 +102,7 @@ namespace Bb.Builds
 
             if (items.Any())
             {
-                
+
                 var max = items.Max(c => c.Item2);
                 if (max > version)
                     return;
@@ -110,17 +116,30 @@ namespace Bb.Builds
 
         }
 
-
-        public string ResolveAssemblyName(string assemblyName, FrameworkVersion framework)
+        /// <summary>
+        /// Resolve assembly name
+        /// </summary>
+        /// <param name="assemblyName">name of the assembly</param>
+        /// <param name="framework"><see cref="FrameworkVersion"/> </param>
+        /// <returns></returns>
+        public string ResolveAssemblyName(string assemblyName, Version version, FrameworkVersion framework, bool download)
         {
-            var result = TryToResolve((assemblyName, null), out var empty, framework.Name).LastOrDefault();
-            if ( string.IsNullOrEmpty(result.Item1))
+
+            if (framework == null)
+                framework = FrameworkVersion.CurrentVersion;
+
+            var result = TryToResolve((assemblyName, version), out var empty, framework.Key).LastOrDefault();
+            if (string.IsNullOrEmpty(result.Item1))
                 foreach (var compatibility in framework.Compatibilities)
                 {
-                    result = TryToResolve((assemblyName, null), out empty, compatibility).LastOrDefault();
+                    result = TryToResolve((assemblyName, version), out empty, compatibility).LastOrDefault();
                     if (!string.IsNullOrEmpty(result.Item1))
                         break;
                 }
+
+            if (string.IsNullOrEmpty(result.Item1) && download)
+                if (TryToDownload(assemblyName, version))
+                    return ResolveAssemblyName(assemblyName, version, framework, false);
 
             return result.Item1;
 
@@ -130,18 +149,18 @@ namespace Bb.Builds
         internal void Resolve(AssemblyReferences references, ScriptDiagnostics diagnostics)
         {
 
-            string framework = references.Sdk.Name;
+            var framework = references.Sdk.Key;
             foreach (var item in _references)
             {
 
-                var list = TryToResolve(item, out var empty, framework);
+                List<(string, FrameworkKey, string, Version)> list = TryToResolve(item, out var empty, framework.Name);
 
                 if (list.Count == 0)   // If missing try to download
                 {
 
-                    if (empty)                    
-                        diagnostics.Information(item.Item1,  $"the package nuget {item.Item1} {item.Item2} not contains library.");
-                    
+                    if (empty)
+                        diagnostics.Information(item.Item1, $"the package nuget {item.Item1} {item.Item2} not contains library.");
+
                     else
                     {
                         if (TryToDownload(item.Item1, item.Item2))
@@ -161,11 +180,44 @@ namespace Bb.Builds
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public FileNugetFolder Resolve(string name)
+        {
+
+            foreach (var nugetFolder in _folders)
+            {
+                var o = nugetFolder.Resolve(name);
+                if (o != null)
+                    return o;
+            }
+
+            return default;
+
+        }
+
+        public LocalFileNugetVersion Resolve(string name, Version version)
+        {
+
+            foreach (var nugetFolder in _folders)
+            {
+                var o = nugetFolder.Resolve(name, version);
+                if (o != null)
+                    return o;
+            }
+
+            return default;
+
+        }
+
+        /// <summary>
         /// Try to download the package nuget
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool TryToDownload(string name, Version? version = null)
+        public bool TryToDownload(string name, Version version = null)
         {
 
             foreach (var nugetFolder in _folders)
@@ -177,10 +229,11 @@ namespace Bb.Builds
 
         }
 
-        private List<(string, string, string, Version)> TryToResolve((string, Version) item, out bool empty, string framework = null)
+
+        private List<(string, FrameworkKey, string, Version)> TryToResolve((string, Version) item, out bool empty, FrameworkKey framework = null)
         {
             empty = false;
-            var lst = new List<(string, string, string, Version)>();
+            var lst = new List<(string, FrameworkKey, string, Version)>();
 
             foreach (var nugetFolder in _folders)
                 foreach (var version in nugetFolder.ResolveAll(item))
@@ -191,7 +244,7 @@ namespace Bb.Builds
 
                     else
                     {
-                        var lst2 = libs.Where(c => string.IsNullOrEmpty(framework) || c.Item2 == framework).ToList();
+                        var lst2 = libs.Where(c => framework == null || c.Item2 == framework).ToList();
                         lst.AddRange(lst2);
                     }
                 }
