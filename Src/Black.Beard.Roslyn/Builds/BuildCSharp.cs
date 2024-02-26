@@ -389,7 +389,27 @@ namespace Bb.Builds
         /// </summary>
         public AssemblyResult LastBuild { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the platform. AnyCpu by default.
+        /// </summary>
+        public Platform Platform { get; set; }
+
+        /// <summary>
+        /// Gets or sets the output kind. DynamicallyLinkedLibrary by default.
+        /// </summary>
         public OutputKind OutputKind { get; private set; }
+        
+        /// <summary>
+        /// main type name
+        /// </summary>
+        public string MainTypeName { get; set; }
+
+        public BuildCSharp SetOutputKind(OutputKind kind, string mainTypeName)
+        {
+            this.MainTypeName = mainTypeName;
+            this.OutputKind = kind;
+            return this;
+        }
 
         /// <summary>
         /// Suppresses the specified ids.
@@ -543,9 +563,6 @@ namespace Bb.Builds
 
         }
 
-        public string MainTypeName { get; set; }
-
-        public Platform Platform { get; set; }
 
         public BuildCSharp SetKindAssembly(OutputKind kind)
         {
