@@ -1,4 +1,5 @@
-﻿using static Bb.Nugets.NugetDocument;
+﻿using System.Diagnostics;
+using static Bb.Nugets.NugetDocument;
 
 namespace Bb.Nugets
 {
@@ -123,11 +124,9 @@ namespace Bb.Nugets
                 // target path
                 var tempPath = Helper.GetTempDir();
 
+                Trace.TraceInformation($"Try to download {uri}");
                 // download
                 var file = uri.Download(tempPath);
-
-                //NugetCompressedDocument docZip = NugetCompressedDocument.Create(file);
-                //var doc = docZip.Load();
 
                 // resolve id & version
                 (name, version) = file.ResolveIdAndVersion(System.IO.Path.Combine(tempPath.FullName, "unzip"));

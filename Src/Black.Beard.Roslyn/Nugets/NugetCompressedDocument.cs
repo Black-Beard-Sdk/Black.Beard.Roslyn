@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static Refs.Microsoft.AspNetCore;
 using static Microsoft.CodeAnalysis.Host.HostWorkspaceServices;
+using System.Diagnostics;
 
 namespace Bb.Nugets
 {
@@ -56,6 +57,7 @@ namespace Bb.Nugets
             if (_targetFolder == null)
                 _targetFolder = Helper.GetTempDir();
 
+            Trace.TraceInformation($"Unzip nuget {_file.FullName} to {_targetFolder.FullName}");
             var targetfolder = _file.FullName.Unzip(Path.Combine(_targetFolder.FullName, "unzip"));
 
             return NugetDocument.ResolveNugetDocument(targetfolder);

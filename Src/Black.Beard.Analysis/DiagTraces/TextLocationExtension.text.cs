@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Data.Common;
-using Bb.Analysis.Traces;
+using Bb.Analysis.DiagTraces;
 
-namespace Bb.Analysis.Traces
+namespace Bb.Analysis.DiagTraces
 {
 
     public static partial class TextLocationExtension

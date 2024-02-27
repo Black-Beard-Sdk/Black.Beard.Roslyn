@@ -1,4 +1,4 @@
-﻿namespace Bb.Analysis.Traces
+﻿namespace Bb.Analysis.DiagTraces
 {
     public interface ILocationPath : ILocation
     {

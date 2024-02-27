@@ -1,15 +1,55 @@
 ﻿using Bb.Http;
 using Bb.Nugets;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Bb
 {
 
+    public static class ActivityProvider
+    {
+
+        public static void Initialize(Version version = null)
+        {
+            var assembly = Assembly.GetCallingAssembly().GetName();
+            ActivityProvider._source = new ActivitySource(assembly.Name, assembly.Version.ToString());
+        }
+
+        public static void Initialize(string name, Version version = null)
+        {
+            ActivityProvider._source = new ActivitySource(name, version != null ? version.ToString() : null);
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Set(this Activity self, Action<Activity> action)
+        {
+            if (self != null && action != null)
+                action(self);
+        }
+
+        public static ActivitySource Source {
+            get
+            {
+                if (_source == null)
+                    Initialize();
+                return _source;
+            }
+        }
+
+        private static ActivitySource _source;
+
+    }
 
     internal static class Helper
     {
+
+
 
 
         /// <summary>

@@ -2,7 +2,7 @@
 using System.Data.Common;
 using System.Runtime.CompilerServices;
 
-namespace Bb.Analysis.Traces
+namespace Bb.Analysis.DiagTraces
 {
 
     public static partial class TextLocationExtension

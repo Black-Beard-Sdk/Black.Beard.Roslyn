@@ -195,7 +195,7 @@ namespace Bb.Builds
 
                         case "startupobject":
                             builder.MainTypeName = e2.InnerText;
-                            builder.SetKindAssembly(OutputKind.ConsoleApplication);
+                            builder.SetOutputKind(OutputKind.ConsoleApplication);
                             break;
 
                         case "targetframework":

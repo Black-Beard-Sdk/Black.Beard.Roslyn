@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Bb.Analysis.Traces
+namespace Bb.Analysis.DiagTraces
 {
 
 

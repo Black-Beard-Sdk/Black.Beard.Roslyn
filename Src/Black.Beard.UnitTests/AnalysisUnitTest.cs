@@ -1,5 +1,5 @@
 using Bb.Analysis;
-using Bb.Analysis.Traces;
+using Bb.Analysis.DiagTraces;
 using Bb.Process;
 using System.Diagnostics;
 using System.IO;

@@ -1,14 +1,16 @@
 using Bb.Analysis;
-using Bb.Analysis.Traces;
+using Bb.Analysis.DiagTraces;
 using Bb.Builds;
 using Bb.Codings;
 using Bb.Nugets;
+using Bb.Process;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Xunit;
+using static Refs.System;
 
 namespace Bb.Roslyn.XTests
 {
@@ -60,6 +62,66 @@ namespace Bb.Roslyn.XTests
 
             var version = FrameworkVersion.Resolve("net6.0", ".NETCore.App");
             var references = version.GetReferences();
+
+        }
+
+        [Fact]
+        public void BuildConsole()
+        {
+
+            string payload = @"
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        System.Console.WriteLine(""Hello World!"");
+    }
+}
+";
+            var builder = new BuildCSharp()
+                .SetOutputKind(Microsoft.CodeAnalysis.OutputKind.ConsoleApplication, "Program")
+                .AddSource("Program.cs", payload)
+                ;
+
+            var result = builder.Build();
+
+            if (result != null && result.Success)
+            {
+
+                result.PrepareFolderToExecute("test1");
+
+                var id = Guid.NewGuid();
+                TaskEventHandler log = (sender, args) =>
+                {
+
+                };
+
+                using (LocalProcessCommandService service = new LocalProcessCommandService())
+                {
+
+                    var cmd = service.Add(new ProcessCommand(id))
+                        .SetWorkingDirectory(result.OutputPah)
+                        .CommandWithArgumentList("dotnet.exe", result.AssemblyFile)
+                        .Intercept(log)
+                        .Run()
+                        .Wait(5000);
+
+                }
+
+                var list = result.ResolveDependencies(builder.References, true);
+
+                var assembly = result.LoadAssembly();
+                var types = assembly.GetExportedTypes();
+                //var instance = Activator.CreateInstance(types[0]);
+                //Assert.NotNull(instance);
+            }
+            else
+            {
+                Assert.Fail();
+
+            }
+
 
         }
 
@@ -197,5 +259,28 @@ namespace Bb.Roslyn.XTests
         private readonly DirectoryInfo? _directoryProject;
 
     }
+
+    public class LocalProcessCommandService : ProcessCommandService
+    {
+
+        public LocalProcessCommandService()
+        {
+            Intercept(log);
+            this.Datas = new List<string?>();
+        }
+
+        public TaskEventEnum Current { get; private set; }
+        public List<string?> Datas { get; }
+
+        private void log(object sender, TaskEventArgs args)
+        {
+            this.Current = args.Status;
+            if (args.Status == TaskEventEnum.DataReceived)
+                Datas.Add(args.DateReceived?.Data);
+        }
+
+
+    }
+
 
 }

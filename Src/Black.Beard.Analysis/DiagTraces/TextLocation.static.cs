@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Bb.Analysis.Traces
+namespace Bb.Analysis.DiagTraces
 {
 
     public partial class TextLocation

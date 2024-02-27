@@ -7,8 +7,9 @@ using System.Diagnostics;
 using System.Text;
 using System.Collections.Immutable;
 using Bb.Codings;
-using Bb.Analysis.Traces;
+using Bb.Analysis.DiagTraces;
 using SharpCompress.Common;
+using System.Reflection.Metadata;
 
 namespace Bb.Compilers
 {
@@ -89,7 +90,7 @@ namespace Bb.Compilers
             return this;
         }
 
-        public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
+        public Action<CSharpCompilationOptions, Activity> ConfigureCompilation { get; internal set; }
 
         public LanguageVersion LanguageVersion { get; set; }
 
@@ -125,46 +126,54 @@ namespace Bb.Compilers
             else
                 _assemblyName = assemblyName;
 
-            AssemblyResult result = GetAssemblyResult();
-            CSharpCompilation compilation = GetCsharpContext(result);
-
-            try     // emit the compilation result to a byte array corresponding to {AssemblyName}.netmodule byte code
+            using (var activity = ActivityProvider.Source.StartActivity("Compile", ActivityKind.Internal))
             {
 
-                using (var peStream = File.Create(result.AssemblyFile))
-                using (var pdbStream = File.Create(result.AssemblyFilePdb))
+                AssemblyResult result = GetAssemblyResult(activity);
+                CSharpCompilation compilation = GetCsharpContext(result, activity);
+
+                try     // emit the compilation result to a byte array corresponding to {AssemblyName}.netmodule byte code
                 {
-                    EmitResult resultEmit = compilation.Emit(peStream, pdbStream);
-                    var diags = resultEmit.Diagnostics.ToList().Select(c => c.ToString()).ToArray();
-                    AnalyzeCompilation(result, resultEmit, diags);
+
+                    using (var peStream = File.Create(result.FullAssemblyFile))
+                    using (var pdbStream = File.Create(result.FullAssemblyFilePdb))
+                    {
+                        EmitResult resultEmit = compilation.Emit(peStream, pdbStream);
+                        var diags = resultEmit.Diagnostics.ToList().Select(c => c.ToString()).ToArray();
+                        AnalyzeCompilation(result, resultEmit, diags, activity);
+
+                        result.References = this._assemblies;
+                    }
+
+                }
+                catch (Exception ex)
+                {
+
+                    result.Exception = ex;
+
+                    if (System.Diagnostics.Debugger.IsAttached)
+                        System.Diagnostics.Debugger.Break();
+
+                    _diagnostics.Error("Compilation", ex.Message);
+
+                    Trace.WriteLine(new { Message = $"Compilation of {result.AssemblyName} return : ", Exception = ex });
+
                 }
 
-            }
-            catch (Exception ex)
-            {
+                if (this.ResolveObjects)
+                    result.Objects = ResolveObjects_Impl(result);
 
-                result.Exception = ex;
 
-                if (System.Diagnostics.Debugger.IsAttached)
-                    System.Diagnostics.Debugger.Break();
-
-                _diagnostics.Error("Compilation", ex.Message);
-
-                Trace.WriteLine(new { Message = $"Compilation of {result.AssemblyName} return : ", Exception = ex });
+                return result;
 
             }
-
-            if (this.ResolveObjects)
-                result.Objects = ResolveObjects_Impl(result);
-
-            return result;
 
         }
 
-        private CSharpCompilation GetCsharpContext(AssemblyResult result)
+        private CSharpCompilation GetCsharpContext(AssemblyResult result, Activity? activity)
         {
 
-            CSharpCompilationOptions compilationOptions = GetCompilationOptions(result);
+            CSharpCompilationOptions compilationOptions = GetCompilationOptions(result, activity);
 
             var _defaultReferences = _assemblies.Libraries().ToList();
 
@@ -196,59 +205,79 @@ namespace Bb.Compilers
         /// </summary>
         public Dictionary<string, object[]> AssemblyAttributes { get; set; }
 
-        private CSharpCompilationOptions GetCompilationOptions(AssemblyResult result)
+        private CSharpCompilationOptions GetCompilationOptions(AssemblyResult result, Activity activity)
         {
+
+            bool allowUnsafe = false;
+
+            _resolver.Activity = activity;
+            var optimizationLevel = this.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release;
 
             CSharpCompilationOptions compilationOptions = new CSharpCompilationOptions
                 (
                     AssemblyKind,
-                    allowUnsafe: true,
+                    allowUnsafe: allowUnsafe,
                     xmlReferenceResolver: null, // no support for permission set and doc includes in interactive
                     metadataReferenceResolver: _resolver,
                     assemblyIdentityComparer: DesktopAssemblyIdentityComparer.Default
                 )
                 .WithModuleName($"{_assemblyName}.dll")
-                .WithOptimizationLevel(this.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release)
+                .WithOptimizationLevel(optimizationLevel)
                 .WithPlatform(this.Platform)
                 //.WithUsings(result.Usings)
                 ;
+
+            activity.Set(c =>
+            {
+                c.SetCustomProperty("AssemblyKind", AssemblyKind.ToString());
+                c.SetCustomProperty("allowUnsafe", allowUnsafe.ToString());
+                c.SetCustomProperty("optimizationLevel", optimizationLevel.ToString());
+                c.SetCustomProperty("MainTypeName", this.MainTypeName ?? string.Empty);
+            });
 
             if (!string.IsNullOrEmpty(this.MainTypeName))
                 compilationOptions.WithMainTypeName(this.MainTypeName);
 
             if (this.KeyFile != null)
-                AddSignature(compilationOptions);
+                AddSignature(compilationOptions, activity);
 
             if (ConfigureCompilation != null)
-                ConfigureCompilation(compilationOptions);
+                ConfigureCompilation(compilationOptions, activity);
 
             return compilationOptions;
 
         }
 
-        private void AddSignature(CSharpCompilationOptions compilationOptions)
+        private void AddSignature(CSharpCompilationOptions compilationOptions, Activity activity)
         {
             if (File.Exists(this.KeyFile))
+            {
                 compilationOptions.WithCryptoKeyFile(this.KeyFile)
                                   .WithDelaySign(this.DelaySign)
                                   .WithCryptoPublicKey(StrongNameKey);
+
+                activity.Set(c =>
+                {
+                    c.SetCustomProperty("KeyFile", KeyFile ?? string.Empty);
+                    c.SetCustomProperty("DelaySign", DelaySign.ToString());
+                    c.SetCustomProperty("StrongNameKey", StrongNameKey != null ? Convert.ToBase64String(StrongNameKey.ToArray()) : string.Empty);
+                });
+
+            }
         }
 
-        private static void AnalyzeCompilation(AssemblyResult result, EmitResult resultEmit, string[] diags)
+        private static void AnalyzeCompilation(AssemblyResult result, EmitResult resultEmit, string[] diags, Activity? activity)
         {
-            Trace.WriteLine
-            (new
+
+            activity.Set(c =>
             {
-                Message = $"Compilation of {result.AssemblyName} return : " + (resultEmit.Success ? " Success!!" : " Failed"),
-                Diagnostics = string.Join(", ", diags),
+                c.SetCustomProperty("Success", result.Success);
+                c.SetCustomProperty("Diagnostics", string.Join(", ", diags));
             });
 
-            var missingRefs = resultEmit.Diagnostics.Where(c => c.Id == "CS0246").ToList();
-
-            foreach (var item in missingRefs)
-            {
-                var tt = item.Descriptor.MessageFormat;
-            }
+            //var missingRefs = resultEmit.Diagnostics.Where(c => c.Id == "CS0246").ToList();
+            //foreach (var item in missingRefs)
+            //    item.Descriptor.MessageFormat;
 
             // Map diagnostic for not reference roslyn outsite this assembly
             foreach (Diagnostic diagnostic in resultEmit.Diagnostics)
@@ -257,7 +286,7 @@ namespace Bb.Compilers
             result.Success = resultEmit.Success;
         }
 
-        private AssemblyResult GetAssemblyResult()
+        private AssemblyResult GetAssemblyResult(Activity? activity)
         {
 
             if (!Directory.Exists(_outputPah))
@@ -266,18 +295,29 @@ namespace Bb.Compilers
             var result = new AssemblyResult(_diagnostics)
             {
                 AssemblyName = _assemblyName,
-                AssemblyFile = Path.Combine(_outputPah, $"{_assemblyName}.dll"),
-                AssemblyFilePdb = Path.Combine(_outputPah, $"{_assemblyName}.pdb"),
+                AssemblyFile = $"{_assemblyName}.dll",
+                AssemblyPdb = $"{_assemblyName}.pdb",
+                OutputPah = _outputPah,
+                FullAssemblyFile = Path.Combine(_outputPah, $"{_assemblyName}.dll"),
+                FullAssemblyFilePdb = Path.Combine(_outputPah, $"{_assemblyName}.pdb"),
             };
+
+            activity.Set(c =>
+            {
+                c.SetCustomProperty("AssemblyName", result.AssemblyName);
+                c.SetCustomProperty("AssemblyFile", result.FullAssemblyFile);
+                c.SetCustomProperty("AssemblyFilePdb", result.FullAssemblyFilePdb);
+            });
+
 
             ResetFilesIfExists(result);
 
             var sources = new List<SyntaxTree>();
 
-            ManageUsings(sources);
-            ManageAssembliesAttributes(sources);
+            ManageUsings(sources, activity);
+            ManageAssembliesAttributes(sources, activity);
 
-            Parse(result, sources);
+            Parse(result, sources, activity);
 
             //// Try to resolve assemblies
             //CSharpVisitor visitor = new CSharpVisitor();
@@ -289,7 +329,7 @@ namespace Bb.Compilers
             return result;
 
         }
-        private void ManageAssembliesAttributes(List<SyntaxTree> sources)
+        private void ManageAssembliesAttributes(List<SyntaxTree> sources, Activity activity)
         {
 
             if (this.AssemblyAttributes.Any())
@@ -328,7 +368,7 @@ namespace Bb.Compilers
                 builder.Using(@namespace);
         }
 
-        private void ManageUsings(List<SyntaxTree> sources)
+        private void ManageUsings(List<SyntaxTree> sources, Activity? source)
         {
 
             if (this.Usings.Any())
@@ -368,8 +408,12 @@ namespace Bb.Compilers
                     builder.Using(item);
                 }
 
-                //var src = builder.Code().ToString();
+                source.Set(c =>
+                {
+                    c.SetCustomProperty("GlobalUsings", builder.Code().ToString());
+                });
 
+                //var src = builder.Code().ToString();
                 sources.Add(builder.Build().SyntaxTree);
 
                 if (isGlobal && LanguageVersion < LanguageVersion.CSharp12)
@@ -408,14 +452,14 @@ namespace Bb.Compilers
         private static void ResetFilesIfExists(AssemblyResult result)
         {
 
-            if (File.Exists(result.AssemblyFile))
-                File.Delete(result.AssemblyFile);
+            if (File.Exists(result.FullAssemblyFile))
+                File.Delete(result.FullAssemblyFile);
 
-            if (File.Exists(result.AssemblyFilePdb))
-                File.Delete(result.AssemblyFilePdb);
+            if (File.Exists(result.FullAssemblyFilePdb))
+                File.Delete(result.FullAssemblyFilePdb);
         }
 
-        private void Parse(AssemblyResult result, List<SyntaxTree> sources = null)
+        private void Parse(AssemblyResult result, List<SyntaxTree> sources = null, Activity activity = null)
         {
 
             if (sources == null)
@@ -437,6 +481,11 @@ namespace Bb.Compilers
             }
 
             result.SyntaxTree = sources.ToArray();
+
+            activity.Set(c =>
+            {
+                c.SetCustomProperty("scripts", string.Join(", ", this._sources.Select(d => d.Filepath)));
+            });
 
         }
 

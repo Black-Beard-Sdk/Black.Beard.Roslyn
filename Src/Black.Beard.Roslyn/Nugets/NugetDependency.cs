@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace Bb.Nugets
 {
@@ -25,7 +26,10 @@ namespace Bb.Nugets
                         Id = c.Value;
                         break;
                     case "version":
-                        Version = new Version(c.Value);
+                        if (Version.TryParse(c.Value, out Version v))
+                            Version = v;
+                        else
+                            Trace.TraceInformation($"Version {c.Value} is not valid");
                         break;
                     default:
                         break;

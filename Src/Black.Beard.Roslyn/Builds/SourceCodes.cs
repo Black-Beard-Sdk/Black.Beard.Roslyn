@@ -15,8 +15,24 @@ namespace Bb.Builds
         public SourceCode Add(string filename)
         {
 
-            if (!_sources.TryGetValue(filename, out SourceCode code))
-                _sources.Add(filename, SourceCode.GetFromFile(filename));
+            if (_sources.ContainsKey(filename))
+                _sources.Remove(filename);
+
+            var code = SourceCode.GetFromFile(filename);
+
+            _sources.Add(filename, code);
+
+            return code;
+
+        }
+
+        public SourceCode Add(string documentName, string payload)
+        {
+
+            if (!_sources.TryGetValue(documentName, out SourceCode code))
+                _sources.Add(documentName, SourceCode.GetFromText(payload, documentName));
+            else
+                code.Source = payload;
 
             return code;
 
@@ -38,7 +54,7 @@ namespace Bb.Builds
                     else
                         item.Value.Reload();
                 }
-         
+
         }
 
         /// <summary>

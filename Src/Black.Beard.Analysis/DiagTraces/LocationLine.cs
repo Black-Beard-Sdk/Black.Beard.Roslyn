@@ -1,46 +1,34 @@
 ﻿using System.Text;
 
-namespace Bb.Analysis.Traces
+namespace Bb.Analysis.DiagTraces
 {
-    public class LocationLineAndIndex : ILocationIndex
+
+
+    public class LocationLine : ILocation
     {
+
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocationIndex"/> struct.
         /// </summary>
         /// <param name="position"> (line, column)</param>
-        /// <param name="index">index</param>
-        public LocationLineAndIndex((int, int) position, int index)
+        public LocationLine((int, int) position)
         {
             Line = position.Item1;
             Column = position.Item2;
-            Index = index;
         }
 
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocationIndex"/> struct.
         /// </summary>
-        /// <param name="position"> (line, column, index)</param>
-        public LocationLineAndIndex((int, int, int) position)
-        {
-            Line = position.Item1;
-            Column = position.Item2;
-            Index = position.Item3;
-        }
-
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LocationIndex"/> struct.
-        /// </summary>
-        /// <param name="index"></param>
-        public LocationLineAndIndex(int line, int column, int index)
+        /// <param name="line"></param>
+        public LocationLine(int line, int column)
         {
             Line = line;
             Column = column;
-            Index = index;
         }
-
 
         /// <summary>
         /// Gets a value indicating whether this instance is the empty instance.
@@ -58,12 +46,6 @@ namespace Bb.Analysis.Traces
         /// </summary>
         public int Column { get; }
 
-
-        /// <summary>
-        /// Line position
-        /// </summary>
-        public int Index { get; }
-
         /// <summary>
         /// return true if the current position start before the specified location
         /// </summary>
@@ -71,9 +53,15 @@ namespace Bb.Analysis.Traces
         /// <returns></returns>
         public bool StartAfter(ILocation location)
         {
-            var l = location as ILocationIndex;
+            var l = location as LocationLine;
             if (l != null)
-                return Index > l.Index;
+            {
+                if (Line > l.Line)
+                    return true;
+                else if (Line == l.Line)
+                    return Column > l.Column;
+            }
+            
             return false;
         }
 
@@ -84,10 +72,17 @@ namespace Bb.Analysis.Traces
         /// <returns></returns>
         public bool StartBefore(ILocation location)
         {
-            var l = location as ILocationIndex;
+            var l = location as LocationLine;
             if (l != null)
-                return Index < l.Index;
+            {
+                if (Line < l.Line)
+                    return true;
+                else if (Line == l.Line)
+                    return Column < l.Column;
+            }
+            
             return false;
+
         }
 
         /// <summary>
@@ -97,9 +92,16 @@ namespace Bb.Analysis.Traces
         /// <returns></returns>
         public bool EndBefore(ILocation location)
         {
-            var l = location as ILocationIndex;
+            var l = location as LocationLine;
             if (l != null)
-                return l.Index > Index;
+            {
+                if (l.Line > Line)
+                    return true;
+                else if (Line == l.Line)
+                    return l.Column > Column;
+
+            }
+            
             return false;
         }
 
@@ -110,15 +112,16 @@ namespace Bb.Analysis.Traces
         /// <returns></returns>
         public bool EndAfter(ILocation location)
         {
-            var l = location as ILocationIndex;
+            var l = location as LocationLine;
             if (l != null)
-                return l.Index < Index;
+            {
+                if (l.Line < Line)
+                    return true;
+                else if (Line == l.Line)
+                    return l.Column < Column;
+            }
+             
             return false;
-        }
-
-        public bool CanBeCompare(ILocation location)
-        {
-            return location is ILocationIndex;
         }
 
         /// <summary>
@@ -127,14 +130,7 @@ namespace Bb.Analysis.Traces
         /// <returns></returns>
         public object Clone()
         {
-            return new LocationLineAndIndex(Line, Column, Index);
-        }
-
-        override public string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            WriteTo(sb);
-            return sb.ToString();
+            return new LocationLine(Line, Column);
         }
 
         /// <summary>
@@ -145,7 +141,27 @@ namespace Bb.Analysis.Traces
         {
             sb.Append("Line:" + Line);
             sb.Append(", col:" + Column);
-            sb.Append(", index:" + Index);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns></returns>
+        override public string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            WriteTo(sb);
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// return true if the current location can be compared with another location
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
+        public bool CanBeCompare(ILocation location)
+        {
+            return location is LocationLine;
         }
 
         /// <summary>
@@ -155,33 +171,33 @@ namespace Bb.Analysis.Traces
         /// <returns>
         /// The result of the conversion.
         /// </returns>
-        public static implicit operator LocationLineAndIndex((int, int, int) position)
+        public static implicit operator LocationLine((int, int) position)
         {
-            return new LocationLineAndIndex(position.Item1, position.Item2, position.Item3);
+            return new LocationLine(position.Item1, position.Item2);
         }
 
 
         /// <summary>
-        /// Performs an implicit conversion from <see cref="LocationLineAndIndex"/> to <see cref="TextLocation"/>.
+        /// Performs an implicit conversion from <see cref="LocationLine"/> to <see cref="TextLocation"/>.
         /// </summary>
         /// <param name="position"></param>
-        public static implicit operator TextLocation(LocationLineAndIndex position)
+        public static implicit operator TextLocation(LocationLine position)
         {
-            return new TextLocation<LocationLineAndIndex>(position);
+            return new TextLocation<LocationLine>(position);
         }
 
         /// <summary>
-        /// Performs an implicit conversion from <see cref="LocationLineAndIndex"/> to <see cref="TextLocation<LocationLineAndIndex>"/>.
+        /// Performs an implicit conversion from <see cref="LocationLine"/> to <see cref="TextLocation<LineLocation>"/>.
         /// </summary>
         /// <param name="position"></param>
-        public static implicit operator TextLocation<LocationLineAndIndex>(LocationLineAndIndex position)
+        public static implicit operator TextLocation<LocationLine>(LocationLine position)
         {
-            return new TextLocation<LocationLineAndIndex>(position);
+            return new TextLocation<LocationLine>(position);
         }
 
         public override int GetHashCode()
         {
-            return Line.GetHashCode() ^Column.GetHashCode() ^Index.GetHashCode();
+            return Line.GetHashCode() ^Column.GetHashCode();
         }
 
     }

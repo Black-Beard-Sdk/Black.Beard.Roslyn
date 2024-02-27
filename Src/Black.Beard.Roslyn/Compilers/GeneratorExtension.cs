@@ -1,4 +1,4 @@
-﻿using Bb.Analysis.Traces;
+﻿using Bb.Analysis.DiagTraces;
 using Bb.Compilers.Exceptions;
 using Microsoft.CodeAnalysis;
 
@@ -13,7 +13,7 @@ namespace Bb.Compilers
         /// </summary>
         /// <param name="self">The self.</param>
         /// <returns></returns>
-        public static Analysis.Traces.ScriptDiagnostic Map(this Diagnostic self)
+        public static Analysis.DiagTraces.ScriptDiagnostic Map(this Diagnostic self)
         {
 
             var locations = GetLocations(self);

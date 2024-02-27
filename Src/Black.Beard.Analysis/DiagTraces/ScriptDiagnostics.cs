@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 
-namespace Bb.Analysis.Traces
+namespace Bb.Analysis.DiagTraces
 {
 
     public class ScriptDiagnostics : IList<ScriptDiagnostic>, INotifyCollectionChanged

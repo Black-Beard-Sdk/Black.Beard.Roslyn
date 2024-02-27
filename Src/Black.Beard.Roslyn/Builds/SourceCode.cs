@@ -139,7 +139,7 @@ namespace Bb.Builds
         /// <value>
         /// String text
         /// </value>
-        public string Source { get; private set; }
+        public string Source { get; set; }
 
         /// <summary>
         /// Gets the empty source code.

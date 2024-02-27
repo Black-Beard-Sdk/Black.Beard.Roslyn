@@ -1,5 +1,5 @@
 ﻿using Bb.Analysis;
-using Bb.Analysis.Traces;
+using Bb.Analysis.DiagTraces;
 using Bb.Codings;
 using Bb.Compilers;
 using Bb.Nugets;
@@ -27,7 +27,8 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="configureCompilation">The configure compilation.</param>
         public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
-        {
+        {                       
+
             Platform = Platform.AnyCpu;
             this.OutputKind = OutputKind.DynamicallyLinkedLibrary;
             _diagnostics = new ScriptDiagnostics();
@@ -113,6 +114,17 @@ namespace Bb.Builds
         {
             foreach (var file in paths)
                 this.Sources.Add(file);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds the source code by filename.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public BuildCSharp AddSource(string documentName, string payload)
+        {
+            this.Sources.Add(documentName, payload);
             return this;
         }
 
@@ -398,7 +410,7 @@ namespace Bb.Builds
         /// Gets or sets the output kind. DynamicallyLinkedLibrary by default.
         /// </summary>
         public OutputKind OutputKind { get; private set; }
-        
+
         /// <summary>
         /// main type name
         /// </summary>
@@ -407,6 +419,12 @@ namespace Bb.Builds
         public BuildCSharp SetOutputKind(OutputKind kind, string mainTypeName)
         {
             this.MainTypeName = mainTypeName;
+            this.OutputKind = kind;
+            return this;
+        }
+
+        public BuildCSharp SetOutputKind(OutputKind kind)
+        {
             this.OutputKind = kind;
             return this;
         }
@@ -485,7 +503,7 @@ namespace Bb.Builds
                             return null;
                         }
                         else
-                            References.AddAssemblyLocation(item.LastBuild.AssemblyFile, item.LastBuild.AssemblyName);
+                            References.AddAssemblyLocation(item.LastBuild.FullAssemblyFile, item.LastBuild.AssemblyName);
                     }
 
 
@@ -563,17 +581,11 @@ namespace Bb.Builds
 
         }
 
-
-        public BuildCSharp SetKindAssembly(OutputKind kind)
-        {
-            this.OutputKind = kind;
-            return this;
-        }
-
         private RoslynCompiler CreateBuilder()
         {
 
             References.Next(Nugets);
+
 
             var compiler = new RoslynCompiler(this.OutputKind, References, _diagnostics)
             {
@@ -594,17 +606,24 @@ namespace Bb.Builds
             .SetOutput(OutputPath)
             ;
 
+
             return compiler;
 
         }
 
-        private void Configure(CSharpCompilationOptions obj)
+        private void Configure(CSharpCompilationOptions obj, Activity activity)
         {
 
             if (_suppress.Count > 0)
             {
                 var dic = ImmutableDictionary.CreateRange(_suppress);
                 obj.WithSpecificDiagnosticOptions(dic);
+
+                activity.Set(c =>
+                {
+                    c.SetCustomProperty("suppress", string.Join(", ", dic.Keys));
+                });
+
             }
 
             if (ConfigureCompilations.Count > 0)

@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace Bb.Nugets
 {
@@ -33,6 +34,8 @@ namespace Bb.Nugets
         internal NugetDocument(FileInfo metadataFile)
         {
 
+            Trace.TraceInformation($"Load metadata file {metadataFile.FullName}");
+
             _metadataFile = metadataFile;
             var root = metadataFile.LoadXmlFromFile().Root;
             _ns = root.Name.NamespaceName;
@@ -53,11 +56,9 @@ namespace Bb.Nugets
                             Description = item.Value;
                             break;
 
-
                         case "repository":
                             Repository = new NugetRepository(item);
                             break;
-
 
                         case "dependencies":
                             foreach (var group in item.Elements())

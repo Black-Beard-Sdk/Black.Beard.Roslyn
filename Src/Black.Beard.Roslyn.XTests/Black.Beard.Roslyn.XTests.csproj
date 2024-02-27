@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Black.Beard.Analysis\Black.Beard.Analysis.csproj" />
+    <ProjectReference Include="..\Black.Beard.Process\Black.Beard.Process.csproj" />
     <ProjectReference Include="..\Black.Beard.Roslyn\Black.Beard.Roslyn.csproj" />
   </ItemGroup>
 

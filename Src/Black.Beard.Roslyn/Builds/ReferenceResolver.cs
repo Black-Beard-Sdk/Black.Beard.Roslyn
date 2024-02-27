@@ -1,6 +1,7 @@
-﻿using Bb.Analysis.Traces;
+﻿using Bb.Analysis.DiagTraces;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Bb.Builds
 {
@@ -41,6 +42,7 @@ namespace Bb.Builds
         /// </summary>
         public override bool ResolveMissingAssemblies => true;
 
+        public Activity Activity { get; internal set; }
 
         public override PortableExecutableReference ResolveMissingAssembly(MetadataReference definition, AssemblyIdentity referenceIdentity)
         {

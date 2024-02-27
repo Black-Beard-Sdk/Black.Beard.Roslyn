@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Bb.Analysis
 {
@@ -139,6 +140,7 @@ namespace Bb.Analysis
 
             }
 
+            Trace.TraceWarning($"FrameworkKey not found for {key}");
             return Unknown;
 
         }
