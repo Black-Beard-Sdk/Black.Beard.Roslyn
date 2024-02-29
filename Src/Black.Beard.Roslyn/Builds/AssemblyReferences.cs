@@ -306,6 +306,7 @@ namespace Bb.Builds
                 _next.Next(next);
         }
 
+
         public string SearchNext(string name, Version version, bool download)
         {
             
@@ -314,7 +315,30 @@ namespace Bb.Builds
 
             return null;
 
-        }         
+        }
+
+
+        /// <summary>
+        /// return true if the file is in the sdk directory
+        /// </summary>
+        /// <param name="fullName">file location</param>
+        /// <returns></returns>
+        public bool IsInSdk(string fullName)
+        {
+            return this.Sdk.IsInSdk(new FileInfo(fullName));
+        }
+
+
+        /// <summary>
+        /// return true if the file is in the sdk directory
+        /// </summary>
+        /// <param name="file">file location</param>
+        /// <returns></returns>
+        public bool IsInSdk(FileInfo file)
+        {
+            return this.Sdk.IsInSdk(file);
+        }
+
 
         #endregion IEnumerable
 

@@ -161,6 +161,23 @@ namespace Bb.Analysis
                 .Where(c => c.Value.Version.Major == major
                     && c.Value.Version.Minor == minor).ToList();
 
+            if (list.Count > 1)
+            {
+                var revision = version.Revision;
+                var result = list.Where(c => c.Value.Version.Revision == revision).ToList();
+                if (result.Count > 0)
+                    list = result;
+
+                if (list.Count > 1)
+                {
+                    var build = version.Build;
+                    result = list.Where(c => c.Value.Version.Build == build).ToList();
+                    if (result.Count > 0)
+                        list = result;
+                }
+
+            }
+
             return list.OrderBy(c => c.Value.Version).Last().Value;
 
         }

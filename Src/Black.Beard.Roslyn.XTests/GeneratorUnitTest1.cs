@@ -89,23 +89,30 @@ public class Program
             if (result != null && result.Success)
             {
 
-                result.PrepareFolderToExecute("test1");
-
-                var id = Guid.NewGuid();
                 TaskEventHandler log = (sender, args) =>
                 {
 
                 };
 
-                using (LocalProcessCommandService service = new LocalProcessCommandService())
+
+                var assemblyToRun = result.PrepareFolderToExecute();
+
+                using (ProcessCommandService service = new LocalProcessCommandService()
+                    .Intercept(log)
+                    )
                 {
 
-                    var cmd = service.Add(new ProcessCommand(id))
-                        .SetWorkingDirectory(result.OutputPah)
-                        .CommandWithArgumentList("dotnet.exe", result.AssemblyFile)
-                        .Intercept(log)
-                        .Run()
-                        .Wait(5000);
+                    var cmd = service.RunAndGet(
+                        c =>
+                        {
+                            c.SetWorkingDirectory(assemblyToRun.Directory)
+                                  .CommandWithArgumentList("dotnet.exe", assemblyToRun.FullName)
+                                  .UseShellExecute(false)
+                                  ;
+                        }
+                        )
+                        .Wait()
+                        ;
 
                 }
 

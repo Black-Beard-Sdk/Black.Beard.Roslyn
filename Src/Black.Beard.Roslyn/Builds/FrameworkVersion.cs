@@ -3,6 +3,8 @@ using Bb.Util;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Diagnostics;
+using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 
 namespace Bb.Builds
 {
@@ -31,6 +33,9 @@ namespace Bb.Builds
                     lock (_lock)
                         if (_current == null)
                         {
+
+                            // var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+
                             var _trustedAssembliesPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
                             HashSet<string> directories = new HashSet<string>(_trustedAssembliesPaths.Select(c => new FileInfo(c).Directory.FullName));
 
@@ -39,7 +44,7 @@ namespace Bb.Builds
                                 foreach (var directory in directories)
                                     if (directory.Contains(toFind))
                                     {
-                                        _current = new FrameworkVersion().Intialize(new DirectoryInfo(directory));
+                                        _current = new FrameworkVersion().Intialize(new DirectoryInfo(directory), null, null);
                                         return _current;
                                     }
                         }
@@ -51,48 +56,74 @@ namespace Bb.Builds
         }
 
 
-
-        private FrameworkVersion Intialize(DirectoryInfo directory)
+        private FrameworkVersion Intialize(DirectoryInfo directory, string Name, Version version)
         {
-
-            var version = new Version(directory.Name);
-            //this.Name = GetName(this.Version);
-
-            this.Key = FrameworkKeys.Resolve(version);
-
 
             this.Directory = directory;
             this.Compatibilities = new List<string>();
 
 
+            ResolveVersion(version);
+            
+            
+            ResolveName(Name);
+            this.Type = this.Name.Substring(this.Name.IndexOf('.'));
+
+
+            this.Key = FrameworkKeys.Resolve(Version);
+            this.LanguageVersion = (LanguageVersion)Key.languageVersion;
             if (Key.Version.Major >= 5)
                 this.Compatibilities.Add("netstandard2.0");
 
 
-            switch (this.Directory.Parent.Name)
-            {
-
-                case "Microsoft.AspNetCore.App":
-                    this.Type = ".AspNetCore.App";
-                    break;
-
-                case "Microsoft.NETCore.App":
-                    this.Type = ".NETCore.App";
-                    break;
-
-                case "Microsoft.WindowsDesktop.App":
-                    this.Type = ".WindowsDesktop.App";
-                    break;
-
-                default:
-                    Stop();
-                    break;
-            }
-
-            this.LanguageVersion = (LanguageVersion)Key.languageVersion;
-
             return this;
 
+        }
+
+        private void ResolveName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+
+                var file = this.Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).FirstOrDefault();
+                if (file != null)
+                {
+                    var n = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file.Name));
+                    switch (n)
+                    {
+                        case "Microsoft.NETCore.App":
+                        case "Microsoft.AspNetCore.App":
+                        case "Microsoft.WindowsDesktop.App":
+                            this.Name = n;
+                            break;
+                        default:
+                            Stop();
+                            break;
+                    }
+                }
+                else
+                    this.Name = this.Directory?.Parent?.Name;
+            }
+            else
+                this.Name = name;
+        }
+
+        private void ResolveVersion(Version version)
+        {
+            if (version != null)
+                Version = version;
+
+            else
+            {
+                var p = Path.Combine(this.Directory.FullName, ".version");
+                if (File.Exists(p))
+                {
+                    var v = File.ReadAllText(p).Split(Environment.NewLine);
+                    Version = new Version(v[1]);
+                }
+                else
+                    Version = new Version(this.Directory.Name);
+            }
         }
 
         /// <summary>
@@ -114,6 +145,11 @@ namespace Bb.Builds
         /// </value>
         public DirectoryInfo Directory { get; private set; }
 
+
+        public string Name { get; private set; }
+
+        public Version Version { get; private set; }
+
         /// <summary>
         /// Gets the type of sdk.
         /// </summary>
@@ -132,7 +168,7 @@ namespace Bb.Builds
         {
             return ResolveVersions(key, type).LastOrDefault();
         }
-                
+
         /// <summary>
         /// Try to Resolve specified versions in the available version installed on system.
         /// </summary>
@@ -276,8 +312,8 @@ namespace Bb.Builds
             foreach (var item in dirs)
             {
                 var versionList = item?.GetDirectories("*", SearchOption.TopDirectoryOnly);
-                foreach (var version in versionList)
-                    versions.Add(new FrameworkVersion().Intialize(version));
+                foreach (var directoryVersion in versionList)
+                    versions.Add(new FrameworkVersion().Intialize(directoryVersion, null, null));
             }
 
             _versions = versions.OrderBy(c => c.Key.Version).ToList();
@@ -307,7 +343,16 @@ namespace Bb.Builds
                 System.Diagnostics.Debugger.Break();
         }
 
-        private static FrameworkVersion _current;
+        /// <summary>
+        /// return true if the file is located in the sdk directory.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public bool IsInSdk(FileInfo file)
+        {
+            return file.Directory.FullName == this.Directory.FullName;
+        }
+
 
         public static string[] DirectoriesToMatchs = new string[]
         {
@@ -316,11 +361,12 @@ namespace Bb.Builds
             "Microsoft.WindowsDesktop.App",
         };
 
+        private static FrameworkVersion _current;
         private static object _lock = new object();
         private static List<FrameworkVersion> _versions;
         private FileReferences _references;
 
     }
 
-  
+
 }

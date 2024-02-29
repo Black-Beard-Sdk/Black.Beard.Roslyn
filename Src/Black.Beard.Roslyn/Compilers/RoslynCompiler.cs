@@ -204,6 +204,7 @@ namespace Bb.Compilers
         /// Add attributes in the assembly
         /// </summary>
         public Dictionary<string, object[]> AssemblyAttributes { get; set; }
+        public RuntimeConfig RuntimeConfig { get; set; }
 
         private CSharpCompilationOptions GetCompilationOptions(AssemblyResult result, Activity activity)
         {
@@ -266,7 +267,7 @@ namespace Bb.Compilers
             }
         }
 
-        private static void AnalyzeCompilation(AssemblyResult result, EmitResult resultEmit, string[] diags, Activity? activity)
+        private void AnalyzeCompilation(AssemblyResult result, EmitResult resultEmit, string[] diags, Activity? activity)
         {
 
             activity.Set(c =>
@@ -283,6 +284,23 @@ namespace Bb.Compilers
             foreach (Diagnostic diagnostic in resultEmit.Diagnostics)
                 result.Diagnostics.Add(diagnostic.Map());
 
+            if (resultEmit.Success)
+            {
+
+                if (this.RuntimeConfig == null)
+                    this.RuntimeConfig = new RuntimeConfig();
+
+                this.RuntimeConfig.SetFramework(this._assemblies.Sdk);
+
+                if (File.Exists(result.AssemblyBuildConfig))
+                    File.Delete(result.AssemblyBuildConfig);
+
+                var t = this.RuntimeConfig.ToString();
+                result.FullAssemblyBuildConfig.Save(t);
+
+            }
+
+
             result.Success = resultEmit.Success;
         }
 
@@ -294,21 +312,25 @@ namespace Bb.Compilers
 
             var result = new AssemblyResult(_diagnostics)
             {
+                OutputPah = _outputPah,
                 AssemblyName = _assemblyName,
                 AssemblyFile = $"{_assemblyName}.dll",
                 AssemblyPdb = $"{_assemblyName}.pdb",
-                OutputPah = _outputPah,
-                FullAssemblyFile = Path.Combine(_outputPah, $"{_assemblyName}.dll"),
-                FullAssemblyFilePdb = Path.Combine(_outputPah, $"{_assemblyName}.pdb"),
+                AssemblyBuildConfig = $"{_assemblyName}.runtimeconfig.json",
             };
 
             activity.Set(c =>
             {
+                c.SetCustomProperty("sdkName", this._assemblies.Sdk.Key.Name);
+                c.SetCustomProperty("sdkVersion", this._assemblies.Sdk.Key.Version);
+                c.SetCustomProperty("frameworkName", this._assemblies.Sdk.Name);
+                c.SetCustomProperty("frameworkVersion", this._assemblies.Sdk.Version);
+
                 c.SetCustomProperty("AssemblyName", result.AssemblyName);
                 c.SetCustomProperty("AssemblyFile", result.FullAssemblyFile);
                 c.SetCustomProperty("AssemblyFilePdb", result.FullAssemblyFilePdb);
+            
             });
-
 
             ResetFilesIfExists(result);
 

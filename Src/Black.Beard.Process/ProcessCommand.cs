@@ -14,8 +14,6 @@ using System.Threading;
 namespace Bb.Process
 {
 
-
-
     /// <summary>
     /// class for manage lifecycle of the <see cref="Task" /> what wraps external process
     /// </summary>
@@ -85,7 +83,7 @@ namespace Bb.Process
                 StandardOutputEncoding = encoding,
                 StandardErrorEncoding = encoding,
 
-                WindowStyle = ProcessWindowStyle.Hidden,
+                WindowStyle = ProcessWindowStyle.Normal,
 
                 //ErrorDialog = true,
                 //ErrorDialogParentHandle = IntPtr.Zero,
@@ -321,6 +319,17 @@ namespace Bb.Process
         }
 
         /// <summary>
+        /// Sets the working directory.
+        /// </summary>
+        /// <param name="WorkingDirectory">The working directory.</param>
+        /// <returns></returns>
+        public ProcessCommand SetWorkingDirectory(DirectoryInfo WorkingDirectory)
+        {
+            _processStartInfo.WorkingDirectory = WorkingDirectory.FullName;
+            return this;
+        }
+
+        /// <summary>
         /// Writes the command in the input stream.
         /// </summary>
         /// <param name="command">The command.</param>
@@ -342,9 +351,10 @@ namespace Bb.Process
             }
 
             _process.StandardInput.WriteLine(command);
-            _process.StandardInput.WriteLine("ECHO \"" + delimiterString + "\"");
+            _process.StandardInput.WriteLine($"ECHO {delimiterString.Quoted()}" );
             return this;
         }
+
 
         #endregion parameters
 
@@ -575,8 +585,6 @@ namespace Bb.Process
                         listen = true;
                         _process.BeginOutputReadLine();                             // then begin asynchronously reading the output
                         _process.BeginErrorReadLine();                              // then begin asynchronously reading the output
-
-                        this.PushTaskEvent(this, TaskEventEnum.Started);
 
                         await _process.WaitForExitAsync(this._cancellation.Token);  // then wait for the process to exit
                         exitCode = _process.ExitCode;

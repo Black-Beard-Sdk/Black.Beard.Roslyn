@@ -47,10 +47,12 @@ namespace Bb.Process
         /// Create and Runs a command
         /// </summary>
         /// <param name="actionToConfigure">The action to configure.</param>
+        /// <param name="wait">specify if the return wait the process is closing.</param>
         /// <returns></returns>
-        public ProcessCommand RunAndGet(Action<ProcessCommand> actionToConfigure)
+        public ProcessCommand RunAndGet(Action<ProcessCommand> actionToConfigure, bool wait = false)
         {
-            return Add(new ProcessCommand(), actionToConfigure).Run();
+            return Add(new ProcessCommand(), actionToConfigure)
+                .Run(wait);
         }
 
         /// <summary>

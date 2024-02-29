@@ -20,12 +20,13 @@ namespace Bb.Compilers
 
         public string OutputPah { get; internal set; }
 
-        public string FullAssemblyFile { get; internal set; }
+        public string FullAssemblyFile => Path.Combine(OutputPah, AssemblyFile);
 
-        public string FullAssemblyFilePdb { get; internal set; }
+        public string FullAssemblyFilePdb => Path.Combine(OutputPah, AssemblyPdb);
+        public string FullAssemblyBuildConfig => Path.Combine(OutputPah, AssemblyBuildConfig);
 
         public string AssemblyName { get; internal set; }
-        
+
         public ScriptDiagnostics Diagnostics { get; internal set; }
 
         public IEnumerable<Analysis.DiagTraces.ScriptDiagnostic> Errors { get => Diagnostics.Where(c => c.Severity == "Error"); }
@@ -44,6 +45,7 @@ namespace Bb.Compilers
         public string AssemblyFile { get; internal set; }
         public string AssemblyPdb { get; internal set; }
         public AssemblyReferences References { get; internal set; }
+        public string AssemblyBuildConfig { get; internal set; }
 
         public Assembly LoadAssembly()
         {
@@ -58,19 +60,18 @@ namespace Bb.Compilers
 
         }
 
-        public DirectoryInfo PrepareFolderToExecute()
+        public FileInfo PrepareFolderToExecute()
         {
             var directory = Helper.GetTempDir();
-            PrepareFolderToExecute(directory);
-            return directory;
+            return PrepareFolderToExecute(directory);
         }
 
-        public void PrepareFolderToExecute(string directory)
+        public FileInfo PrepareFolderToExecute(string directory)
         {
-            PrepareFolderToExecute(new DirectoryInfo(directory) ?? throw new ArgumentNullException(nameof(directory)));
+            return PrepareFolderToExecute(new DirectoryInfo(directory) ?? throw new ArgumentNullException(nameof(directory)));
         }
 
-        public void PrepareFolderToExecute(DirectoryInfo directory)
+        public FileInfo PrepareFolderToExecute(DirectoryInfo directory)
         {
 
             directory.Refresh();
@@ -78,16 +79,28 @@ namespace Bb.Compilers
             if (!directory.Exists)
                 directory.Create();
 
+
+            var target = Path.Combine(directory.FullName, AssemblyFile);
+            new FileInfo(FullAssemblyFile).CopyTo(target, true);
+            new FileInfo(FullAssemblyFilePdb).CopyTo(Path.Combine(directory.FullName, AssemblyPdb), true);
+            new FileInfo(FullAssemblyBuildConfig).CopyTo(Path.Combine(directory.FullName, AssemblyBuildConfig), true);
+
             var items = ResolveDependencies(References, true);
 
             foreach (var item in items)
             {
+
+                if (!item.Resolved)
+                {
+
+                }
+
                 var file = new FileInfo(item.Location);
                 file.CopyTo(Path.Combine(directory.FullName, file.Name), true);
+
             }
 
-            new FileInfo(FullAssemblyFile).CopyTo(Path.Combine(directory.FullName, new FileInfo(FullAssemblyFile).Name), true);
-            new FileInfo(FullAssemblyFilePdb).CopyTo(Path.Combine(directory.FullName, new FileInfo(FullAssemblyFilePdb).Name), true);
+            return new FileInfo(target);
 
         }
 

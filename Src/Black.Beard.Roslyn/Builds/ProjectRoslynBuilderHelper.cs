@@ -111,6 +111,20 @@ namespace Bb.Builds
                     switch (e2.Name.ToLower())
                     {
 
+                        case "concurrentgarbagecollection":
+                            builder.RuntimeConfig.GCConcurrent = e2.InnerText?.ToLower() == "true";
+                            break;
+
+                        case "threadpoolminthreads":
+                            if (int.TryParse(e2.InnerText?.ToLower()?.Trim() ?? string.Empty, out int r1))
+                            builder.RuntimeConfig.MinThreads = r1;
+                            break;
+
+                        case "threadpoolmaxthreads":
+                            if (int.TryParse(e2.InnerText?.ToLower()?.Trim() ?? string.Empty, out int r2))
+                                builder.RuntimeConfig.MaxThreads = r2;
+                            break;
+
                         case "compile":
                             //var toRemove = e2.Attributes["Remove"].Value.ToString();
                         case "content":

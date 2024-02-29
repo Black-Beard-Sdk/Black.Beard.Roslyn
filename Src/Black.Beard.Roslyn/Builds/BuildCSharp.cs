@@ -5,6 +5,7 @@ using Bb.Compilers;
 using Bb.Nugets;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using SharpCompress.Common;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
@@ -27,8 +28,8 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="configureCompilation">The configure compilation.</param>
         public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
-        {                       
-
+        {
+            RuntimeConfig = new RuntimeConfig();
             Platform = Platform.AnyCpu;
             this.OutputKind = OutputKind.DynamicallyLinkedLibrary;
             _diagnostics = new ScriptDiagnostics();
@@ -415,6 +416,7 @@ namespace Bb.Builds
         /// main type name
         /// </summary>
         public string MainTypeName { get; set; }
+        public RuntimeConfig RuntimeConfig { get; internal set; }
 
         public BuildCSharp SetOutputKind(OutputKind kind, string mainTypeName)
         {
@@ -599,7 +601,8 @@ namespace Bb.Builds
                 Usings = _usings.Values.ToArray(),
                 AssemblyAttributes = this._attributes,
                 MainTypeName = this.MainTypeName,
-                Platform = this.Platform
+                Platform = this.Platform,
+                RuntimeConfig = RuntimeConfig,
             }
 
             .AddCodeSource(Sources)
