@@ -92,6 +92,32 @@ namespace Bb.Builds
 
 
         /// <summary>
+        /// Add packages on the build.
+        /// </summary>
+        /// <param name="packageName">name of the package</param>
+        /// <param name="version">version of the package. If null the last version is used</param>
+        /// <returns></returns>
+        public BuildCSharp AddPackage(string packageName, Version? version = null)
+        {
+            this.Nugets.AddReference(packageName, version);
+            return this;
+        }
+
+
+        /// <summary>
+        /// Add packages on the build.
+        /// </summary>
+        /// <param name="packageName">name of the package</param>
+        /// <param name="version">version of the package. If null the last version is used</param>
+        /// <returns></returns>
+        public BuildCSharp AddPackage(string packageName, string? version = null)
+        {
+            this.Nugets.AddReference(packageName, version);
+            return this;
+        }
+
+
+        /// <summary>
         /// Load the sources from the project file.
         /// </summary>
         /// <param name="paths"></param>
