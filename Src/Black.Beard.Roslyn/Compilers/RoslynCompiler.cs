@@ -126,11 +126,11 @@ namespace Bb.Compilers
             else
                 _assemblyName = assemblyName;
 
-            using (var activity = ActivityProvider.Source.StartActivity("Compile", ActivityKind.Internal))
+            using (var activity = RoslynActivityProvider.StartActivity("Compile", ActivityKind.Internal))
             {
 
-                AssemblyResult result = GetAssemblyResult(activity);
-                CSharpCompilation compilation = GetCsharpContext(result, activity);
+                AssemblyResult result = GetAssemblyResult();
+                CSharpCompilation compilation = GetCsharpContext(result);
 
                 try     // emit the compilation result to a byte array corresponding to {AssemblyName}.netmodule byte code
                 {
@@ -140,7 +140,7 @@ namespace Bb.Compilers
                     {
                         EmitResult resultEmit = compilation.Emit(peStream, pdbStream);
                         var diags = resultEmit.Diagnostics.ToList().Select(c => c.ToString()).ToArray();
-                        AnalyzeCompilation(result, resultEmit, diags, activity);
+                        AnalyzeCompilation(result, resultEmit, diags);
 
                         result.References = this._assemblies;
                     }
@@ -170,8 +170,10 @@ namespace Bb.Compilers
 
         }
 
-        private CSharpCompilation GetCsharpContext(AssemblyResult result, Activity? activity)
+        private CSharpCompilation GetCsharpContext(AssemblyResult result)
         {
+
+            Activity? activity = RoslynActivityProvider.CurrentActivity;
 
             CSharpCompilationOptions compilationOptions = GetCompilationOptions(result, activity);
 
@@ -267,10 +269,10 @@ namespace Bb.Compilers
             }
         }
 
-        private void AnalyzeCompilation(AssemblyResult result, EmitResult resultEmit, string[] diags, Activity? activity)
+        private void AnalyzeCompilation(AssemblyResult result, EmitResult resultEmit, string[] diags)
         {
 
-            activity.Set(c =>
+            RoslynActivityProvider.Set(c =>
             {
                 c.SetCustomProperty("Success", result.Success);
                 c.SetCustomProperty("Diagnostics", string.Join(", ", diags));
@@ -304,8 +306,8 @@ namespace Bb.Compilers
             result.Success = resultEmit.Success;
         }
 
-        private AssemblyResult GetAssemblyResult(Activity? activity)
-        {
+        private AssemblyResult GetAssemblyResult()
+        {            
 
             if (!Directory.Exists(_outputPah))
                 Directory.CreateDirectory(_outputPah);
@@ -319,7 +321,7 @@ namespace Bb.Compilers
                 AssemblyBuildConfig = $"{_assemblyName}.runtimeconfig.json",
             };
 
-            activity.Set(c =>
+            RoslynActivityProvider.Set(c =>
             {
                 c.SetCustomProperty("sdkName", this._assemblies.Sdk.Key.Name);
                 c.SetCustomProperty("sdkVersion", this._assemblies.Sdk.Key.Version);
@@ -336,10 +338,10 @@ namespace Bb.Compilers
 
             var sources = new List<SyntaxTree>();
 
-            ManageUsings(sources, activity);
-            ManageAssembliesAttributes(sources, activity);
+            ManageUsings(sources);
+            ManageAssembliesAttributes(sources);
 
-            Parse(result, sources, activity);
+            Parse(result, sources);
 
             //// Try to resolve assemblies
             //CSharpVisitor visitor = new CSharpVisitor();
@@ -351,7 +353,7 @@ namespace Bb.Compilers
             return result;
 
         }
-        private void ManageAssembliesAttributes(List<SyntaxTree> sources, Activity activity)
+        private void ManageAssembliesAttributes(List<SyntaxTree> sources)
         {
 
             if (this.AssemblyAttributes.Any())
@@ -390,7 +392,7 @@ namespace Bb.Compilers
                 builder.Using(@namespace);
         }
 
-        private void ManageUsings(List<SyntaxTree> sources, Activity? source)
+        private void ManageUsings(List<SyntaxTree> sources)
         {
 
             if (this.Usings.Any())
@@ -430,7 +432,7 @@ namespace Bb.Compilers
                     builder.Using(item);
                 }
 
-                source.Set(c =>
+                RoslynActivityProvider.Set(c =>
                 {
                     c.SetCustomProperty("GlobalUsings", builder.Code().ToString());
                 });

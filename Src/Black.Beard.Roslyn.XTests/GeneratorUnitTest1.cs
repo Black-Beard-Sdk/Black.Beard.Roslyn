@@ -69,6 +69,8 @@ namespace Bb.Roslyn.XTests
         public void BuildConsole()
         {
 
+            bool testSuccess = false;
+
             string payload = @"
 
 public class Program
@@ -91,7 +93,9 @@ public class Program
 
                 TaskEventHandler log = (sender, args) =>
                 {
-
+                    if (args.Status == TaskEventEnum.DataReceived)
+                        if (args.DateReceived?.Data == "Hello World!")
+                            testSuccess = true;
                 };
 
 
@@ -129,6 +133,7 @@ public class Program
 
             }
 
+            Assert.True(testSuccess);
 
         }
 
