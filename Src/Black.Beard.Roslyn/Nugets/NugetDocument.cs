@@ -50,7 +50,7 @@ namespace Bb.Nugets
                             Id = item.Value;
                             break;
                         case "version":
-                            Version = new Version(item.Value);
+                            Version = Helper.ResolveVersion(item.Value);
                             break;
                         case "description":
                             Description = item.Value;
@@ -90,14 +90,14 @@ namespace Bb.Nugets
         /// return the dependencies
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<NugetGroupDependency> Dependencies() => _dependencies;
+        public IEnumerable<NugetGroupDependency> GroupDependencies() => _dependencies;
 
         /// <summary>
         /// return the dependencies for a specific framework
         /// </summary>
         /// <param name="framework"></param>
         /// <returns></returns>
-        public IEnumerable<NugetGroupDependency> Dependencies(string framework)
+        public IEnumerable<NugetGroupDependency> GroupDependencies(string framework)
         {
             return _dependencies.Where(c => c.TargetFramework == framework);
         }

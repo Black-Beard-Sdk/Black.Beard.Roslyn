@@ -155,7 +155,7 @@ namespace Bb.Builds
                         case "packagereference":
                             var nugetName = e2.Attributes["Include"].Value.ToString();
                             var version = e2.Attributes["Version"].Value.ToString();
-                            builder.Nugets.AddReference(nugetName, version);
+                            builder.Nugets.AddPackage(nugetName, version);
                             break;
 
                         case "projectreference":

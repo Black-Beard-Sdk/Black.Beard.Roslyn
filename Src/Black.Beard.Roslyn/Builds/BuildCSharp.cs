@@ -2,6 +2,7 @@
 using Bb.Analysis.DiagTraces;
 using Bb.Codings;
 using Bb.Compilers;
+using Bb.Metrology;
 using Bb.Nugets;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -35,19 +36,14 @@ namespace Bb.Builds
             _diagnostics = new ScriptDiagnostics();
             _compiledAssemblies = new Dictionary<int, AssemblyResult>();
             _suppress = new Dictionary<string, ReportDiagnostic>();
-
-            this.Nugets = new NugetController();
+            
             Framework = new Frameworks();
             ConfigureCompilations = new List<Action<CSharpCompilationOptions>>(2);
             this.References = new AssemblyReferences();
             Sources = new SourceCodes();
             OutputPath = Path.Combine(Path.GetTempPath(), "_builds");
 
-
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                this.Nugets.AddDefaultWindowsFolder();
-
+           
             if (configureCompilation != null)
                 this.ConfigureCompilations.Add(configureCompilation);
 
@@ -97,9 +93,9 @@ namespace Bb.Builds
         /// <param name="packageName">name of the package</param>
         /// <param name="version">version of the package. If null the last version is used</param>
         /// <returns></returns>
-        public BuildCSharp AddPackage(string packageName, Version? version = null)
+        public BuildCSharp AddPackage(string packageName, Version version)
         {
-            this.Nugets.AddReference(packageName, version);
+            this.Nugets.AddPackage(packageName, version);
             return this;
         }
 
@@ -112,7 +108,18 @@ namespace Bb.Builds
         /// <returns></returns>
         public BuildCSharp AddPackage(string packageName, string? version = null)
         {
-            this.Nugets.AddReference(packageName, version);
+            this.Nugets.AddPackage(packageName, version);
+            return this;
+        }
+
+        /// <summary>
+        /// Add packages on the build.
+        /// </summary>
+        /// <param name="packageName">name of the package</param>
+        /// <returns></returns>
+        public BuildCSharp AddPackage(string packageName)
+        {
+            this.Nugets.AddPackage(packageName);
             return this;
         }
 
@@ -215,10 +222,37 @@ namespace Bb.Builds
         /// </value>
         public AssemblyReferences References { get; }
 
+
+
+        public BuildCSharp SetNugetController(NugetController controller)
+        {
+            this._nugets = controller;
+            return this;
+        }
+
         /// <summary>
         /// referential nuget controller
         /// </summary>
-        public NugetController Nugets { get; }
+        public NugetController Nugets 
+        {
+            get
+            {
+
+                if (_nugets == null)
+                {
+                    
+                    this._nugets = new NugetController();
+
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        this.Nugets.AddDefaultWindowsFolder();
+
+                }
+
+                return _nugets;
+            }
+        }
+
+        private NugetController _nugets;
 
         public Frameworks Framework { get; internal set; }
 
@@ -640,7 +674,7 @@ namespace Bb.Builds
 
         }
 
-        private void Configure(CSharpCompilationOptions obj, Activity activity)
+        private void Configure(CSharpCompilationOptions obj)
         {
 
             if (_suppress.Count > 0)
@@ -648,11 +682,9 @@ namespace Bb.Builds
                 var dic = ImmutableDictionary.CreateRange(_suppress);
                 obj.WithSpecificDiagnosticOptions(dic);
 
-                activity.Set(c =>
-                {
-                    c.SetCustomProperty("suppress", string.Join(", ", dic.Keys));
-                });
-
+                if (RoslynActivityProvider.WithTelemetry)
+                    RoslynActivityProvider.AddProperty("suppress", string.Join(", ", dic.Keys));
+                
             }
 
             if (ConfigureCompilations.Count > 0)

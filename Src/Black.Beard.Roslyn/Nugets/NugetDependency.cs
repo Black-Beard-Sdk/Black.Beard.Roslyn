@@ -10,7 +10,8 @@ namespace Bb.Nugets
         public NugetDependency(string id, Version version)
         {
             Id = id;
-            Version = version;
+            VersionMin = version;
+            VersionMax = version;
         }
 
 
@@ -26,10 +27,31 @@ namespace Bb.Nugets
                         Id = c.Value;
                         break;
                     case "version":
-                        if (Version.TryParse(c.Value, out Version v))
-                            Version = v;
+
+                        if (c.Value.StartsWith("[") && c.Value.EndsWith("]"))
+                        {
+
+                            var value = c.Value.Substring(1, c.Value.Length - 2).Split(',');
+                            if (value.Length > 0)
+                            {
+                                var v1 = value[0];
+                                if (Version.TryParse(v1.Trim(), out Version v))
+                                    VersionMin = v;
+                                VersionMax = v;
+                            }
+                            if (value.Length > 1)
+                            {
+                                var v1 = value[1];
+                                if (Version.TryParse(v1.Trim(), out Version v2))
+                                    VersionMax = v2;
+                            }
+                        }
+                        else if (Version.TryParse(c.Value.Trim(), out Version v3))
+                            VersionMax = v3;
+
                         else
                             Trace.TraceInformation($"Version {c.Value} is not valid");
+
                         break;
                     default:
                         break;
@@ -40,11 +62,19 @@ namespace Bb.Nugets
 
         public string Id { get; set; }
 
-        public Version Version { get; set; }
+        public Version VersionMin { get; set; }
+
+        public Version VersionMax { get; set; }
 
         public override string ToString()
         {
-            return Id.ToString() + " " + Version.ToString();
+            if (VersionMin == null)
+                return Id.ToString();
+
+            if (VersionMin != VersionMax)
+                return Id.ToString() + " " + VersionMin.ToString() + " " + VersionMax.ToString();
+
+            return Id.ToString() + " " + VersionMin.ToString();
         }
 
     }

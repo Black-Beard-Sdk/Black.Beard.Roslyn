@@ -4,17 +4,22 @@ using Bb.Builds;
 using Bb.Codings;
 using Bb.Nugets;
 using Bb.Process;
+//using OpenTelemetry;
+//using OpenTelemetry.Resources;
+//using OpenTelemetry.Trace;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Xunit;
-using static Refs.System;
+using System.Diagnostics;
+using ICSharpCode.Decompiler.Metadata;
+using Bb.Metrology;
+using Bb.Diagnostics;
 
 namespace Bb.Roslyn.XTests
 {
-    public class GeneratorUnitTest
+    public class GeneratorUnitTest : IDisposable
     {
 
         public GeneratorUnitTest()
@@ -47,7 +52,6 @@ namespace Bb.Roslyn.XTests
             Assert.True(code.Contains("public String @get {"));
 
         }
-
 
         [Fact]
         public void InitializeFrameworks()
@@ -137,7 +141,6 @@ public class Program
 
         }
 
-
         [Fact]
         public void TestProject()
         {
@@ -182,8 +185,6 @@ public class Program
             var dir = Path.Combine(Environment.CurrentDirectory, Path.GetRandomFileName());
             var controller = new NugetController().AddFolder(dir, NugetController.HostNugetOrg);
 
-            // new Version("1.0.48")
-
             var result = controller.Resolve("Black.Beard.Componentmodel");
             if (result == null || result.Any())
             {
@@ -198,10 +199,70 @@ public class Program
             var n = version.Nuspec;
             Assert.True(n != null);
 
-            n.Dependencies("").ToList();
+            n.GroupDependencies("").ToList();
 
         }
 
+        [Fact]
+        public void TestReferencePackage()
+        {
+
+            //var names = DiagnosticProviderExtensions.GetActivityNames().ToList();
+            //using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+            //    //.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("MySample"))
+            //    .AddSource(names.Select(c => c.Item2).ToArray())
+            //    .Build();
+
+
+            string payload = @"
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        System.Console.WriteLine(""Hello World!"");
+    }
+}
+";
+
+
+            var path = Path.Combine(Environment.CurrentDirectory, Path.GetRandomFileName());
+            var dir = Path.Combine(Environment.CurrentDirectory, Path.GetRandomFileName());
+            var controller = new NugetController().AddFolder(dir, NugetController.HostNugetOrg);
+
+
+            // Build assembly
+            BuildCSharp builder = new BuildCSharp()
+            {
+                OutputPath = path,
+            }
+            .SetNugetController(controller)
+            .AddSource("noname", payload)
+            //.AddReferences(
+            //      typeof(LocationDefault)
+            //    , typeof(LocalMethodCompiler)
+            //    )
+            .AddPackage("Microsoft.CodeAnalysis.CSharp.Workspaces")
+            ;
+
+            var build = builder.Build();
+
+        }
+
+        [Fact]
+        public void Start_Not_Null_When_ActivityListener_Added_And_ShouldListenTo_Explicitly_Defined_Activity()
+        {
+            var activitySource = new ActivitySource("ActivitySourceName");
+            var activityListener = new ActivityListener
+            {
+                ShouldListenTo = s => true
+            };
+            ActivitySource.AddActivityListener(activityListener);
+
+            using var activity = activitySource.StartActivity($"MethodType:/Path");
+
+            //Assert.Is(activity);
+        }
 
         [Fact]
         public void StartBeforeTest1()
@@ -267,6 +328,11 @@ public class Program
             Assert.True(right.StopEndAfter(left));
         }
 
+        public void Dispose()
+        {
+            //_tracerProvider.Dispose();
+        }
+
         private readonly FileInfo _assemblyFile;
         private readonly DirectoryInfo? _directoryProject;
 
@@ -293,6 +359,5 @@ public class Program
 
 
     }
-
 
 }

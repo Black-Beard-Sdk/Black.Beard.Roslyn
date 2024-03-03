@@ -22,6 +22,7 @@ namespace Bb.Nugets
             _list = new List<(string, FrameworkKey, string, Version)>();
             _path = dir;
             Version = dir.Name.ResolveVersion();
+            Name = dir.Parent.Name;
         }
 
 
@@ -50,15 +51,22 @@ namespace Bb.Nugets
 
         internal LocalFileNugetVersion Initialize()
         {
-
+                        
             _initialized = true;
+
+
+            var fileNuspec = _path.GetFiles(Name + ".nuspec", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            if (fileNuspec != null)    
+                this.Metadata = NugetDocument.ResolveNugetDocument(fileNuspec);
+
+
             foreach (var file in _path.GetFiles("*.dll", SearchOption.AllDirectories))
                 try
                 {
                     using (var lib = new PEFile(file.FullName))
                     {
                         var n = lib.Name;
-                        _list.Add((file.FullName,  FrameworkKeys.Resolve(file.Directory.Name), n, lib.Version));
+                        _list.Add((file.FullName, FrameworkKeys.Resolve(file.Directory.Name), n, lib.Version));
                     }
                 }
                 catch (Exception)
@@ -72,8 +80,10 @@ namespace Bb.Nugets
 
         public Version Version { get; }
 
-        public FileNugetFolder Parent { get; internal set; }
+        public string Name { get; }
 
+        public FileNugetFolder Parent { get; internal set; }
+        public NugetDocument Metadata { get; private set; }
 
         private readonly List<(string, FrameworkKey, string, Version)> _list;
         private DirectoryInfo _path;

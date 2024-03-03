@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Bb.Metrology;
+using System.Diagnostics;
 using static Bb.Nugets.NugetDocument;
 
 namespace Bb.Nugets
@@ -58,7 +59,7 @@ namespace Bb.Nugets
         {
             _folders.TryGetValue(name.ToLower(), out FileNugetFolder folder);
             return folder;
-        }              
+        }
 
         /// <summary>
         /// resolve by name and version
@@ -104,7 +105,7 @@ namespace Bb.Nugets
 
         public bool TryToDownload(NugetDependency dependency)
         {
-            return TryToDownload(dependency.Id, dependency.Version);
+            return TryToDownload(dependency.Id, dependency.VersionMin);
         }
 
         /// <summary>
@@ -115,45 +116,72 @@ namespace Bb.Nugets
         public bool TryToDownload(string name, Version version = null)
         {
 
-            foreach (var host in Hosts)
-            {
 
-                // Url
-                var uri = host.Url(name, version?.ToString());
-
-                // target path
-                var tempPath = Helper.GetTempDir();
-
-                Trace.TraceInformation($"Try to download {uri}");
-                // download
-                var file = uri.Download(tempPath);
-
-                // resolve id & version
-                (name, version) = file.ResolveIdAndVersion(System.IO.Path.Combine(tempPath.FullName, "unzip"));
-
-                // unzipping
-                var targetfolder = file.Unzip(System.IO.Path.Combine(Path.FullName, name, version.ToString()));
-
-                if (targetfolder.Exists)
+            using (var activity = RoslynActivityProvider.StartActivity("Try to download", ActivityKind.Producer))
+                foreach (var host in Hosts)
                 {
 
-                    var l = new FileNugetFolder(targetfolder.Parent);
-                    if (!_folders.TryGetValue(l.Name.ToLower(), out var f))
-                        _folders.Add(l.Name.ToLower(), l);
-                    else
-                        f.Reset();
+                    string file = null;
 
+                    // Url
+                    var uri = host.Url(name, version?.ToString());
 
-                    return true;
+                    // target path
+                    var tempPath = Helper.GetTempDir();
+
+                    Trace.TraceInformation($"Try to download {name} {version?.ToString()} from {host}");
+
+                    try
+                    {
+
+                        if (RoslynActivityProvider.WithTelemetry)
+                            RoslynActivityProvider.AddProperty("url", uri.ToString());
+
+                        // download
+                        file = uri.Download(tempPath);
+
+                    }
+                    catch (Exception ex)
+                    {
+
+                        if (RoslynActivityProvider.WithTelemetry)
+                            RoslynActivityProvider.AddProperty("exception", ex.ToString());
+                       
+                        return false;
+
+                    }
+
+                    // resolve id & version
+                    (name, version) = file.ResolveIdAndVersion(System.IO.Path.Combine(tempPath.FullName, "unzip"));
+
+                    // unzipping
+                    var targetfolder = file.Unzip(System.IO.Path.Combine(Path.FullName, name, version.ToString()));
+
+                    if (targetfolder.Exists)
+                    {
+
+                        if (RoslynActivityProvider.WithTelemetry)
+                            RoslynActivityProvider.AddProperty("result", true);
+
+                        var l = new FileNugetFolder(targetfolder.Parent);
+                        if (!_folders.TryGetValue(l.Name.ToLower(), out var f))
+                            _folders.Add(l.Name.ToLower(), l);
+                        else
+                            f.Reset();
+
+                        return true;
+
+                    }
+
+                    if (RoslynActivityProvider.WithTelemetry)
+                        RoslynActivityProvider.AddProperty("result", false);
 
                 }
-
-            }
 
             return false;
 
         }
-           
+
         public DirectoryInfo Path { get; }
 
         public string[] Hosts => _hosts.ToArray();

@@ -10,6 +10,7 @@ using Bb.Codings;
 using Bb.Analysis.DiagTraces;
 using SharpCompress.Common;
 using System.Reflection.Metadata;
+using Bb.Metrology;
 
 namespace Bb.Compilers
 {
@@ -90,7 +91,7 @@ namespace Bb.Compilers
             return this;
         }
 
-        public Action<CSharpCompilationOptions, Activity> ConfigureCompilation { get; internal set; }
+        public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
 
         public LanguageVersion LanguageVersion { get; set; }
 
@@ -173,9 +174,7 @@ namespace Bb.Compilers
         private CSharpCompilation GetCsharpContext(AssemblyResult result)
         {
 
-            Activity? activity = RoslynActivityProvider.CurrentActivity;
-
-            CSharpCompilationOptions compilationOptions = GetCompilationOptions(result, activity);
+            CSharpCompilationOptions compilationOptions = GetCompilationOptions(result);
 
             var _defaultReferences = _assemblies.Libraries().ToList();
 
@@ -208,12 +207,11 @@ namespace Bb.Compilers
         public Dictionary<string, object[]> AssemblyAttributes { get; set; }
         public RuntimeConfig RuntimeConfig { get; set; }
 
-        private CSharpCompilationOptions GetCompilationOptions(AssemblyResult result, Activity activity)
+        private CSharpCompilationOptions GetCompilationOptions(AssemblyResult result)
         {
 
             bool allowUnsafe = false;
 
-            _resolver.Activity = activity;
             var optimizationLevel = this.Debug ? OptimizationLevel.Debug : OptimizationLevel.Release;
 
             CSharpCompilationOptions compilationOptions = new CSharpCompilationOptions
@@ -230,28 +228,29 @@ namespace Bb.Compilers
                 //.WithUsings(result.Usings)
                 ;
 
-            activity.Set(c =>
-            {
-                c.SetCustomProperty("AssemblyKind", AssemblyKind.ToString());
-                c.SetCustomProperty("allowUnsafe", allowUnsafe.ToString());
-                c.SetCustomProperty("optimizationLevel", optimizationLevel.ToString());
-                c.SetCustomProperty("MainTypeName", this.MainTypeName ?? string.Empty);
-            });
+            if (RoslynActivityProvider.WithTelemetry)
+                RoslynActivityProvider.Set(c =>
+                {
+                    c.SetCustomProperty("AssemblyKind", AssemblyKind.ToString());
+                    c.SetCustomProperty("allowUnsafe", allowUnsafe.ToString());
+                    c.SetCustomProperty("optimizationLevel", optimizationLevel.ToString());
+                    c.SetCustomProperty("MainTypeName", this.MainTypeName ?? string.Empty);
+                });
 
             if (!string.IsNullOrEmpty(this.MainTypeName))
                 compilationOptions.WithMainTypeName(this.MainTypeName);
 
             if (this.KeyFile != null)
-                AddSignature(compilationOptions, activity);
+                AddSignature(compilationOptions);
 
             if (ConfigureCompilation != null)
-                ConfigureCompilation(compilationOptions, activity);
+                ConfigureCompilation(compilationOptions);
 
             return compilationOptions;
 
         }
 
-        private void AddSignature(CSharpCompilationOptions compilationOptions, Activity activity)
+        private void AddSignature(CSharpCompilationOptions compilationOptions)
         {
             if (File.Exists(this.KeyFile))
             {
@@ -259,12 +258,13 @@ namespace Bb.Compilers
                                   .WithDelaySign(this.DelaySign)
                                   .WithCryptoPublicKey(StrongNameKey);
 
-                activity.Set(c =>
-                {
-                    c.SetCustomProperty("KeyFile", KeyFile ?? string.Empty);
-                    c.SetCustomProperty("DelaySign", DelaySign.ToString());
-                    c.SetCustomProperty("StrongNameKey", StrongNameKey != null ? Convert.ToBase64String(StrongNameKey.ToArray()) : string.Empty);
-                });
+                if (RoslynActivityProvider.WithTelemetry)
+                    RoslynActivityProvider.Set(c =>
+                    {
+                        c.SetCustomProperty("KeyFile", KeyFile ?? string.Empty);
+                        c.SetCustomProperty("DelaySign", DelaySign.ToString());
+                        c.SetCustomProperty("StrongNameKey", StrongNameKey != null ? Convert.ToBase64String(StrongNameKey.ToArray()) : string.Empty);
+                    });
 
             }
         }
@@ -272,11 +272,12 @@ namespace Bb.Compilers
         private void AnalyzeCompilation(AssemblyResult result, EmitResult resultEmit, string[] diags)
         {
 
-            RoslynActivityProvider.Set(c =>
-            {
-                c.SetCustomProperty("Success", result.Success);
-                c.SetCustomProperty("Diagnostics", string.Join(", ", diags));
-            });
+            if (RoslynActivityProvider.WithTelemetry)
+                RoslynActivityProvider.Set(c =>
+                {
+                    c.SetCustomProperty("Success", result.Success);
+                    c.SetCustomProperty("Diagnostics", string.Join(", ", diags));
+                });
 
             //var missingRefs = resultEmit.Diagnostics.Where(c => c.Id == "CS0246").ToList();
             //foreach (var item in missingRefs)
@@ -307,7 +308,7 @@ namespace Bb.Compilers
         }
 
         private AssemblyResult GetAssemblyResult()
-        {            
+        {
 
             if (!Directory.Exists(_outputPah))
                 Directory.CreateDirectory(_outputPah);
@@ -321,18 +322,19 @@ namespace Bb.Compilers
                 AssemblyBuildConfig = $"{_assemblyName}.runtimeconfig.json",
             };
 
-            RoslynActivityProvider.Set(c =>
-            {
-                c.SetCustomProperty("sdkName", this._assemblies.Sdk.Key.Name);
-                c.SetCustomProperty("sdkVersion", this._assemblies.Sdk.Key.Version);
-                c.SetCustomProperty("frameworkName", this._assemblies.Sdk.Name);
-                c.SetCustomProperty("frameworkVersion", this._assemblies.Sdk.Version);
+            if (RoslynActivityProvider.WithTelemetry)
+                RoslynActivityProvider.Set(c =>
+                {
+                    c.SetCustomProperty("sdkName", this._assemblies.Sdk.Key.Name);
+                    c.SetCustomProperty("sdkVersion", this._assemblies.Sdk.Key.Version);
+                    c.SetCustomProperty("frameworkName", this._assemblies.Sdk.Name);
+                    c.SetCustomProperty("frameworkVersion", this._assemblies.Sdk.Version);
 
-                c.SetCustomProperty("AssemblyName", result.AssemblyName);
-                c.SetCustomProperty("AssemblyFile", result.FullAssemblyFile);
-                c.SetCustomProperty("AssemblyFilePdb", result.FullAssemblyFilePdb);
-            
-            });
+                    c.SetCustomProperty("AssemblyName", result.AssemblyName);
+                    c.SetCustomProperty("AssemblyFile", result.FullAssemblyFile);
+                    c.SetCustomProperty("AssemblyFilePdb", result.FullAssemblyFilePdb);
+
+                });
 
             ResetFilesIfExists(result);
 
@@ -483,7 +485,7 @@ namespace Bb.Compilers
                 File.Delete(result.FullAssemblyFilePdb);
         }
 
-        private void Parse(AssemblyResult result, List<SyntaxTree> sources = null, Activity activity = null)
+        private void Parse(AssemblyResult result, List<SyntaxTree> sources = null)
         {
 
             if (sources == null)
@@ -506,11 +508,9 @@ namespace Bb.Compilers
 
             result.SyntaxTree = sources.ToArray();
 
-            activity.Set(c =>
-            {
-                c.SetCustomProperty("scripts", string.Join(", ", this._sources.Select(d => d.Filepath)));
-            });
-
+            if (RoslynActivityProvider.WithTelemetry)
+                RoslynActivityProvider.AddProperty("scripts", string.Join(", ", this._sources.Select(d => d.Filepath)));
+            
         }
 
         #endregion Methods

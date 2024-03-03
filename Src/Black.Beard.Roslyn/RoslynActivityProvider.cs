@@ -1,94 +1,22 @@
-﻿using System.Diagnostics;
+﻿// Ignore Spelling: Metrology
+
+using Bb.ComponentModel;
+using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Bb
+namespace Bb.Metrology
 {
 
+
     /// <summary>
-    /// Managing initialize activity source. this class implement unit of work pattern
+    /// Managing initialize activity source.
     /// </summary>
     public static class RoslynActivityProvider
     {
 
-        /// <summary>
-        /// Initialize the activity source
-        /// </summary>
-        /// <param name="version"></param>
-        public static void Initialize(Version version = null)
-        {
-            var assembly = Assembly.GetCallingAssembly().GetName();
-            RoslynActivityProvider._source = new ActivitySource(assembly.Name, assembly.Version.ToString());
-        }
-
-        /// <summary>
-        /// Initialize the activity source
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="version"></param>
-        public static void Initialize(string name, Version version = null)
-        {
-            RoslynActivityProvider._source = new ActivitySource(name, version != null ? version.ToString() : null);
-        }
-
-
-        /// <summary>
-        /// Gets the <see cref="ActivitySource"/> object for the current execution context.
-        /// </summary>
-        public static ActivitySource Source
-        {
-            get
-            {
-                if (_source == null)
-                    Initialize();
-                return _source;
-            }
-        }
-
-
-        /// <summary>
-        /// Adds a tag to the current Activity object for the current execution context.
-        /// </summary>
-        /// <param name="self"></param>
-        /// <param name="action"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Set(this Activity self, Action<Activity> action)
-        {
-            if (self != null && action != null)
-                action(self);
-        }
-
-        /// <summary>
-        /// Gets the current Activity object for the current execution context.
-        /// </summary>
-        /// <param name="action"></param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Set(Action<Activity> action)
-        {
-
-            if (_currentActivity != null && action != null)
-                action(_currentActivity);
-
-        }
-
-
-        /// <summary>
-        /// Gets the current Activity object for the current execution context.
-        /// </summary>
-        public static Activity? CurrentActivity => _currentActivity;
-
-        #region CreateActivity
-
-        /// <summary>
-        /// Check if there is any listeners for this ActivitySource.
-        /// This property can be helpful to tell if there is no listener, then no need to create Activity object
-        /// and avoid creating the objects needed to create Activity (e.g. ActivityContext)
-        /// Example of that is http scenario which can avoid reading the context data from the wire.
-        /// </summary>
-        public static bool HasListeners()
-        {
-            return Source.HasListeners();
-        }
+        #region Create Activity
 
         /// <summary>
         /// Creates a new <see cref="Activity"/> object if there is any listener to the Activity, returns null otherwise.
@@ -99,17 +27,19 @@ namespace Bb
         /// <remarks>
         /// If the Activity object is created, it will not start automatically. Callers need to call <see cref="Activity.Start()"/> to start it.
         /// </remarks>
+        /// <exception cref="InvalidOperationException">If the Activity already exists.</exception>"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Activity? CreateActivity(string name, ActivityKind kind)
         {
 
-            if (RoslynActivityProvider._currentActivity != null)
-                throw new InvalidOperationException("An activity is already in progress.");
+            if (!WithTelemetry)
+                return null;
 
-            var result = Source.CreateActivity(name, kind);
-            if (result != null)
-                RoslynActivityProvider._currentActivity = result;
+            var current = Source.CreateActivity(name, kind);
+            WithTelemetry = current != null;
 
-            return result;
+            return current;
+
         }
 
         /// <summary>
@@ -126,17 +56,18 @@ namespace Bb
         /// <remarks>
         /// If the Activity object is created, it will not start automatically. Callers need to call <see cref="Activity.Start()"/> to start it.
         /// </remarks>
+        /// <exception cref="InvalidOperationException">If the Activity already exists.</exception>"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Activity? CreateActivity(string name, ActivityKind kind, ActivityContext parentContext, IEnumerable<KeyValuePair<string, object?>>? tags = null, IEnumerable<ActivityLink>? links = null, ActivityIdFormat idFormat = ActivityIdFormat.Unknown)
         {
 
-            if (RoslynActivityProvider._currentActivity != null)
-                throw new InvalidOperationException("An activity is already in progress.");
+            if (!WithTelemetry)
+                return null;
 
-            var result = Source.CreateActivity(name, kind, parentContext, tags, links, idFormat);
-            if (result != null)
-                RoslynActivityProvider._currentActivity = result;
+            var current = Source.CreateActivity(name, kind, parentContext, tags, links, idFormat);
+            WithTelemetry = current != null;
 
-            return result;
+            return current;
 
         }
 
@@ -153,36 +84,39 @@ namespace Bb
         /// <remarks>
         /// If the Activity object is created, it will not start automatically. Callers need to call <see cref="Activity.Start()"/> to start it.
         /// </remarks>
+        /// <exception cref="InvalidOperationException">If the Activity already exists.</exception>"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Activity? CreateActivity(string name, ActivityKind kind, string parentId, IEnumerable<KeyValuePair<string, object?>>? tags = null, IEnumerable<ActivityLink>? links = null, ActivityIdFormat idFormat = ActivityIdFormat.Unknown)
         {
 
-            if (RoslynActivityProvider._currentActivity != null)
-                throw new InvalidOperationException("An activity is already in progress.");
+            if (!WithTelemetry)
+                return null;
 
-            var result = Source.CreateActivity(name, kind, parentId, tags, links, idFormat);
-            if (result != null)
-                RoslynActivityProvider._currentActivity = result;
+            var current = Source.CreateActivity(name, kind, parentId, tags, links, idFormat);
+            WithTelemetry = current != null;
 
-            return result;
+            return current;
 
         }
+
         /// <summary>
         /// Creates and starts a new <see cref="Activity"/> object if there is any listener to the Activity, returns null otherwise.
         /// </summary>
         /// <param name="name">The operation name of the Activity</param>
         /// <param name="kind">The <see cref="ActivityKind"/></param>
         /// <returns>The created <see cref="Activity"/> object or null if there is no any event listener.</returns>
+        /// <exception cref="InvalidOperationException">If the Activity already exists.</exception>"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Activity? StartActivity([CallerMemberName] string name = "", ActivityKind kind = ActivityKind.Internal)
         {
 
-            if (RoslynActivityProvider._currentActivity != null)
-                throw new InvalidOperationException("An activity is already in progress.");
+            if (!WithTelemetry)
+                return null;
 
-            var result = Source.StartActivity(name, kind);
-            if (result != null)
-                RoslynActivityProvider._currentActivity = result;
+            var current = Source.StartActivity(name, kind);
+            WithTelemetry = current != null;
 
-            return result;
+            return current;
 
         }
 
@@ -196,17 +130,18 @@ namespace Bb
         /// <param name="links">The optional <see cref="ActivityLink"/> list to initialize the created Activity object with.</param>
         /// <param name="startTime">The optional start timestamp to set on the created Activity object.</param>
         /// <returns>The created <see cref="Activity"/> object or null if there is no any listener.</returns>
+        /// <exception cref="InvalidOperationException">If the Activity already exists.</exception>"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Activity? StartActivity(string name, ActivityKind kind, ActivityContext parentContext, IEnumerable<KeyValuePair<string, object?>>? tags = null, IEnumerable<ActivityLink>? links = null, DateTimeOffset startTime = default)
         {
 
-            if (RoslynActivityProvider._currentActivity != null)
-                throw new InvalidOperationException("An activity is already in progress.");
+            if (!WithTelemetry)
+                return null;
 
-            var result = Source.StartActivity(name, kind, parentContext, tags, links, startTime);
-            if (result != null)
-                RoslynActivityProvider._currentActivity = result;
+            var current = Source.StartActivity(name, kind, parentContext, tags, links, startTime);
+            WithTelemetry = current != null;
 
-            return result;
+            return current;
 
         }
 
@@ -220,17 +155,18 @@ namespace Bb
         /// <param name="links">The optional <see cref="ActivityLink"/> list to initialize the created Activity object with.</param>
         /// <param name="startTime">The optional start timestamp to set on the created Activity object.</param>
         /// <returns>The created <see cref="Activity"/> object or null if there is no any listener.</returns>
+        /// <exception cref="InvalidOperationException">If the Activity already exists.</exception>"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Activity? StartActivity(string name, ActivityKind kind, string parentId, IEnumerable<KeyValuePair<string, object?>>? tags = null, IEnumerable<ActivityLink>? links = null, DateTimeOffset startTime = default)
         {
 
-            if (RoslynActivityProvider._currentActivity != null)
-                throw new InvalidOperationException("An activity is already in progress.");
+            if (!WithTelemetry)
+                return null;
 
-            var result = Source.StartActivity(name, kind, parentId, tags, links, startTime);
-            if (result != null)
-                RoslynActivityProvider._currentActivity = result;
+            var current = Source.StartActivity(name, kind, parentId, tags, links, startTime);
+            WithTelemetry = current != null;
 
-            return result;
+            return current;
 
         }
 
@@ -244,28 +180,112 @@ namespace Bb
         /// <param name="startTime">The optional start timestamp to set on the created Activity object.</param>
         /// <param name="name">The operation name of the Activity.</param>
         /// <returns>The created <see cref="Activity"/> object or null if there is no any listener.</returns>
+        /// <exception cref="InvalidOperationException">If the Activity already exists.</exception>"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Activity? StartActivity(ActivityKind kind, ActivityContext parentContext = default, IEnumerable<KeyValuePair<string, object?>>? tags = null, IEnumerable<ActivityLink>? links = null, DateTimeOffset startTime = default, [CallerMemberName] string name = "")
         {
 
-            if (RoslynActivityProvider._currentActivity != null)
-                throw new InvalidOperationException("An activity is already in progress.");
+            if (!WithTelemetry)
+                return null;
 
-            var result = Source.StartActivity(kind, parentContext, tags, links, startTime, name);
-            if (result != null)
-                RoslynActivityProvider._currentActivity = result;
+            var current = Source.StartActivity(kind, parentContext, tags, links, startTime, name);
+            WithTelemetry = current != null;
 
-            return result;
+            return current;
 
         }
-
 
         #endregion
 
 
-        private static ActivitySource _source;
+        #region Append infos
 
-        [ThreadStatic]
-        private static Activity _currentActivity;
+        /// <summary>
+        /// Gets the current Activity object for the current execution context.
+        /// </summary>
+        /// <param name="action">action to run with current activity</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Set(Action<Activity> action)
+        {
+            if (WithTelemetry && action != null)
+            {
+                var current = Activity.Current;
+                if (current != null)
+                    action(current);
+            }
+        }
+
+        /// <summary>
+        /// Add custom property to the current Activity object for the current execution context.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public static void AddProperty(string key, object value)
+        {
+            if (WithTelemetry)
+            {
+                var current = Activity.Current;
+                if (current != null)
+                    current.SetCustomProperty(key, value);
+            }
+        }
+
+        /// <summary>
+        /// Add custom property to the current Activity object for the current execution context.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public static void AddBaggage(string key, string value)
+        {
+            if (WithTelemetry)
+            {
+                var current = Activity.Current;
+                if (current != null)
+                    current.AddBaggage(key, value);
+            }
+        }
+
+        /// <summary>
+        /// Add custom event to the current Activity object for the current execution context.
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="tags"></param>
+        public static void AddEvent(string eventName, params (string key, string value)[] tags)
+        {
+            if (WithTelemetry)
+            {
+                var current = Activity.Current;
+                if (current != null)
+                {
+
+                    var _tags = new ActivityTagsCollection();
+
+                    foreach (var item in tags)
+                        _tags.Add(item.key, item.value);
+
+                    current.AddEvent(new ActivityEvent(eventName, default, _tags));
+
+                }
+            }
+        }
+
+        #endregion Append infos
+
+        /// <summary>
+        /// Initializes the <see cref="ActivitySource"/> object.
+        /// </summary>
+        static RoslynActivityProvider()
+        {
+            Name = nameof(RoslynActivityProvider);
+            Name = Name.Substring(0, Name.Length - "Provider".Length);
+            Version = typeof(RoslynActivityProvider).Assembly.GetName().Version;
+            Source = new ActivitySource(Name, Version?.ToString());
+        }
+
+        internal static ActivitySource Source;
+        public static readonly string Name;
+        public static readonly Version Version;
+        public static bool WithTelemetry = true;
 
     }
 
