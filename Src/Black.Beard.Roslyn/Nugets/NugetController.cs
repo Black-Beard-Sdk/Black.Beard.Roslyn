@@ -25,12 +25,12 @@ namespace Bb.Nugets
         /// <summary>
         /// Is freeBsd platform
         /// </summary>
-        public static bool IsFreeBSD = RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD);
+        public static bool IsFreeBSDPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD);
 
         /// <summary>
         /// Is osx platform
         /// </summary>
-        public static bool IsOsx = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+        public static bool IsOsxPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
 
         /// <summary>
