@@ -18,13 +18,13 @@ namespace Bb.Builds
         /// <param name="debug"></param>
         /// <param name="configureCompilation"></param>
         /// <returns></returns>
-        public static BuildCSharp CreateCsharpBuild(this string path, bool debug = false, Action<CSharpCompilationOptions> configureCompilation = null)
+        public static BuildCSharp CreateCsharpBuild(this string path, bool debug = false, Func<CSharpCompilationOptions, CSharpCompilationOptions> configureCompilation = null)
         {
             var file = new FileInfo(path);
             return CreateCsharpBuild(file, debug, configureCompilation);
         }
 
-        internal static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug, List<Action<CSharpCompilationOptions>> configureCompilations, BuildList children)
+        internal static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug, List<Func<CSharpCompilationOptions, CSharpCompilationOptions>> configureCompilations, BuildList children)
         {
 
             file.Refresh();
@@ -51,7 +51,7 @@ namespace Bb.Builds
         /// <param name="configureCompilation"></param>
         /// <returns></returns>
         /// <exception cref="FileNotFoundException"></exception>
-        public static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug = false, Action<CSharpCompilationOptions> configureCompilation = null)
+        public static BuildCSharp CreateCsharpBuild(this FileInfo file, bool debug = false, Func<CSharpCompilationOptions, CSharpCompilationOptions> configureCompilation = null)
         {
 
             file.Refresh();

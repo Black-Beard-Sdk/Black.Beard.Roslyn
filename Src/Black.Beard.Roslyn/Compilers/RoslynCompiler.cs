@@ -91,7 +91,7 @@ namespace Bb.Compilers
             return this;
         }
 
-        public Action<CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
+        public Func<CSharpCompilationOptions, CSharpCompilationOptions> ConfigureCompilation { get; internal set; }
 
         public LanguageVersion LanguageVersion { get; set; }
 
@@ -237,24 +237,24 @@ namespace Bb.Compilers
                     c.SetCustomProperty("MainTypeName", this.MainTypeName ?? string.Empty);
                 });
 
-            if (!string.IsNullOrEmpty(this.MainTypeName))
-                compilationOptions.WithMainTypeName(this.MainTypeName);
-
+            if (!string.IsNullOrEmpty(this.MainTypeName))            
+                compilationOptions = compilationOptions.WithMainTypeName(this.MainTypeName);
+            
             if (this.KeyFile != null)
-                AddSignature(compilationOptions);
+                compilationOptions = AddSignature(compilationOptions);
 
             if (ConfigureCompilation != null)
-                ConfigureCompilation(compilationOptions);
+                compilationOptions = ConfigureCompilation(compilationOptions);
 
             return compilationOptions;
 
         }
 
-        private void AddSignature(CSharpCompilationOptions compilationOptions)
+        private CSharpCompilationOptions AddSignature(CSharpCompilationOptions compilationOptions)
         {
             if (File.Exists(this.KeyFile))
             {
-                compilationOptions.WithCryptoKeyFile(this.KeyFile)
+                compilationOptions = compilationOptions.WithCryptoKeyFile(this.KeyFile)
                                   .WithDelaySign(this.DelaySign)
                                   .WithCryptoPublicKey(StrongNameKey);
 
@@ -267,6 +267,9 @@ namespace Bb.Compilers
                     });
 
             }
+
+            return compilationOptions;
+
         }
 
         private void AnalyzeCompilation(AssemblyResult result, EmitResult resultEmit, string[] diags)
@@ -283,7 +286,7 @@ namespace Bb.Compilers
             //foreach (var item in missingRefs)
             //    item.Descriptor.MessageFormat;
 
-            // Map diagnostic for not reference roslyn outsite this assembly
+            // Map diagnostic for not reference Roslyn outsite this assembly
             foreach (Diagnostic diagnostic in resultEmit.Diagnostics)
                 result.Diagnostics.Add(diagnostic.Map());
 
@@ -303,8 +306,8 @@ namespace Bb.Compilers
 
             }
 
-
             result.Success = resultEmit.Success;
+
         }
 
         private AssemblyResult GetAssemblyResult()

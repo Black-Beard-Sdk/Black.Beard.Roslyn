@@ -105,9 +105,7 @@ public class Program
 
                 var assemblyToRun = result.PrepareFolderToExecute();
 
-                using (ProcessCommandService service = new LocalProcessCommandService()
-                    .Intercept(log)
-                    )
+                using (ProcessCommandService service = new LocalProcessCommandService().Intercept(log))
                 {
 
                     var cmd = service.RunAndGet(
@@ -126,16 +124,9 @@ public class Program
 
                 var list = result.ResolveDependencies(builder.References, true);
 
-                var assembly = result.LoadAssembly();
-                var types = assembly.GetExportedTypes();
-                //var instance = Activator.CreateInstance(types[0]);
-                //Assert.NotNull(instance);
             }
             else
-            {
                 Assert.Fail();
-
-            }
 
             Assert.True(testSuccess);
 

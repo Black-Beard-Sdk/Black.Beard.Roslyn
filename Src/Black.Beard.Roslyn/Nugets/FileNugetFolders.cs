@@ -116,7 +116,6 @@ namespace Bb.Nugets
         public bool TryToDownload(string name, Version version = null)
         {
 
-
             using (var activity = RoslynActivityProvider.StartActivity("Try to download", ActivityKind.Producer))
                 foreach (var host in Hosts)
                 {

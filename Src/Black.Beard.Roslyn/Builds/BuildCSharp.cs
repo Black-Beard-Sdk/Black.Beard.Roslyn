@@ -28,7 +28,7 @@ namespace Bb.Builds
         /// Initializes a new instance of the <see cref="BuildCSharp"/> class.
         /// </summary>
         /// <param name="configureCompilation">The configure compilation.</param>
-        public BuildCSharp(Action<CSharpCompilationOptions> configureCompilation = null)
+        public BuildCSharp(Func<CSharpCompilationOptions, CSharpCompilationOptions> configureCompilation = null)
         {
             RuntimeConfig = new RuntimeConfig();
             Platform = Platform.AnyCpu;
@@ -38,7 +38,7 @@ namespace Bb.Builds
             _suppress = new Dictionary<string, ReportDiagnostic>();
             
             Framework = new Frameworks();
-            ConfigureCompilations = new List<Action<CSharpCompilationOptions>>(2);
+            ConfigureCompilations = new List<Func<CSharpCompilationOptions, CSharpCompilationOptions>>(2);
             this.References = new AssemblyReferences();
             Sources = new SourceCodes();
             OutputPath = Path.Combine(Path.GetTempPath(), "_builds");
@@ -420,13 +420,13 @@ namespace Bb.Builds
         /// <value>
         /// The configure compilation.
         /// </value>
-        public BuildCSharp ConfigureCompilation(Action<CSharpCompilationOptions> action)
+        public BuildCSharp ConfigureCompilation(Func<CSharpCompilationOptions, CSharpCompilationOptions> action)
         {
             ConfigureCompilations.Add(action);
             return this;
         }
 
-        public List<Action<CSharpCompilationOptions>> ConfigureCompilations { get; internal set; }
+        public List<Func<CSharpCompilationOptions, CSharpCompilationOptions>> ConfigureCompilations { get; internal set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [resolve objects].
@@ -674,13 +674,13 @@ namespace Bb.Builds
 
         }
 
-        private void Configure(CSharpCompilationOptions obj)
+        private CSharpCompilationOptions Configure(CSharpCompilationOptions obj)
         {
 
             if (_suppress.Count > 0)
             {
                 var dic = ImmutableDictionary.CreateRange(_suppress);
-                obj.WithSpecificDiagnosticOptions(dic);
+                obj = obj.WithSpecificDiagnosticOptions(dic);
 
                 if (RoslynActivityProvider.WithTelemetry)
                     RoslynActivityProvider.AddProperty("suppress", string.Join(", ", dic.Keys));
@@ -689,7 +689,10 @@ namespace Bb.Builds
 
             if (ConfigureCompilations.Count > 0)
                 foreach (var item in ConfigureCompilations)
-                    item(obj);
+                    obj = item(obj);
+
+            return obj;
+
         }
 
         /// <summary>

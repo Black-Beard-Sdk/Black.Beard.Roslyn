@@ -263,6 +263,9 @@ namespace Bb.Nugets
         public bool TryToDownload(string name, Version version = null)
         {
 
+            if (Filter != null && !Filter(name, version))
+                return false;
+
             foreach (var nugetFolder in _folders)
                 if (nugetFolder.WithResolver)
                     if (nugetFolder.TryToDownload(name, version))
@@ -272,6 +275,8 @@ namespace Bb.Nugets
 
         }
 
+        private Func<string, Version, bool> Filter { get; set; }
+        
 
         private List<(string, FrameworkKey, string, Version, NugetDocument)> TryToResolve((string, Version) item, out bool empty, FrameworkKey framework = null)
         {
