@@ -2,6 +2,7 @@
 using Bb.Analysis.DiagTraces;
 using Bb.Builds;
 using ICSharpCode.Decompiler.Util;
+using System.Runtime.InteropServices;
 
 namespace Bb.Nugets
 {
@@ -9,6 +10,27 @@ namespace Bb.Nugets
 
     public class NugetController : IAssemblyReferenceResolver
     {
+
+
+        /// <summary>
+        /// Is windows platform
+        /// </summary>
+        public static bool IsWindowsPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        
+        /// <summary>
+        /// Is linux platform
+        /// </summary>
+        public static bool IsLinuxPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+        
+        /// <summary>
+        /// Is freeBsd platform
+        /// </summary>
+        public static bool IsFreeBSD = RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD);
+
+        /// <summary>
+        /// Is osx platform
+        /// </summary>
+        public static bool IsOsx = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
 
         /// <summary>
@@ -31,10 +53,23 @@ namespace Bb.Nugets
 
 
         /// <summary>
+        /// Add the default repository to resolve nuget if filter is true
+        /// </summary>
+        /// <param name="filter">condition for adding folder</param>
+        /// <param name="path">path to store the package downloaded</param>
+        /// <returns></returns>
+        public NugetController AddFolderIf(bool filter, string path)
+        {
+            if (filter)
+                AddFolder(path);
+            return this;
+        }
+
+
+        /// <summary>
         /// Add the default repository to resolve nuget for windows
         /// </summary>
         /// <param name="path">path to store the package downloaded</param>
-        /// <param name="host">host where search package on line</param>
         /// <returns></returns>
         public NugetController AddFolder(string path)
         {
@@ -42,6 +77,20 @@ namespace Bb.Nugets
             return this;
         }
 
+      
+        /// <summary>
+        /// Add the default repository to resolve nuget if filter is true
+        /// </summary>
+        /// <param name="filter">condition for adding folder</param>
+        /// <param name="path">path to store the package downloaded</param>
+        /// <param name="hosts">host where search package on line</param>
+        /// <returns></returns>
+        public NugetController AddFolderIf(bool filter, string path, params string[] hosts)
+        {
+            if (filter)
+                AddFolder(path, hosts);
+            return this;
+        }
 
         /// <summary>
         /// Add the default repository to resolve nuget for windows
@@ -53,11 +102,15 @@ namespace Bb.Nugets
         {
 
             if (!_folders.Any(c => c.Path.FullName == path))
-                _folders.Add(new FileNugetFolders(path, hosts).Refresh());
+                _folders.Add(new FileNugetFolders(path, hosts)
+                    .Refresh()
+                    );
 
             return this;
 
         }
+
+
 
         /// <summary>
         /// Copy the nuget folder from the source
@@ -275,8 +328,14 @@ namespace Bb.Nugets
 
         }
 
-        private Func<string, Version, bool> Filter { get; set; }
-        
+        public NugetController WithFilter(Func<string, Version, bool> filter)
+        {
+            Filter = filter;
+            return this;
+        }
+
+        public Func<string, Version, bool> Filter { get; set; }
+
 
         private List<(string, FrameworkKey, string, Version, NugetDocument)> TryToResolve((string, Version) item, out bool empty, FrameworkKey framework = null)
         {

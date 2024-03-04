@@ -174,7 +174,12 @@ public class Program
         {
 
             var dir = Path.Combine(Environment.CurrentDirectory, Path.GetRandomFileName());
-            var controller = new NugetController().AddFolder(dir, NugetController.HostNugetOrg);
+            var controller = new NugetController()
+                .AddFolder(dir, NugetController.HostNugetOrg)
+                .WithFilter((n, v) =>
+                {
+                    return true;
+                });
 
             var result = controller.Resolve("Black.Beard.Componentmodel");
             if (result == null || result.Any())

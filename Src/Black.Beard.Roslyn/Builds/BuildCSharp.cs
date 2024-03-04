@@ -243,7 +243,7 @@ namespace Bb.Builds
                     
                     this._nugets = new NugetController();
 
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    if (NugetController.IsWindowsPlatform)
                         this.Nugets.AddDefaultWindowsFolder();
 
                 }
