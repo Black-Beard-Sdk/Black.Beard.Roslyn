@@ -29,10 +29,6 @@ namespace Bb.Compilers
 
         public ScriptDiagnostics Diagnostics { get; internal set; }
 
-        public IEnumerable<Analysis.DiagTraces.ScriptDiagnostic> Errors { get => Diagnostics.Where(c => c.Severity == "Error"); }
-
-        public IEnumerable<Analysis.DiagTraces.ScriptDiagnostic> Warnings { get => Diagnostics.Where(c => c.Severity == "Warning"); }
-
         public List<string> Documents { get; }
 
         public bool Success { get; internal set; }

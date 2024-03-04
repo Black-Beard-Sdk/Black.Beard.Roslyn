@@ -279,7 +279,7 @@ namespace Bb.Analysis.DiagTraces
         /// <value>
         /// The errors.
         /// </value>
-        public IEnumerable<ScriptDiagnostic> Errors { get => _list.Where(c => c.IsSeverityAsError); }
+        public IEnumerable<ScriptDiagnostic> Errors { get => _list.Where(c => c.IsSeverityAsError).ToList(); }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="ScriptDiagnostics"/> is success. then the list of diagnostic don't contains error.
