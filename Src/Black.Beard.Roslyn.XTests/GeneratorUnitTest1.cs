@@ -4,21 +4,16 @@ using Bb.Builds;
 using Bb.Codings;
 using Bb.Nugets;
 using Bb.Process;
-//using OpenTelemetry;
-//using OpenTelemetry.Resources;
-//using OpenTelemetry.Trace;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
 using System.Diagnostics;
-using ICSharpCode.Decompiler.Metadata;
-using Bb.Metrology;
-using Bb.Diagnostics;
 
 namespace Bb.Roslyn.XTests
 {
+
     public class GeneratorUnitTest : IDisposable
     {
 
