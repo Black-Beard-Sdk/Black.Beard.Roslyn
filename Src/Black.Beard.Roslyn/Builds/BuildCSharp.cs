@@ -7,6 +7,7 @@ using Bb.Nugets;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using SharpCompress.Common;
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
@@ -30,20 +31,22 @@ namespace Bb.Builds
         /// <param name="configureCompilation">The configure compilation.</param>
         public BuildCSharp(Func<CSharpCompilationOptions, CSharpCompilationOptions> configureCompilation = null)
         {
+
             RuntimeConfig = new RuntimeConfig();
             Platform = Platform.AnyCpu;
             this.OutputKind = OutputKind.DynamicallyLinkedLibrary;
             _diagnostics = new ScriptDiagnostics();
             _compiledAssemblies = new Dictionary<int, AssemblyResult>();
             _suppress = new Dictionary<string, ReportDiagnostic>();
-            
+
+
             Framework = new Frameworks();
             ConfigureCompilations = new List<Func<CSharpCompilationOptions, CSharpCompilationOptions>>(2);
             this.References = new AssemblyReferences();
             Sources = new SourceCodes();
             OutputPath = Path.Combine(Path.GetTempPath(), "_builds");
 
-           
+
             if (configureCompilation != null)
                 this.ConfigureCompilations.Add(configureCompilation);
 
@@ -52,11 +55,14 @@ namespace Bb.Builds
 
         }
 
+
+        #region Packages and references
+
         /// <summary>
         /// Add references to the build.
         /// </summary>
         /// <param name="types"></param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp AddReferences(params Type[] types)
         {
             this.References.AddByTypes(types);
@@ -67,7 +73,7 @@ namespace Bb.Builds
         /// Add references to the build.
         /// </summary>
         /// <param name="types"></param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp AddReferences(params Assembly[] types)
         {
             this.References.AddByAssemblies(types);
@@ -79,7 +85,7 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="assemblyLocation"></param>
         /// <param name="assemblyName"></param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp AddReferences(string assemblyLocation, string assemblyName = null)
         {
             this.References.AddAssemblyLocation(assemblyLocation, assemblyName);
@@ -87,25 +93,36 @@ namespace Bb.Builds
         }
 
 
+
+        /// <summary>
+        /// Replace the current nuget controller
+        /// </summary>
+        /// <param name="controller"></param>
+        /// <returns></returns>
+        public BuildCSharp SetNugetController(NugetController controller)
+        {
+            this._nugets = controller;
+            return this;
+        }
+
         /// <summary>
         /// Add packages on the build.
         /// </summary>
         /// <param name="packageName">name of the package</param>
         /// <param name="version">version of the package. If null the last version is used</param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp AddPackage(string packageName, Version version)
         {
             this.Nugets.AddPackage(packageName, version);
             return this;
         }
 
-
         /// <summary>
         /// Add packages on the build.
         /// </summary>
         /// <param name="packageName">name of the package</param>
         /// <param name="version">version of the package. If null the last version is used</param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp AddPackage(string packageName, string? version = null)
         {
             this.Nugets.AddPackage(packageName, version);
@@ -116,19 +133,23 @@ namespace Bb.Builds
         /// Add packages on the build.
         /// </summary>
         /// <param name="packageName">name of the package</param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp AddPackage(string packageName)
         {
             this.Nugets.AddPackage(packageName);
             return this;
         }
 
+        #endregion Packages and references
+
+
+        #region Sources
 
         /// <summary>
         /// Load the sources from the project file.
         /// </summary>
         /// <param name="paths"></param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp AddSource(params FileInfo[] paths)
         {
 
@@ -143,7 +164,7 @@ namespace Bb.Builds
         /// Adds the source code by filename.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp AddSource(params string[] paths)
         {
             foreach (var file in paths)
@@ -155,34 +176,20 @@ namespace Bb.Builds
         /// Adds the source code by filename.
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp AddSource(string documentName, string payload)
         {
             this.Sources.Add(documentName, payload);
             return this;
         }
 
-        /// <summary>
-        /// Gets or sets the output path of the build.
-        /// </summary>
-        /// <value>
-        /// The output path.
-        /// </value>
-        public string OutputPath { get; set; }
-
-        /// <summary>
-        /// Gets the file name's list of sources code.
-        /// </summary>
-        /// <value>
-        /// The sources.
-        /// </value>
-        public SourceCodes Sources { get; }
+        #endregion Packages and references
 
         /// <summary>
         /// Active the implicit usings.
         /// </summary>
         /// <param name="enable"></param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp EnableImplicitUsings(bool enable = true)
         {
             if (enable)
@@ -214,49 +221,16 @@ namespace Bb.Builds
             return this;
         }
 
-        /// <summary>
-        /// Gets the references assemblies.
-        /// </summary>
-        /// <value>
-        /// The references.
-        /// </value>
-        public AssemblyReferences References { get; }
 
 
-
-        public BuildCSharp SetNugetController(NugetController controller)
-        {
-            this._nugets = controller;
-            return this;
-        }
+        #region Sdk
 
         /// <summary>
-        /// referential nuget controller
+        /// Add available sdk.
         /// </summary>
-        public NugetController Nugets 
-        {
-            get
-            {
-
-                if (_nugets == null)
-                {
-                    
-                    this._nugets = new NugetController();
-
-                    if (NugetController.IsWindowsPlatform)
-                        this.Nugets.AddDefaultWindowsFolder();
-
-                }
-
-                return _nugets;
-            }
-        }
-
-        private NugetController _nugets;
-
-        public Frameworks Framework { get; internal set; }
-
-        public BuildCSharp AddAvailableVersion(string[] frameworkVersions)
+        /// <param name="frameworkVersions"></param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp AddAvailableSdk(string[] frameworkVersions)
         {
 
             var type = this.Framework.Sdk;
@@ -277,12 +251,10 @@ namespace Bb.Builds
 
         }
 
-        public BuildCSharp SetVersion(string frameworkVersion)
-        {
-            this.Framework.Versions.Add(FrameworkVersion.Resolve(FrameworkKeys.Resolve(frameworkVersion)));
-            return this;
-        }
-
+        /// <summary>
+        /// Remove all available sdk.
+        /// </summary>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp ResetSdk()
         {
             this.References.Sdk = null;
@@ -292,16 +264,60 @@ namespace Bb.Builds
             return this;
         }
 
+
         /// <summary>
-        /// Set the sdk version.
+        /// Set the sdk dotnet.
         /// </summary>
-        /// <param name="framework"></param>
-        /// <returns></returns>
-        public BuildCSharp SetSdk(FrameworkVersion framework)
+        /// <param name="frameworkKey"></param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp SetSdk(string frameworkKey)
         {
-            this.References.Sdk = framework;
+            var key = FrameworkKeys.Resolve(frameworkKey);
+            SetSdk(key);
             return this;
         }
+
+        /// <summary>
+        /// Set the sdk dotnet.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="type"></param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp SetSdk(FrameworkKey key, FrameworkType type = null)
+        {
+            var version = FrameworkVersion.Resolve(key, type);
+            SetSdk(version);
+            return this;
+        }
+
+        /// <summary>
+        /// Set the current running sdk dotnet.
+        /// </summary>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp SetSdk()
+        {
+            SetSdk(FrameworkVersion.CurrentVersion);
+            return this;
+        }
+
+        /// <summary>
+        /// Set the sdk dotnet.
+        /// </summary>
+        /// <param name="framework"></param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp SetSdk(FrameworkVersion framework)
+        {
+            this.Framework.Sdk = framework.Type;
+            this.References.Sdk = framework;
+            this.Framework.Versions.Add(framework);
+            return this;
+        }
+
+
+
+
+
+        #endregion Sdk
 
 
         #region Usings
@@ -390,6 +406,132 @@ namespace Bb.Builds
         #endregion Usings
 
 
+        #region properties
+
+        /// <summary>
+        /// Gets the references assemblies.
+        /// </summary>
+        /// <value>
+        /// The references.
+        /// </value>
+        public AssemblyReferences References { get; }
+
+        /// <summary>
+        /// Gets or sets the output path of the build.
+        /// </summary>
+        /// <value>
+        /// The output path.
+        /// </value>
+        public string OutputPath { get; set; }
+
+        /// <summary>
+        /// Gets the file name's list of sources code.
+        /// </summary>
+        /// <value>
+        /// The sources.
+        /// </value>
+        public SourceCodes Sources { get; }
+
+        /// <summary>
+        /// Set type of output library
+        /// </summary>
+        /// <param name="kind">kind of library</param>
+        /// <param name="mainTypeName">Name of main type name</param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp SetOutputKind(OutputKind kind, string mainTypeName)
+        {
+            this.MainTypeName = mainTypeName;
+            this.OutputKind = kind;
+            return this;
+        }
+
+        /// <summary>
+        /// Set type of output library
+        /// </summary>
+        /// <param name="kind">kind of library</param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp SetOutputKind(OutputKind kind)
+        {
+            this.OutputKind = kind;
+            return this;
+        }
+
+        /// <summary>
+        /// Suppresses the specified ids.
+        /// </summary>
+        /// <param name="ids">The ids.</param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp Suppress(params string[] ids)
+        {
+
+            foreach (var item in ids)
+                _suppress.Add(item, ReportDiagnostic.Suppress);
+
+            return this;
+
+        }
+
+        /// <summary>
+        /// suppress diagnostic items.
+        /// </summary>
+        /// <param name="reportMode">The report mode.</param>
+        /// <param name="ids">The ids.</param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp SuppressDiagnostic(ReportDiagnostic reportMode, params string[] ids)
+        {
+
+            foreach (var idKey in ids)
+            {
+                if (!_suppress.ContainsKey(idKey))
+                    _suppress.Add(idKey, reportMode);
+                else
+                    _suppress[idKey] = reportMode;
+            }
+
+            return this;
+
+        }
+
+        /// <summary>
+        /// Add configuration options action.
+        /// </summary>
+        /// <value>
+        /// The configure compilation.
+        /// </value>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp ConfigureCompilation(Func<CSharpCompilationOptions, CSharpCompilationOptions> action)
+        {
+            ConfigureCompilations.Add(action);
+            return this;
+        }
+
+        /// <summary>
+        /// referential nuget controller
+        /// </summary>
+        public NugetController Nugets
+        {
+            get
+            {
+
+                if (_nugets == null)
+                {
+
+                    this._nugets = new NugetController();
+
+                    if (NugetController.IsWindowsPlatform)
+                        this.Nugets.AddDefaultWindowsFolder();
+
+                }
+
+                return _nugets;
+            }
+        }
+
+        /// <summary>
+        /// get the framework
+        /// </summary>
+        public Frameworks Framework { get; internal set; }
+
         /// <summary>
         /// Gets or sets the key file.
         /// </summary>
@@ -413,18 +555,6 @@ namespace Bb.Builds
         /// The strong name key.
         /// </value>
         public ImmutableArray<byte> StrongNameKey { get; set; }
-
-        /// <summary>
-        /// Add configuration options action.
-        /// </summary>
-        /// <value>
-        /// The configure compilation.
-        /// </value>
-        public BuildCSharp ConfigureCompilation(Func<CSharpCompilationOptions, CSharpCompilationOptions> action)
-        {
-            ConfigureCompilations.Add(action);
-            return this;
-        }
 
         public List<Func<CSharpCompilationOptions, CSharpCompilationOptions>> ConfigureCompilations { get; internal set; }
 
@@ -476,62 +606,63 @@ namespace Bb.Builds
         /// main type name
         /// </summary>
         public string MainTypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the runtime configuration.
+        /// </summary>
         public RuntimeConfig RuntimeConfig { get; internal set; }
 
-        public BuildCSharp SetOutputKind(OutputKind kind, string mainTypeName)
-        {
-            this.MainTypeName = mainTypeName;
-            this.OutputKind = kind;
-            return this;
-        }
+        #endregion properties
 
-        public BuildCSharp SetOutputKind(OutputKind kind)
+
+
+        /// <summary>
+        /// Add attribute on the assembly
+        /// </summary>
+        /// <param name="attributeName">name of the attribute</param>
+        /// <param name="arguments">arguments of the attribute</param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp AddAssemblyAttribute(string attributeName, params object[] arguments)
         {
-            this.OutputKind = kind;
+            if (_attributes.ContainsKey(attributeName))
+                _attributes.Remove(attributeName);
+            _attributes.Add(attributeName, arguments);
             return this;
         }
 
         /// <summary>
-        /// Suppresses the specified ids.
+        /// Add attribute on the assembly
         /// </summary>
-        /// <param name="ids">The ids.</param>
-        /// <returns></returns>
-        public BuildCSharp Suppress(params string[] ids)
+        /// <param name="attribute">attribute type</param>
+        /// <param name="arguments">arguments of the attribute</param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp AddAssemblyAttribute(Type attribute, params object[] arguments)
         {
-
-            foreach (var item in ids)
-                _suppress.Add(item, ReportDiagnostic.Suppress);
-
+            var attributeName = attribute.Name;
+            if (_attributes.ContainsKey(attributeName))
+                _attributes.Remove(attributeName);
+            _attributes.Add(attributeName, arguments);
+            this.References.AddByTypes(attribute);
             return this;
-
         }
 
         /// <summary>
-        /// suppress diagnostic items.
+        /// Apply a filter for manage the sources to integrate in the build.
         /// </summary>
-        /// <param name="reportMode">The report mode.</param>
-        /// <param name="ids">The ids.</param>
-        /// <returns></returns>
-        public BuildCSharp SuppressDiagnostic(ReportDiagnostic reportMode, params string[] ids)
+        /// <param name="value"></param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
+        public BuildCSharp FilterSources(Func<SourceCode, bool> value)
         {
-
-            foreach (var idKey in ids)
-            {
-                if (!_suppress.ContainsKey(idKey))
-                    _suppress.Add(idKey, reportMode);
-                else
-                    _suppress[idKey] = reportMode;
-            }
-
+            this.Sources.Filter = value;
             return this;
-
         }
+
 
         /// <summary>
         /// Builds the specified assembly name.
         /// </summary>
         /// <param name="assemblyName">Name of the assembly.</param>
-        /// <returns></returns>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public AssemblyResult Build(string assemblyName = null)
         {
 
@@ -552,9 +683,9 @@ namespace Bb.Builds
                     if (References.Sdk == null)
                     {
                         if (this.Framework != null && this.Framework.HasVersion)
-                            References.Sdk = this.Framework.GetFrameworkVersion();
+                            SetSdk(this.Framework.GetFrameworkVersion());
                         else
-                            References.Sdk = FrameworkVersion.CurrentVersion;
+                            SetSdk();
                     }
 
                     foreach (var item in _dependencies)
@@ -594,117 +725,6 @@ namespace Bb.Builds
 
         }
 
-        private void BuildDependencies()
-        {
-
-            if (_children.Children.Any())
-            {
-                foreach (var item in _children.Children)
-                    if (item.Value.CanBeBuilded())
-                    {
-
-                        var build = item.Value;
-
-                        foreach (var subBuild in build._dependencies)
-                            if (subBuild.CanBeBuilded())
-                                subBuild.Build();
-
-                        if (build.CanBeBuilded())
-                            build.Build();
-
-
-                    }
-            }
-
-        }
-
-
-        public bool CanBeBuilded()
-        {
-
-            if (this.LastBuild != null && this.LastBuild.Success)
-                return false;
-
-            if (this._inBuild)
-                return false;
-
-            if (_dependencies.Count == 0)
-                return true;
-
-            bool result = true;
-            foreach (var item in _dependencies)
-                if (item.LastBuild == null || !item.LastBuild.Success)
-                {
-                    result = false;
-                    break;
-                }
-
-            return result;
-
-        }
-
-        private RoslynCompiler CreateBuilder()
-        {
-
-            References.Next(Nugets);
-
-
-            var compiler = new RoslynCompiler(this.OutputKind, References, _diagnostics)
-            {
-                ConfigureCompilation = Configure,
-                DocumentationMode = this.DocumentationMode,
-                KeyFile = this.KeyFile,
-                DelaySign = this.DelaySign,
-                StrongNameKey = this.StrongNameKey,
-                ResolveObjects = this.ResolveObjects,
-                Debug = this.Debug,
-                Usings = _usings.Values.ToArray(),
-                AssemblyAttributes = this._attributes,
-                MainTypeName = this.MainTypeName,
-                Platform = this.Platform,
-                RuntimeConfig = RuntimeConfig,
-            }
-
-            .AddCodeSource(Sources)
-            .SetOutput(OutputPath)
-            ;
-
-
-            return compiler;
-
-        }
-
-        private CSharpCompilationOptions Configure(CSharpCompilationOptions obj)
-        {
-
-            if (_suppress.Count > 0)
-            {
-                var dic = ImmutableDictionary.CreateRange(_suppress);
-                obj = obj.WithSpecificDiagnosticOptions(dic);
-
-                if (RoslynActivityProvider.WithTelemetry)
-                    RoslynActivityProvider.AddProperty("suppress", string.Join(", ", dic.Keys));
-                
-            }
-
-            if (ConfigureCompilations.Count > 0)
-                foreach (var item in ConfigureCompilations)
-                    obj = item(obj);
-
-            return obj;
-
-        }
-
-        /// <summary>
-        /// Apply a filter for manager the sources to integrate in the build.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public BuildCSharp FilterSources(Func<SourceCode, bool> value)
-        {
-            this.Sources.Filter = value;
-            return this;
-        }
 
         #region subBuild
 
@@ -714,6 +734,11 @@ namespace Bb.Builds
             return this;
         }
 
+        /// <summary>
+        /// Set diagnostics
+        /// </summary>
+        /// <param name="diagnostics"></param>
+        /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         internal BuildCSharp SetDiagnostics(ScriptDiagnostics diagnostics)
         {
             _diagnostics = diagnostics;
@@ -748,23 +773,110 @@ namespace Bb.Builds
             _dependencies.Add(buildCSharp);
         }
 
-        public BuildCSharp AddAssemblyAttribute(string attributeName, params object[] arguments)
+        private RoslynCompiler CreateBuilder()
         {
-            if (_attributes.ContainsKey(attributeName))
-                _attributes.Remove(attributeName);
-            _attributes.Add(attributeName, arguments);
-            return this;
+
+            References.Next(Nugets);
+
+
+            var compiler = new RoslynCompiler(this.OutputKind, References, _diagnostics)
+            {
+                ConfigureCompilation = Configure,
+                DocumentationMode = this.DocumentationMode,
+                KeyFile = this.KeyFile,
+                DelaySign = this.DelaySign,
+                StrongNameKey = this.StrongNameKey,
+                ResolveObjects = this.ResolveObjects,
+                Debug = this.Debug,
+                Usings = _usings.Values.ToArray(),
+                AssemblyAttributes = this._attributes,
+                MainTypeName = this.MainTypeName,
+                Platform = this.Platform,
+                RuntimeConfig = RuntimeConfig,
+            }
+
+            .AddCodeSource(Sources)
+            .SetOutput(OutputPath)
+            ;
+
+
+            return compiler;
+
         }
 
-        public BuildCSharp AddAssemblyAttribute(Type attribute, params object[] arguments)
+        private void BuildDependencies()
         {
-            var attributeName = attribute.Name;
-            if (_attributes.ContainsKey(attributeName))
-                _attributes.Remove(attributeName);
-            _attributes.Add(attributeName, arguments);
-            this.References.AddByTypes(attribute);
-            return this;
+
+            if (_children.Children.Any())
+            {
+                foreach (var item in _children.Children)
+                    if (item.Value.CanBeBuilt())
+                    {
+
+                        var build = item.Value;
+
+                        foreach (var subBuild in build._dependencies)
+                            if (subBuild.CanBeBuilt())
+                                subBuild.Build();
+
+                        if (build.CanBeBuilt())
+                            build.Build();
+
+
+                    }
+            }
+
         }
+
+        private CSharpCompilationOptions Configure(CSharpCompilationOptions obj)
+        {
+
+            if (_suppress.Count > 0)
+            {
+                var dic = ImmutableDictionary.CreateRange(_suppress);
+                obj = obj.WithSpecificDiagnosticOptions(dic);
+
+                if (RoslynActivityProvider.WithTelemetry)
+                    RoslynActivityProvider.AddProperty("suppress", string.Join(", ", dic.Keys));
+
+            }
+
+            if (ConfigureCompilations.Count > 0)
+                foreach (var item in ConfigureCompilations)
+                    obj = item(obj);
+
+            return obj;
+
+        }
+
+        /// <summary>
+        /// the current instance can be built
+        /// </summary>
+        /// <returns>boolean</returns>
+        public bool CanBeBuilt()
+        {
+
+            if (this.LastBuild != null && this.LastBuild.Success)
+                return false;
+
+            if (this._inBuild)
+                return false;
+
+            if (_dependencies.Count == 0)
+                return true;
+
+            bool result = true;
+            foreach (var item in _dependencies)
+                if (item.LastBuild == null || !item.LastBuild.Success)
+                {
+                    result = false;
+                    break;
+                }
+
+            return result;
+
+        }
+
 
         #endregion subBuild
 
@@ -776,13 +888,13 @@ namespace Bb.Builds
         private readonly Dictionary<string, ReportDiagnostic> _suppress;
         private Dictionary<string, CSUsing> _usings = new Dictionary<string, CSUsing>();
         private Dictionary<string, object[]> _attributes = new Dictionary<string, object[]>();
-
+        private NugetController _nugets;
         private bool _inBuild = false;
+
     }
 
     internal class BuildList
     {
-
 
         public Dictionary<string, BuildCSharp> Children = new Dictionary<string, BuildCSharp>();
 

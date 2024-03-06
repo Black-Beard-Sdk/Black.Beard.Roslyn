@@ -1,4 +1,5 @@
 ﻿
+using Bb.Analysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Bb.Builds
@@ -11,7 +12,7 @@ namespace Bb.Builds
         public Frameworks()
         {
             this.Versions = new List<FrameworkVersion>();
-            Sdk = ".NETCore.App";
+            Sdk = FrameworkType.NETCore;
         }
 
         /// <summary>
@@ -20,7 +21,7 @@ namespace Bb.Builds
         /// <value>
         /// The SDK.
         /// </value>
-        public string Sdk { get; set; }
+        public FrameworkType Sdk { get; set; }
 
         /// <summary>
         /// Gets or sets the version.
@@ -41,7 +42,7 @@ namespace Bb.Builds
         {
 
             if (this.Sdk == null)
-                this.Sdk = ".NETCore.App";
+                Sdk = FrameworkType.NETCore;
 
             if (this.Versions.Count == 0)
             {
@@ -91,7 +92,7 @@ namespace Bb.Builds
         }
 
         public LanguageVersion LanguageVersion { get; set; } = LanguageVersion.CSharp6;
-        
+
         /// <summary>
         /// return true whether has version.
         /// </summary>

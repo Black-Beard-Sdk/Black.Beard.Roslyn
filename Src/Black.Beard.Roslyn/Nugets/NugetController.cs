@@ -92,6 +92,7 @@ namespace Bb.Nugets
             return this;
         }
 
+
         /// <summary>
         /// Add the default repository to resolve nuget for windows
         /// </summary>
@@ -103,13 +104,15 @@ namespace Bb.Nugets
 
             if (!_folders.Any(c => c.Path.FullName == path))
                 _folders.Add(new FileNugetFolders(path, hosts)
+                    {
+                        Parent = this,
+                    }
                     .Refresh()
                     );
 
             return this;
 
         }
-
 
 
         /// <summary>
@@ -138,6 +141,7 @@ namespace Bb.Nugets
             AddPackage(nugetName, (Version)null);
         }
 
+
         /// <summary>
         /// Add a reference to resolve in the build
         /// </summary>
@@ -150,6 +154,7 @@ namespace Bb.Nugets
             else
                 AddPackage(nugetName, new Version(version));
         }
+
 
         /// <summary>
         /// Add a reference to resolve in the build
@@ -179,6 +184,7 @@ namespace Bb.Nugets
             _packages.Add((nugetName, version));
 
         }
+
 
         /// <summary>
         /// Resolve assembly name
@@ -313,8 +319,8 @@ namespace Bb.Nugets
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool TryToDownload(string name, Version version = null)
-        {
+        public virtual bool TryToDownload(string name, Version version = null)
+        {        
 
             if (Filter != null && !Filter(name, version))
                 return false;
@@ -370,6 +376,11 @@ namespace Bb.Nugets
                 _next.Next(next);
         }
 
+        /// <summary>
+        /// Intercept functions. return true to bypass the process
+        /// </summary>
+        public Func<string , object[], bool>  Intercept { get; set; }
+       
 
         public static string HostNugetOrg = "https://www.nuget.org/api/v2/package";
         public static string DefaultWindowsLocalFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");

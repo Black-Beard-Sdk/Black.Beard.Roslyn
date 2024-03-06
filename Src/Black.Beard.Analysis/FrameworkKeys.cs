@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 
 namespace Bb.Analysis
 {
+
+
     public static class FrameworkKeys
     {
 
@@ -145,8 +147,6 @@ namespace Bb.Analysis
 
         }
 
-        public static Func<string, FrameworkKey> Resolver { get; set; }    
-
         /// <summary>
         /// resolve by version
         /// </summary>
@@ -193,6 +193,9 @@ namespace Bb.Analysis
                     yield return item.Value;
             }
         }
+
+
+        public static Func<string, FrameworkKey> Resolver { get; set; }
 
 
         public static FrameworkKey Netstandard20 { get; }

@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
+using static Refs.Microsoft;
 
 namespace Bb.Builds
 {
@@ -34,19 +35,14 @@ namespace Bb.Builds
                         if (_current == null)
                         {
 
-                            // var isLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-
-                            var _trustedAssembliesPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
-                            HashSet<string> directories = new HashSet<string>(_trustedAssembliesPaths.Select(c => new FileInfo(c).Directory.FullName));
-
-                            string RuntimeDirectory = string.Empty;
-                            foreach (var toFind in DirectoriesToMatchs)
-                                foreach (var directory in directories)
-                                    if (directory.Contains(toFind))
-                                    {
-                                        _current = new FrameworkVersion().Intialize(new DirectoryInfo(directory), null, null);
-                                        return _current;
-                                    }
+                            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                                return SetCurrentWindows();
+                            
+                            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                                return SetCurrentLinux();
+                            
+                            else
+                                throw new NotImplementedException("Not implemented for this platform");
                         }
 
                 return _current;
@@ -56,56 +52,75 @@ namespace Bb.Builds
         }
 
 
+        private static FrameworkVersion SetCurrentWindows()
+        {
+
+            var _trustedAssembliesPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
+            HashSet<string> directories = new HashSet<string>(_trustedAssembliesPaths.Select(c => new FileInfo(c).Directory.FullName));
+
+            string RuntimeDirectory = string.Empty;
+            foreach (var toFind in FrameworkType.All())
+                foreach (var directory in directories)
+                    if (directory.Contains(toFind.WindowDirectory))
+                    {
+                        _current = new FrameworkVersion().Intialize(new DirectoryInfo(directory), null, null);
+                        return _current;
+                    }
+
+            return _current;
+
+        }
+
+        private static FrameworkVersion SetCurrentLinux()
+        {
+
+            var _trustedAssembliesPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
+            HashSet<string> directories = new HashSet<string>(_trustedAssembliesPaths.Select(c => new FileInfo(c).Directory.FullName));
+
+            string RuntimeDirectory = string.Empty;
+            foreach (var toFind in FrameworkType.All())
+                foreach (var directory in directories)
+                    if (directory.Contains(toFind.WindowDirectory))
+                    {
+                        _current = new FrameworkVersion().Intialize(new DirectoryInfo(directory), null, null);
+                        return _current;
+                    }
+
+            return _current;
+
+        }
+
         private FrameworkVersion Intialize(DirectoryInfo directory, string Name, Version version)
         {
 
             this.Directory = directory;
             this.Compatibilities = new List<string>();
 
-
+            ResolveType(Name);
             ResolveVersion(version);
-            
-            
-            ResolveName(Name);
-            this.Type = this.Name.Substring(this.Name.IndexOf('.'));
-
 
             this.Key = FrameworkKeys.Resolve(Version);
+
             this.LanguageVersion = (LanguageVersion)Key.languageVersion;
             if (Key.Version.Major >= 5)
                 this.Compatibilities.Add("netstandard2.0");
-
 
             return this;
 
         }
 
-        private void ResolveName(string name)
+        private void ResolveType(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
-
                 var file = this.Directory.GetFiles("*.deps.json", SearchOption.AllDirectories).FirstOrDefault();
                 if (file != null)
-                {
-                    var n = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file.Name));
-                    switch (n)
-                    {
-                        case "Microsoft.NETCore.App":
-                        case "Microsoft.AspNetCore.App":
-                        case "Microsoft.WindowsDesktop.App":
-                            this.Name = n;
-                            break;
-                        default:
-                            Stop();
-                            break;
-                    }
-                }
+                    this.Type = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file.Name));
                 else
-                    this.Name = this.Directory?.Parent?.Name;
+                    this.Type = this.Directory?.Parent?.Name;
             }
             else
-                this.Name = name;
+                this.Type = name;
         }
 
         private void ResolveVersion(Version version)
@@ -126,13 +141,6 @@ namespace Bb.Builds
             }
         }
 
-        /// <summary>
-        /// Gets the version of dotnet.
-        /// </summary>
-        /// <value>
-        /// The version.
-        /// </value>
-        //public Version Version { get; private set; }
 
         public FrameworkKey Key { get; private set; }
 
@@ -156,7 +164,7 @@ namespace Bb.Builds
         /// <value>
         /// The type.
         /// </value>
-        public string Type { get; private set; }
+        public FrameworkType Type { get; private set; }
 
 
         public LanguageVersion LanguageVersion { get; set; } = LanguageVersion.CSharp6;
@@ -164,7 +172,7 @@ namespace Bb.Builds
 
         #region Resolve
 
-        public static FrameworkVersion Resolve(FrameworkKey key, string type = null)
+        public static FrameworkVersion Resolve(FrameworkKey key, FrameworkType type = null)
         {
             return ResolveVersions(key, type).LastOrDefault();
         }
@@ -175,7 +183,7 @@ namespace Bb.Builds
         /// <param name="frameworkVersion">The framework version.</param>
         /// <param name="type">The type of sdk.</param>
         /// <returns></returns>
-        public static IEnumerable<FrameworkVersion> ResolveVersions(Version frameworkVersion, string type = null)
+        public static IEnumerable<FrameworkVersion> ResolveVersions(Version frameworkVersion, FrameworkType type = null)
         {
 
             if (_versions == null)
@@ -184,7 +192,7 @@ namespace Bb.Builds
             var major = frameworkVersion.Major;
             var list = _versions.Where(c => c.Key.Version.Major == major).ToList();
 
-            if (!string.IsNullOrEmpty(type))
+            if (type != null)
                 list = list.Where(c => c.Type == type).ToList();
 
             return list;
@@ -197,7 +205,7 @@ namespace Bb.Builds
         /// <param name="frameworkVersion">The framework version.</param>
         /// <param name="type">The type of sdk.</param>
         /// <returns></returns>
-        public static IEnumerable<FrameworkVersion> ResolveVersions(FrameworkKey frameworkVersion, string type = null)
+        public static IEnumerable<FrameworkVersion> ResolveVersions(FrameworkKey frameworkVersion, FrameworkType type = null)
         {
 
             if (_versions == null)
@@ -205,14 +213,14 @@ namespace Bb.Builds
 
             var list = _versions.Where(c => c.Key == frameworkVersion).ToList();
 
-            if (!string.IsNullOrEmpty(type))
+            if (type != null)
                 list = list.Where(c => c.Type == type).ToList();
 
             return list;
 
         }
 
-        public static IEnumerable<FrameworkVersion> ResolveSdk(string type)
+        public static IEnumerable<FrameworkVersion> ResolveSdk(FrameworkType type)
         {
 
             if (_versions == null)
@@ -234,30 +242,6 @@ namespace Bb.Builds
 
         public List<string> Compatibilities { get; private set; }
 
-        public static string ResolveSdkName(string sdk)
-        {
-
-            switch (sdk.ToLower())
-            {
-
-                case "microsoft.net.sdk":
-                    return ".NETCore.App";
-
-                case "microsoft.net.sdk.windowsdesktop":
-                    return ".WindowsDesktop.App";
-
-                case "microsoft.net.sdk.web":
-                    return ".AspNetCore.App";
-
-                default:
-                    Stop();
-                    break;
-
-            }
-
-            return ".NETCore.App";
-
-        }
 
         #endregion Resolve
 
@@ -352,14 +336,7 @@ namespace Bb.Builds
         {
             return file.Directory.FullName == this.Directory.FullName;
         }
-
-
-        public static string[] DirectoriesToMatchs = new string[]
-        {
-            "Microsoft.NETCore.App",
-            "Microsoft.AspNetCore.App",
-            "Microsoft.WindowsDesktop.App",
-        };
+            
 
         private static FrameworkVersion _current;
         private static object _lock = new object();

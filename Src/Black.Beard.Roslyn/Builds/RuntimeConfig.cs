@@ -66,7 +66,7 @@ namespace Bb.Builds
                 ["tfm"] = framework.Key.Name,
                 ["framework"] = new JsonObject()
                 {
-                    ["name"] = framework.Name,
+                    ["name"] = framework.Type.Name,
                     ["version"] = framework.Version.ToString(),
                 },
             };

@@ -235,6 +235,21 @@ namespace Bb.Metrology
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
+        public static void AddTag(string key, object value)
+        {
+            if (WithTelemetry)
+            {
+                var current = Activity.Current;
+                if (current != null)
+                    current.AddTag(key, value);
+            }
+        }
+
+        /// <summary>
+        /// Add custom property to the current Activity object for the current execution context.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
         public static void AddBaggage(string key, string value)
         {
             if (WithTelemetry)

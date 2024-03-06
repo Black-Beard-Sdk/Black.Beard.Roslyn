@@ -79,7 +79,7 @@ namespace Bb.Builds
             {
 
                 case "project":
-                    builder.Framework.Sdk = FrameworkVersion.ResolveSdkName(e.Attributes["Sdk"].Value);
+                    builder.Framework.Sdk = e.Attributes["Sdk"].Value;
                     foreach (XmlNode item in e.ChildNodes)
                         if (item is XmlElement e2)
                             Visit(builder, e2, dir);
@@ -217,7 +217,7 @@ namespace Bb.Builds
                             if (!string.IsNullOrEmpty(p))
                             {
                                 string[] targetframeworks = p.Split(';').Where(c => !string.IsNullOrEmpty(c)).ToArray();
-                                builder.AddAvailableVersion(targetframeworks);
+                                builder.AddAvailableSdk(targetframeworks);
                             }
                             break;
 

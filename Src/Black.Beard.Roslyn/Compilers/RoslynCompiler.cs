@@ -330,7 +330,7 @@ namespace Bb.Compilers
                 {
                     c.SetCustomProperty("sdkName", this._assemblies.Sdk.Key.Name);
                     c.SetCustomProperty("sdkVersion", this._assemblies.Sdk.Key.Version);
-                    c.SetCustomProperty("frameworkName", this._assemblies.Sdk.Name);
+                    c.SetCustomProperty("frameworkName", this._assemblies.Sdk.Type.Name);
                     c.SetCustomProperty("frameworkVersion", this._assemblies.Sdk.Version);
 
                     c.SetCustomProperty("AssemblyName", result.AssemblyName);

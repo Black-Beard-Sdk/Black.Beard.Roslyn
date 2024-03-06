@@ -116,6 +116,14 @@ namespace Bb.Nugets
         public bool TryToDownload(string name, Version version = null)
         {
 
+            if (Parent != null)
+                if (Parent.Intercept != null)
+                {
+                    var result = Parent.Intercept("download package", new object[] { name, version });
+                    if (result)
+                        return true;
+                }
+
             using (var activity = RoslynActivityProvider.StartActivity("Try to download", ActivityKind.Producer))
                 foreach (var host in Hosts)
                 {
@@ -134,7 +142,10 @@ namespace Bb.Nugets
                     {
 
                         if (RoslynActivityProvider.WithTelemetry)
-                            RoslynActivityProvider.AddProperty("url", uri.ToString());
+                        {
+                            RoslynActivityProvider.AddTag("urlTag", uri.ToString());
+                            RoslynActivityProvider.AddProperty("urlProperty", uri.ToString());
+                        }
 
                         // download
                         file = uri.Download(tempPath);
@@ -185,11 +196,12 @@ namespace Bb.Nugets
 
         public string[] Hosts => _hosts.ToArray();
 
+        public NugetController Parent { get; internal set; }
 
 
         private readonly List<string> _hosts;
-
         private Dictionary<string, FileNugetFolder> _folders = new Dictionary<string, FileNugetFolder>();
+
 
     }
 
