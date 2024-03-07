@@ -99,7 +99,7 @@ namespace Bb.Builds
             ResolveType(Name);
             ResolveVersion(version);
 
-            this.Key = FrameworkKeys.Resolve(Version);
+            this.Key = FrameworkKey.Resolve(Version);
 
             this.LanguageVersion = (LanguageVersion)Key.languageVersion;
             if (Key.Version.Major >= 5)

@@ -238,7 +238,7 @@ namespace Bb.Builds
             List<FrameworkKey> versions = new List<FrameworkKey>();
             foreach (var item in frameworkVersions)
             {
-                var version = FrameworkKeys.Resolve(item);
+                var version = FrameworkKey.Resolve(item);
                 if (version != null)
                     versions.Add(version);
             }
@@ -272,7 +272,7 @@ namespace Bb.Builds
         /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
         public BuildCSharp SetSdk(string frameworkKey)
         {
-            var key = FrameworkKeys.Resolve(frameworkKey);
+            var key = FrameworkKey.Resolve(frameworkKey);
             SetSdk(key);
             return this;
         }
