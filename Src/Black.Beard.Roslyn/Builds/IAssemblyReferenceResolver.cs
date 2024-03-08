@@ -8,7 +8,7 @@ namespace Bb.Builds
         void Next(IAssemblyReferenceResolver next);
         
         // method to resolve assembly name
-        string ResolveAssemblyName(string assemblyName, Version version, FrameworkVersion framework, bool download);
+        Reference ResolveAssemblyName(string assemblyName, FrameworkVersion framework, Func<ReferenceType, List<Reference>, Reference> func);
         
     }
 

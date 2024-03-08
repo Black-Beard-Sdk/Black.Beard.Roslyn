@@ -81,7 +81,7 @@ namespace Bb.Compilers
             new FileInfo(FullAssemblyFilePdb).CopyTo(Path.Combine(directory.FullName, AssemblyPdb), true);
             new FileInfo(FullAssemblyBuildConfig).CopyTo(Path.Combine(directory.FullName, AssemblyBuildConfig), true);
 
-            var items = ResolveDependencies(References, true);
+            var items = ResolveDependencies(References);
 
             foreach (var item in items)
             {
@@ -100,9 +100,9 @@ namespace Bb.Compilers
 
         }
 
-        public List<DependencyAssemblyNameResolver.AssemblyReference> ResolveDependencies(AssemblyReferences references, bool download)
+        public List<DependencyAssemblyNameResolver.AssemblyReference> ResolveDependencies(AssemblyReferences references)
         {
-            return DependencyAssemblyNameResolver.Resolve(new FileInfo(FullAssemblyFile), references, download);
+            return DependencyAssemblyNameResolver.Resolve(new FileInfo(FullAssemblyFile), references);
 
         }
 

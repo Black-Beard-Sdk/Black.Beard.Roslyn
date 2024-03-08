@@ -5,17 +5,32 @@ namespace Bb.Builds
 {
 
 
-    public class FileReferences : IEnumerable<string>
+    public class FileReferences
     {
-
-
 
         public FileReferences(DirectoryInfo dir)
         {
-                        
-            foreach (var item in dir.GetFiles("*.dll", SearchOption.TopDirectoryOnly))
-                _files.Add(item.FullName);
-            
+
+            var _d = new HashSet<string>()
+            {
+                dir.FullName
+            };
+
+            _directories = new HashSet<DirectoryInfo>()
+            {
+                dir
+            };
+
+            var _trustedAssembliesPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
+            HashSet<string> dirs = new HashSet<string>(_trustedAssembliesPaths.Select(c => new FileInfo(c).Directory.FullName));
+            foreach (var item in dirs)
+                if (_d.Add(item))
+                {
+                    var d = new DirectoryInfo(item);
+                    if (d.Exists)
+                        _directories.Add(d);
+                }
+
         }
 
 
@@ -24,7 +39,7 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public string? Resolve(string filename)
+        public IEnumerable<string> Resolve(string filename)
         {
 
             string file = filename;
@@ -32,23 +47,25 @@ namespace Bb.Builds
             if (!filename.EndsWith(".dll"))
                 file += ".dll";
 
-            var result = _files.FirstOrDefault(c => c.EndsWith(file));
+            List<string> files = new List<string>();
+            foreach (var dir in _directories)
+            {
+                var item = dir.GetFiles(file, SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (item != null)
+                    files.Add( item.FullName);
+            }
 
-            return result;
+            if (files.Count > 0)
+                return files;
+
+            return null;
 
         }
 
-        public IEnumerator<string> GetEnumerator()
-        {
-            return _files.GetEnumerator();
-        }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _files.GetEnumerator();
-        }
 
-        private List<string> _files = new List<string>();
+        private readonly HashSet<DirectoryInfo> _directories;
+
 
     }
 

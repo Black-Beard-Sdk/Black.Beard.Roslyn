@@ -117,7 +117,7 @@ public class Program
 
                 }
 
-                var list = result.ResolveDependencies(builder.References, true);
+                var list = result.ResolveDependencies(builder.References);
 
             }
             else
@@ -132,6 +132,15 @@ public class Program
         {
 
 
+            var dir = Path.Combine(Environment.CurrentDirectory, Path.GetRandomFileName());
+            var controller = new NugetController()
+                .AddFolder(dir, NugetController.HostNugetOrg)
+                .WithFilter((n, v) =>
+                {
+                    return true;
+                });
+
+
             var projects = _directoryProject.GetFiles("*.csproj", SearchOption.AllDirectories);
 
 
@@ -139,15 +148,18 @@ public class Program
             {
 
                 var builder = item.CreateCsharpBuild(true)
-                                  .ResetSdk()
-                                  ;
+                    .SetNugetController(controller)
+                    .AddReferences(typeof(System.Text.Json.JsonDocument))
+                    .AddReferences(typeof(Trace))
+                    .ResetSdk()
+                    ;
 
                 var result = builder.Build();
 
                 if (result != null && result.Success)
                 {
 
-                    var list = result.ResolveDependencies(builder.References, true);
+                    var list = result.ResolveDependencies(builder.References);
 
                     //var assembly = result.LoadAssembly();
                     //var types = assembly.GetExportedTypes();
@@ -159,6 +171,7 @@ public class Program
                     Assert.Fail();
 
                 }
+
             }
 
         }
@@ -187,7 +200,7 @@ public class Program
             LocalFileNugetVersion version = result.Last();
             Assert.True(version != null);
 
-            var n = version.Nuspec;
+            var n = version.Metadata;
             Assert.True(n != null);
 
             n.GroupDependencies("").ToList();

@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Bb.Analysis;
+using Bb.Builds;
+using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace Bb.Nugets
@@ -34,6 +36,8 @@ namespace Bb.Nugets
         internal NugetDocument(FileInfo metadataFile)
         {
 
+            this._list = new List<Reference>();
+
             Trace.TraceInformation($"Load metadata file {metadataFile.FullName}");
 
             _metadataFile = metadataFile;
@@ -62,7 +66,7 @@ namespace Bb.Nugets
 
                         case "dependencies":
                             foreach (var group in item.Elements())
-                                _dependencies.Add(new NugetGroupDependency(group));
+                                _dependencies.Add(new NugetGroupDependency(group, this));
                             break;
 
                         default:
@@ -86,11 +90,27 @@ namespace Bb.Nugets
             return Id.ToString() + " " + Version.ToString();
         }
 
+
+        /// <summary>
+        /// return true if the dependencies are for multiple target build
+        /// </summary>
+        public bool IsMultipleTarget => _dependencies.Count > 1;
+
         /// <summary>
         /// return the dependencies
         /// </summary>
         /// <returns></returns>
         public IEnumerable<NugetGroupDependency> GroupDependencies() => _dependencies;
+        
+        /// <summary>
+        /// return the dependencies for a specific framework
+        /// </summary>
+        /// <param name="framework"></param>
+        /// <returns></returns>
+        public IEnumerable<NugetGroupDependency> GroupDependencies(FrameworkKey frameworkKey)
+        {
+            return _dependencies.Where(c => c.TargetFramework == frameworkKey.Name);
+        }
 
         /// <summary>
         /// return the dependencies for a specific framework
@@ -103,11 +123,19 @@ namespace Bb.Nugets
         }
 
 
+        public IEnumerable<Reference> References => _list;
+
+
+        internal void Add(Reference reference)
+        {
+            reference.Package = this;
+            _list.Add(reference);
+        }
+
         private List<NugetGroupDependency> _dependencies = new List<NugetGroupDependency>();
         private FileInfo _metadataFile;
         private string _ns;
-
-
+        private List<Reference> _list;
     }
 
 

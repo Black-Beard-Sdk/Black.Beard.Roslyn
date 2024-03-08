@@ -2,11 +2,14 @@
 
 namespace Bb.Nugets
 {
+
     public class NugetGroupDependency
     {
 
-        internal NugetGroupDependency(XElement item)
+        internal NugetGroupDependency(XElement item, NugetDocument parent)
         {
+
+            this.Nuget = parent;   
 
             foreach (var attribute in item.Attributes())
                 if (attribute.Name.LocalName == "targetFramework")
@@ -16,7 +19,7 @@ namespace Bb.Nugets
             {
                 var n = c.Name.LocalName;
                 if (n.ToLower() == "dependency")
-                    _dependencies.Add(new NugetDependency(c));
+                    _dependencies.Add(new NugetDependency(c, this, parent));
             }
 
         }
@@ -26,6 +29,7 @@ namespace Bb.Nugets
         /// </summary>
         public string TargetFramework { get; }
 
+        public NugetDocument Nuget { get; }
 
         override public string ToString()
         {

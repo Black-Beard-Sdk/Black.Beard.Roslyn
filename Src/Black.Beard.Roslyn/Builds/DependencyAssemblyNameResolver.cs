@@ -15,15 +15,15 @@ namespace Bb.Builds
         /// <param name="file"></param>
         /// <param name="references"></param>
         /// <param name="download"></param>
-        public static List<AssemblyReference> Resolve(FileInfo file, AssemblyReferences references, bool download)
+        public static List<AssemblyReference> Resolve(FileInfo file, AssemblyReferences references)
         {
             List<AssemblyReference> hash = new List<AssemblyReference>();
-            ResolveImpl(file, hash, references, download);
+            ResolveImpl(file, hash, references);
             hash.Remove(hash.FirstOrDefault(c => c.Location == file.FullName));
             return hash;
         }
 
-        private static void ResolveImpl(FileInfo file, List<AssemblyReference> list, AssemblyReferences references, bool download)
+        private static void ResolveImpl(FileInfo file, List<AssemblyReference> list, AssemblyReferences references)
         {
 
             var isInSdk = references.IsInSdk(file.FullName);
@@ -47,21 +47,24 @@ namespace Bb.Builds
                     foreach (var item in lib.AssemblyReferences)
                         if (!list.Any(c => c.AssemblyName == item.Name))
                         {
-                            var reference = references.SearchInRegistered(item.Name);
+                            var reference = references.SearchInRegistered(item.Name, item.Version);
                             if (reference != null)
                             {
                                 if (!references.IsInSdk(reference.Location))
-                                    ResolveImpl(new FileInfo(reference.Location), list, references, download);
+                                    ResolveImpl(new FileInfo(reference.Location), list, references);
                             }
                             else
                             {
 
-                                var location = references.SearchNext(item.Name, item.Version, download);
+                                var location = references.SearchNext(item.Name, (f, c) =>
+                                {
+                                    return c.FirstOrDefault();
+                                });
 
                                 if (location != null)
                                 {
                                     if (!references.IsInSdk(reference.Location))
-                                        ResolveImpl(new FileInfo(location), list, references, download);
+                                        ResolveImpl(new FileInfo(location.Location), list, references);
                                 }
                                 else
                                     list.Add(current = new AssemblyReference()

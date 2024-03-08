@@ -1,7 +1,4 @@
-﻿using System;
-using System.Data.Common;
-using System.Runtime.CompilerServices;
-
+﻿
 namespace Bb.Analysis.DiagTraces
 {
 

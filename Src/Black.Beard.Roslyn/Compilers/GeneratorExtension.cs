@@ -66,8 +66,8 @@ namespace Bb.Compilers
 
             return new SpanLocation<LocationLineAndIndex, LocationLineAndIndex>
             (
-                (index1, line1, col1), 
-                (index2, line2, col2)
+                (line1, col1, index1), 
+                (line2, col2, index2)
             )
             {
                 Filename = location?.SourceTree?.FilePath ?? string.Empty,

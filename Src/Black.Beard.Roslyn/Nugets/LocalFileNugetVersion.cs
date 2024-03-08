@@ -1,4 +1,5 @@
 ﻿using Bb.Analysis;
+using Bb.Builds;
 using ICSharpCode.Decompiler.Metadata;
 using System.Diagnostics;
 
@@ -19,27 +20,26 @@ namespace Bb.Nugets
         /// <param name="dir"></param>
         public LocalFileNugetVersion(DirectoryInfo dir)
         {
-            _list = new List<(string, FrameworkKey, string, Version)>();
+
             _path = dir;
             Version = dir.Name.ResolveVersion();
             Name = dir.Parent.Name;
+
+            this.Metadata = NugetDocument.ResolveNugetDocument(_path);
+
         }
 
-
-        public NugetDocument Nuspec => NugetDocument.ResolveNugetDocument(_path);
-
-
-        /// <summary>
-        /// return the list of libraries
-        /// </summary>
-        /// <returns></returns>
-        public List<(string, FrameworkKey, string, Version)> GetLibs()
+        public IEnumerable<Reference> References
         {
+            get
+            {
 
-            if (!_initialized)
-                Initialize();
+                if (!_initialized)
+                    this.Initialize();
 
-            return _list.Where(c => c.Item2 != FrameworkKeys.Unknown).ToList();
+                return this.Metadata.References;
+
+            }
 
         }
 
@@ -47,32 +47,26 @@ namespace Bb.Nugets
         /// <summary>
         /// Return true if the folder has no library.
         /// </summary>
-        public bool Empty => _list.Count == 0;
+        public bool Empty => References.Any();
 
         internal LocalFileNugetVersion Initialize()
         {
-                        
+
             _initialized = true;
 
+            var dir = _path;
 
-            var fileNuspec = _path.GetFiles(Name + ".nuspec", SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (fileNuspec != null)    
-                this.Metadata = NugetDocument.ResolveNugetDocument(fileNuspec);
+            if (this.Metadata.IsMultipleTarget)
+                dir = new DirectoryInfo(Path.Combine(_path.FullName, "lib"));
 
+            foreach (var file in dir.GetFiles("*.dll", SearchOption.AllDirectories))
+            {
 
-            foreach (var file in _path.GetFiles("*.dll", SearchOption.AllDirectories))
-                try
-                {
-                    using (var lib = new PEFile(file.FullName))
-                    {
-                        var n = lib.Name;
-                        _list.Add((file.FullName, FrameworkKeys.Resolve(file.Directory.Name), n, lib.Version));
-                    }
-                }
-                catch (Exception)
-                {
+                var k = FrameworkKey.Resolve(file.Directory.Name);
 
-                }
+                var reference = new Reference(file.FullName) { Framework = k};
+                this.Metadata.Add(reference);
+            }
 
             return this;
 
@@ -83,9 +77,9 @@ namespace Bb.Nugets
         public string Name { get; }
 
         public FileNugetFolder Parent { get; internal set; }
+
         public NugetDocument Metadata { get; private set; }
 
-        private readonly List<(string, FrameworkKey, string, Version)> _list;
         private DirectoryInfo _path;
         private bool _initialized;
 

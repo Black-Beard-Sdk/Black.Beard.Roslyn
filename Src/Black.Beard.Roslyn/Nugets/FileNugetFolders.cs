@@ -67,10 +67,11 @@ namespace Bb.Nugets
         /// <param name="name"></param>
         /// <param name="version"></param>
         /// <returns></returns>
-        public LocalFileNugetVersion Resolve(string name, Version version)
+        public LocalFileNugetVersion Resolve(string name, Version version, bool refresh)
         {
             if (_folders.TryGetValue(name.ToLower(), out FileNugetFolder folder))
-                return folder.Resolve(version);
+                return folder.Resolve(version, refresh);
+
             return default;
         }
 
@@ -79,11 +80,11 @@ namespace Bb.Nugets
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public LocalFileNugetVersion Resolve((string, Version) item)
+        public LocalFileNugetVersion Resolve((string, Version) item, bool refresh)
         {
 
             if (_folders.TryGetValue(item.Item1.ToLower(), out FileNugetFolder folder))
-                return folder.Resolve(item.Item2);
+                return folder.Resolve(item.Item2, refresh);
 
             return default;
 
@@ -99,6 +100,19 @@ namespace Bb.Nugets
             if (_folders.TryGetValue(item.Item1.ToLower(), out FileNugetFolder folder))
                 foreach (var version in folder)
                     if (version.Version >= item.Item2)
+                        yield return version;
+        }
+
+
+        /// <summary>
+        /// resolve all version by name
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public IEnumerable<LocalFileNugetVersion> ResolveAll(string item)
+        {
+            if (_folders.TryGetValue(item.ToLower(), out FileNugetFolder folder))
+                foreach (var version in folder)
                         yield return version;
         }
 

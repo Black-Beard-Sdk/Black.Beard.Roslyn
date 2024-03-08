@@ -175,8 +175,22 @@ namespace Bb.Compilers
         {
 
             CSharpCompilationOptions compilationOptions = GetCompilationOptions(result);
+            var lst = _assemblies.Libraries().ToList();
 
-            var _defaultReferences = _assemblies.Libraries().ToList();
+            var _defaultReferences = new List<PortableExecutableReference>(lst.Count);
+
+            foreach (var item in lst)
+            {
+
+                if (item.Item2.Count == 1)
+                    _defaultReferences.Add(item.Item2[0].Item2);
+
+                else
+                {
+                    _defaultReferences.Add(item.Item2[0].Item2);
+                }
+
+            }
 
             return CSharpCompilation.Create
             (
@@ -328,10 +342,10 @@ namespace Bb.Compilers
             if (RoslynActivityProvider.WithTelemetry)
                 RoslynActivityProvider.Set(c =>
                 {
-                    c.SetCustomProperty("sdkName", this._assemblies.Sdk.Key.Name);
-                    c.SetCustomProperty("sdkVersion", this._assemblies.Sdk.Key.Version);
-                    c.SetCustomProperty("frameworkName", this._assemblies.Sdk.Type.Name);
-                    c.SetCustomProperty("frameworkVersion", this._assemblies.Sdk.Version);
+                    c.SetCustomProperty("sdkName",          this._assemblies.Sdk.Key.Name);
+                    c.SetCustomProperty("sdkVersion",       this._assemblies.Sdk.Key.Version);
+                    c.SetCustomProperty("frameworkVersion", this._assemblies.Sdk.Key.Name);
+                    c.SetCustomProperty("frameworkName",    this._assemblies.Sdk.Type.Name);
 
                     c.SetCustomProperty("AssemblyName", result.AssemblyName);
                     c.SetCustomProperty("AssemblyFile", result.FullAssemblyFile);

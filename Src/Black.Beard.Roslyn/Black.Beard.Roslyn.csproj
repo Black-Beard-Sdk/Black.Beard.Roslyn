@@ -25,9 +25,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="Black.Beard.ComponentModel" Version="1.0.56" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.26" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Compress" Version="2.0.26" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.26" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.27" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Compress" Version="2.0.27" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.27" />
 		<PackageReference Include="Black.Beard.Http" Version="1.0.12" />
 		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.9.2" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />

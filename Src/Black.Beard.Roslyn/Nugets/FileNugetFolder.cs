@@ -46,17 +46,19 @@ namespace Bb.Nugets
         /// </summary>
         /// <param name="version"></param>
         /// <returns></returns>
-        public LocalFileNugetVersion Resolve(Version version)
+        public LocalFileNugetVersion Resolve(Version version, bool refresh)
         {
 
-            if (!_initializd)
+            if (!_initializd || refresh)
                 Refresh();
 
             if (version != null)
                 if (_versions.TryGetValue(version.ToString(), out LocalFileNugetVersion v))
                     return v;
 
-            return null;
+            KeyValuePair<string, LocalFileNugetVersion> result = _versions.OrderByDescending(c => c.Value.Version).FirstOrDefault();
+
+            return result.Value;
 
         }
 

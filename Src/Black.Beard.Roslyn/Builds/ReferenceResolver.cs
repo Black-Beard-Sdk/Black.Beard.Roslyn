@@ -47,23 +47,27 @@ namespace Bb.Builds
         public override PortableExecutableReference ResolveMissingAssembly(MetadataReference definition, AssemblyIdentity referenceIdentity)
         {
 
-            PortableExecutableReference result = _assemblies.ResolveAssemblyNameAndAddIfMissing(referenceIdentity.Name);
-
-            if (result == null)
+            var result = _assemblies.ResolveAssemblyName(referenceIdentity.Name, (f, list) =>
             {
 
-                _diagnostics.Warning(referenceIdentity.Name, $"assembly {referenceIdentity.Name} not resolved");
+                var reference = list.OrderByDescending(c => c.Version).ToList();
 
-                //var assembly = TypeDiscovery.Instance.GetAssemblies().FirstOrDefault(c => c.GetName().Name == referenceIdentity.Name);
-                //if (assembly != null)
-                //{
-                //    var _reference = new Reference(assembly);
-                //    result = _reference.GetPortableExecutableReference();
-                //}
+                if (referenceIdentity.Version != null && referenceIdentity.Version == new Version(0,0,0,0))
+                    reference = list.Where(c => c.Version >= referenceIdentity.Version).ToList();
 
-            }
+                if (list.Count() > 1)
+                    _diagnostics.Warning(referenceIdentity.Name, $"assembly {referenceIdentity.Name} has multiple versions");
 
-            return result;
+                return list.FirstOrDefault();
+
+            }); 
+
+            if (result != null)
+                return result.ExecutableReference;
+
+            _diagnostics.Warning(referenceIdentity.Name, $"assembly {referenceIdentity.Name} not resolved");
+
+            return default;
 
         }
 

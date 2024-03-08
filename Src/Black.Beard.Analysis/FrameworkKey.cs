@@ -1,64 +1,107 @@
-﻿using Refs;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
+﻿using System.Diagnostics;
+using System.Reflection;
+
 
 namespace Bb.Analysis
 {
+
+
     [DebuggerDisplay("{Name} {Version}")]
     public class FrameworkKey
     {
 
         internal FrameworkKey()
         {
-                
+
         }
 
         static FrameworkKey()
         {
+            // netstandard13
 
-            //Add(new FrameworkKey("net1.0", new Version(1, 0), 800));
-            //Add(new FrameworkKey("net1.1", new Version(1, 1), 800));
-            //Add(new FrameworkKey("net2.0", new Version(2, 0), 800));
+            Unknown = new FrameworkKey("unknown key", new Version(0, 0), 0);
 
+            Add(Netstandard10 = new FrameworkKey("netstandard1.0", new Version(1, 0), 800));
+            Add("v1.0", Netstandard10);
 
-            Unknown = new FrameworkKey("unknown", new Version(0, 0), 0);
+            Add(Netstandard13 = new FrameworkKey("netstandard1.3", new Version(1, 3), 800));
+            Add("v1.3", Netstandard13);
 
+            Add(Netstandard16 = new FrameworkKey("netstandard1.6", new Version(1, 6), 800));
+            Add("v1.6", Netstandard16);
 
             Add(Netstandard20 = new FrameworkKey("netstandard2.0", new Version(2, 0), 800));
+            Add("v2.0", Netstandard20);
+
+            Add(Netstandard21 = new FrameworkKey("netstandard2.1", new Version(2, 1), 800));
+            Add("v2.1", Netstandard20);
+
+            Add(Netcoreapp20 = new FrameworkKey("netcoreapp2.0", new Version(2, 0), 800));
+
             Add(Netcoreapp21 = new FrameworkKey("netcoreapp2.1", new Version(2, 1), 800));
+            Add("v2.1", Netcoreapp21);
+
             Add(Netcoreapp22 = new FrameworkKey("netcoreapp2.2", new Version(2, 2), 800));
+            Add("v2.2", Netcoreapp22);
+            
             Add(Netcoreapp30 = new FrameworkKey("netcoreapp3.0", new Version(3, 0), 800));
+            Add("net30", Netcoreapp30);
+            Add("v3.0", Netcoreapp30);
+            
             Add(Netcoreapp31 = new FrameworkKey("netcoreapp3.1", new Version(3, 1), 800));
+            Add("v3.1", Netcoreapp31);
 
             //Add(new FrameworkKey("netcore4.5", new Version(4, 5), 800));
             //Add(new FrameworkKey("netcore5.0", new Version(5, 0), 800));
 
-            //Add("net30", Netcoreapp30);
-            //Add("net35", Netcoreapp30);
+            Add(Netcoreapp35 = new FrameworkKey("netcoreapp3.5", new Version(3, 5), 800));
+            Add("v3.5", Netcoreapp35);
+            Add("net35", Netcoreapp35);
 
             //Add("net40", new FrameworkKey("netcoreapp4.0", new Version(4, 0), 800));
 
             Add(Net45 = new FrameworkKey("net4.5", new Version(4, 5), 800));
+            Add("net45", Net45);
             Add("net451", Net45);
+            Add("v4.5.1", Net45);
             Add("net452", Net45);
+            Add("v4.5.2", Net45);
 
 
             Add(Net46 = new FrameworkKey("net4.6", new Version(4, 6), 800));
             Add("net461", Net46);
+            Add("v4.6.1", Net46);
             Add("net462", Net46);
+            Add("v4.6.2", Net46);
             Add("net463", Net46);
+            Add("v4.6.3", Net46);
 
             Add(Net47 = new FrameworkKey("net4.7", new Version(4, 7), 800));
             Add("net471", Net47);
+            Add("v4.7.1", Net47);
             Add("net472", Net47);
+            Add("v4.7.2", Net47);
 
             Add(Net48 = new FrameworkKey("net4.8", new Version(4, 8), 800));
-            Add(Net50 = new FrameworkKey("net5.0", new Version(5, 0), 900));
-            Add(Net60 = new FrameworkKey("net6.0", new Version(6, 0), 1000));
-            Add(Net70 = new FrameworkKey("net7.0", new Version(7, 0), 1100));
-            Add(Net80 = new FrameworkKey("net8.0", new Version(8, 0), 1200));
+            Add("v4.8", Net48);
 
-            Add(Net80 = new FrameworkKey("net9.0", new Version(8, 0), 1300));
+            Add(Net50 = new FrameworkKey("net5.0", new Version(5, 0), 900));
+            Add("v5.0", Net50);
+
+            Add(Net60 = new FrameworkKey("net6.0", new Version(6, 0), 1000));
+            Add("v6.0", Net60);
+
+            Add(Net70 = new FrameworkKey("net7.0", new Version(7, 0), 1100));
+            Add("v7.0", Net70);
+
+            Add(Net80 = new FrameworkKey("net8.0", new Version(8, 0), 1200));
+            Add("v8.0", Net80);
+
+
+            Add(Net90 = new FrameworkKey("net9.0", new Version(9, 0), 1300));
+            Add("v9.0", Net90);
+
+            FrameworkKey.Current = GetCurrentKey();
 
         }
 
@@ -74,7 +117,7 @@ namespace Bb.Analysis
             this.Version = version;
             this.languageVersion = languageVersion;
 
-            
+
 
         }
 
@@ -174,6 +217,9 @@ namespace Bb.Analysis
 
             var k = key.ToLower().Replace(".", "");
 
+            if (k.Contains(@"/"))
+                k = k.Substring(0, k.IndexOf(@"/"));
+
             if (FrameworkKey._keys.TryGetValue(k, out result))
                 return result;
 
@@ -191,7 +237,7 @@ namespace Bb.Analysis
 
             }
 
-            Trace.TraceWarning($"FrameworkKey not found for {key}");
+            Trace.TraceWarning($"Framework key not found for {key}");
             return Unknown;
 
         }
@@ -247,24 +293,125 @@ namespace Bb.Analysis
         public static Func<string, FrameworkKey> Resolver { get; set; }
 
 
+        public static FrameworkKey Netstandard10 { get; }
+
+        public static FrameworkKey Netstandard13 { get; }
+
+        public static FrameworkKey Netstandard16 { get; }
+
         public static FrameworkKey Netstandard20 { get; }
+
+        public static FrameworkKey Netstandard21 { get; }
+
+        public static FrameworkKey Netcoreapp20 { get; }
         public static FrameworkKey Netcoreapp21 { get; }
+
         public static FrameworkKey Netcoreapp22 { get; }
+
         public static FrameworkKey Netcoreapp30 { get; }
+
         public static FrameworkKey Netcoreapp31 { get; }
+
+        public static FrameworkKey Netcoreapp35 { get; }
+
         public static FrameworkKey Net45 { get; }
+        
         public static FrameworkKey Net46 { get; }
+        
         public static FrameworkKey Net461 { get; }
+        
         public static FrameworkKey Net462 { get; }
+        
         public static FrameworkKey Net47 { get; }
+        
         public static FrameworkKey Net48 { get; }
+        
         public static FrameworkKey Net50 { get; }
+        
         public static FrameworkKey Net60 { get; }
+        
         public static FrameworkKey Net70 { get; }
+        
         public static FrameworkKey Net80 { get; }
+        
+        public static FrameworkKey Net90 { get; }
+
 
         public static FrameworkKey Unknown { get; }
+        public static FrameworkKey Current { get; }
 
+
+
+
+        #region Resolve current key
+
+        private static FrameworkKey? GetCurrentKey()
+        {
+
+            HashSet<Assembly> _h = new HashSet<Assembly>();
+            var stack = new StackTrace();
+            for (int i = stack.FrameCount - 1; i >= 0; i--)
+            {
+                var f = stack.GetFrame(i);
+                var m = f.GetMethod();
+                var a = m.DeclaringType.Assembly;
+                if (a != null && a.GetName().Name != "System.Private.CoreLib" && !a.IsDynamic)
+                    _h.Add(a);
+            }
+
+            HashSet<FrameworkKey> keys = new HashSet<FrameworkKey>();
+            foreach (var item in _h)
+            {
+                var v1 = GetVersion(item);
+                if (v1 != null)
+                    keys.Add(v1);
+            }
+
+            return keys.OrderByDescending(c => c.Version).FirstOrDefault();
+
+        }
+
+        private static FrameworkKey? GetVersion(Assembly assembly)
+        {
+            var fileAssembly = new FileInfo(assembly.Location);
+            var dir = fileAssembly.Directory;
+            return GetVersion(dir, Path.GetFileNameWithoutExtension(fileAssembly.Name));
+        }
+
+        public static FrameworkKey? GetVersion(DirectoryInfo dir, string pattern)
+        {
+
+            var ee = FrameworkHelper.TryGetDeps(dir, pattern);
+            if (ee != null)
+            {
+                var nam = ee.Value.GetString();
+                nam = nam.Split(',').Where(c => c.StartsWith("Version=")).FirstOrDefault();
+                nam = nam.Substring(nam.IndexOf('=') + 1);
+                var r = FrameworkKey.Resolve(nam);
+                if (r != FrameworkKey.Unknown)
+                    return r;
+            }
+
+            ee = FrameworkHelper.TryGetRuntimeConfig(dir, pattern);
+            if (ee != null)
+            {
+                var nam = ee.Value.GetProperty("tfm").GetString();
+                return FrameworkKey.Resolve(nam);
+            }
+
+            var file = dir.GetFiles(pattern + ".runtimeconfig.json", SearchOption.AllDirectories).FirstOrDefault();
+            if (file != null)
+            {
+                var json = System.Text.Json.JsonDocument.Parse(File.ReadAllText(file.FullName));
+                var nam = json.RootElement.GetProperty("runtimeOptions").GetProperty("tfm").GetString();
+                return FrameworkKey.Resolve(nam);
+            }
+
+            return null;
+
+        }
+
+        #endregion Resolve current key
 
         private static Dictionary<string, FrameworkKey> _keys = new Dictionary<string, FrameworkKey>();
 

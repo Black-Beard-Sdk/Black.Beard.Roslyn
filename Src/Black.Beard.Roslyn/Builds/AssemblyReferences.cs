@@ -3,6 +3,7 @@ using System.Collections;
 using System.Reflection;
 using Refs;
 using ICSharpCode.Decompiler.Metadata;
+using System;
 
 namespace Bb.Builds
 {
@@ -12,7 +13,7 @@ namespace Bb.Builds
     /// Assembly references
     /// </summary>
     /// <seealso cref="System.Collections.Generic.IEnumerable&lt;Reference&gt;" />
-    public class AssemblyReferences : IEnumerable<KeyValuePair<string, Reference>>
+    public class AssemblyReferences : IEnumerable<Reference>
     {
 
         /// <summary>
@@ -20,7 +21,7 @@ namespace Bb.Builds
         /// </summary>
         public AssemblyReferences()
         {
-            this._referencesByAssembly = new Dictionary<string, Reference>();
+            this._referencesByAssembly = new Dictionary<string, Dictionary<Version, Reference>>();
         }
 
 
@@ -92,7 +93,7 @@ namespace Bb.Builds
             if (assembly == null)
                 throw new NullReferenceException(nameof(assembly));
 
-            AddAssemblyLocation(assembly.Location, assembly.GetName().Name);
+            AddAssemblyLocation(assembly.Location);
 
             return this;
 
@@ -110,61 +111,91 @@ namespace Bb.Builds
 
             FileReferences references = Sdk.GetReferences();
 
-            var l = references.Resolve(assemblyFilename);
+            var l = references.Resolve(assemblyFilename)?.FirstOrDefault();
 
             if (l == null)
                 throw new FileNotFoundException(assemblyFilename);
 
-            AddAssemblyLocation(l, assemblyName);
+            AddAssemblyLocation(l);
 
             return this;
 
         }
 
+
         /// <summary>
         /// Adds the assembly reference by assembly name.
         /// </summary>
-        /// <param name="assemblyName">Name of the assembly.</param>
+        /// <param name="assemblyName">The assembly name</param>
+        /// <param name="Version">The version to find.</param>
         /// <exception cref="System.ArgumentNullException">assemblyName</exception>
         /// <exception cref="System.IO.FileLoadException"></exception>
-        public PortableExecutableReference ResolveAssemblyNameAndAddIfMissing(string assemblyName)
+        public Reference ResolveAssemblyName(string assemblyName, Func<ReferenceType, List<Reference>, Reference> func)
         {
 
+            if (func == null)
+                throw new ArgumentNullException(nameof(func));
+
+            List<string> list;
             string lib = null;
-            Reference reference;
+            List<Reference> referenceList = null;
+            Reference reference = null;
+            var references = Sdk.GetReferences();
 
             if (string.IsNullOrEmpty(assemblyName))
                 throw new ArgumentNullException(nameof(assemblyName));
 
 
-            if (_referencesByAssembly.TryGetValue(assemblyName, out var result))  // in already referenced assemblies
-                return result.ExecutableReference;
+            referenceList = SearchInRegistered(assemblyName);
+            if (referenceList != null)
+                reference = func(ReferenceType.Local, referenceList.ToList());
 
-            var item = Libs.Items.Where(c => c.Name == assemblyName).FirstOrDefault();
+            if (reference != null)
+                return reference;
 
+            var item = Libs.Items.Where(c => c.Name == assemblyName).FirstOrDefault(); // try to resolve the name of the file assembly
             if (item != null)
             {
-                lib = Sdk.GetReferences().Resolve(assemblyName);
-                if (!string.IsNullOrEmpty(lib))
-                    AddAssemblyLocation(lib, assemblyName);
 
-                if (_referencesByAssembly.TryGetValue(assemblyName, out reference))
-                    return reference.ExecutableReference;
+                list = references.Resolve(item.File)?.ToList();
+                if (list != null && list.Count > 0)
+                {
+                    referenceList = new List<Reference>(list.Count);
+
+                    foreach (var item1 in list)
+                        referenceList.Add(new Reference(item1));
+
+                    reference = func(ReferenceType.CollectedByFrameworkNamed, referenceList);
+
+                    if (reference != null)
+                    {
+                        AddByAssembly(Assembly.LoadFile(reference.Location));
+                        return reference;
+                    }
+                }
 
             }
 
-            if (_next != null)
+
+            list = references.Resolve(assemblyName)?.ToList();
+            if (list != null && list.Count > 0)
             {
 
-                lib = _next.ResolveAssemblyName(assemblyName, null, this.Sdk, true);
-                if (!string.IsNullOrEmpty(lib))
-                    AddAssemblyLocation(lib, assemblyName);
+                referenceList = new List<Reference>(list.Count);
 
-                if (_referencesByAssembly.TryGetValue(assemblyName, out reference))
-                    return reference.ExecutableReference;
+                foreach (var item1 in list)
+                    referenceList.Add(new Reference(item1));
+
+                reference = func(ReferenceType.CollectedByFrameworkNamed, referenceList);
+
+                if (reference != null)
+                    return reference;
 
             }
 
+            reference = SearchNext(assemblyName, func);
+            if (reference != null)
+                return reference;
 
             return null;
 
@@ -191,75 +222,83 @@ namespace Bb.Builds
         }
 
 
-        /// <summary>
-        /// Adds the assembly location path.
-        /// </summary>
-        /// <param name="assemblyLocation">The assembly location.</param>
-        /// <exception cref="System.IO.FileNotFoundException"></exception>
-        public AssemblyReferences AddAssemblyLocation(string assemblyLocation, string assemblyName = null)
-        {
-
-            if (!File.Exists(assemblyLocation))
-                throw new FileNotFoundException(assemblyLocation);
-
-            Add(assemblyLocation, assemblyName);
-
-            return this;
-
-        }
 
         /// <summary>
         /// Adds the specified references.
         /// </summary>
         /// <param name="location">The key.</param>
-        /// <param name="reference">The reference.</param>
+        /// <param name="assemblyName">The assembly name</param>
+        /// <param name="Version">The version to find.</param>
         /// <exception cref="System.NullReferenceException">reference</exception>
-        public PortableExecutableReference Add(string location, string assemblyName = null)
+        public Reference AddAssemblyLocation(string location)
         {
 
             if (location == null)
                 throw new NullReferenceException(nameof(location));
 
-            if (string.IsNullOrEmpty(assemblyName))
-            {
-                var item = _referencesByAssembly.Where(c => c.Value.Location == location).FirstOrDefault();
-                if (item.Value != null)
-                    return item.Value.ExecutableReference;
-                try
-                {
-                    var lib = new PEFile(location);
-                    assemblyName = lib.Name;
-                }
-                catch (Exception)
-                {
 
-                }
-            }
+            foreach (var item1 in _referencesByAssembly.Values)
+                foreach (var item2 in item1.Values)
+                    if (item2.Location == location)
+                        return item2;
 
-            if (!_referencesByAssembly.TryGetValue(assemblyName, out var instance))
-                _referencesByAssembly.Add(assemblyName, instance = new Reference(location, assemblyName));
 
+            Reference instance = new Reference(location);
+
+            return AddReference(instance);
+
+        }
+
+        public Reference AddReference(Reference instance)
+        {
+            if (!_referencesByAssembly.TryGetValue(instance.AssemblyName, out var versions))
+                _referencesByAssembly.Add(instance.AssemblyName, versions = new Dictionary<Version, Reference>());
+
+            if (!versions.ContainsKey(instance.Version))
+                versions.Add(instance.Version, instance);
             else
-                instance.SelectLastest(location);
+                versions[instance.Version] = instance;
 
-            return instance.ExecutableReference;
-
+            return instance;
         }
 
 
         /// <summary>
         /// Return the specified references.
         /// </summary>
-        /// <param name="location">The key.</param>
-        /// <param name="reference">The reference.</param>
+        /// <param name="assemblyName">The assembly name</param>
+        /// <param name="Version">The version to find.</param>
         /// <exception cref="System.NullReferenceException">reference</exception>
-        public Reference SearchInRegistered(string assemblyName)
+        public Reference SearchInRegistered(string assemblyName, Version version)
         {
 
-            if (_referencesByAssembly.TryGetValue(assemblyName, out var instance))
-                return instance;
+            if (_referencesByAssembly.TryGetValue(assemblyName, out var versions))
+                if (versions.TryGetValue(version, out var instance))
+                {
+                    return instance;
+                }
+                else
+                {
+                    return versions.Values.Where(c => c.Version >= version).OrderByDescending(c => c.Version).FirstOrDefault();
+                }
 
             return null;
+
+        }
+
+        /// <summary>
+        /// Return the specified references.
+        /// </summary>
+        /// <param name="assemblyName">The assembly name</param>
+        /// <param name="Version">The version to find.</param>
+        /// <exception cref="System.NullReferenceException">reference</exception>
+        public List<Reference> SearchInRegistered(string assemblyName)
+        {
+
+            if (_referencesByAssembly.TryGetValue(assemblyName, out var versions))
+                return versions.Values.ToList();
+
+            return default;
 
         }
 
@@ -274,16 +313,27 @@ namespace Bb.Builds
         /// <returns>
         /// An enumerator that can be used to iterate through the collection.
         /// </returns>
-        public IEnumerator<KeyValuePair<string, Reference>> GetEnumerator()
+        public IEnumerator<Reference> GetEnumerator()
         {
             foreach (var item in this._referencesByAssembly)
-                yield return item;
+                foreach (var item2 in item.Value)
+                    yield return item2.Value;
         }
 
-        public IEnumerable<PortableExecutableReference> Libraries()
+        public IEnumerable<(string, List<(Version, PortableExecutableReference)>)> Libraries()
         {
             foreach (var item in this._referencesByAssembly)
-                yield return item.Value.ExecutableReference;
+            {
+
+                var list = new List<(Version, PortableExecutableReference)>(item.Value.Count);
+
+                foreach (var item2 in item.Value.OrderByDescending(c => c.Key))
+                    list.Add((item2.Key, item2.Value.ExecutableReference));
+
+                yield return (item.Key, list);
+
+            }
+
         }
 
         /// <summary>
@@ -307,11 +357,11 @@ namespace Bb.Builds
         }
 
 
-        public string SearchNext(string name, Version version, bool download)
+        public Reference SearchNext(string name, Func<ReferenceType, List<Reference>, Reference> func)
         {
-            
+
             if (_next != null)
-                return _next.ResolveAssemblyName(name, version, this.Sdk, download);
+                return _next.ResolveAssemblyName(name, this.Sdk, func);
 
             return null;
 
@@ -345,14 +395,19 @@ namespace Bb.Builds
 
         public FrameworkVersion Sdk { get; internal set; }
 
-
         private IAssemblyReferenceResolver _next;
-        private readonly Dictionary<string, Reference> _referencesByAssembly;
-
+        private readonly Dictionary<string, Dictionary<Version, Reference>> _referencesByAssembly;
 
     }
 
 
+    public enum ReferenceType
+    {
+        Local,
+        CollectedByFrameworkNamed,
+        Freesearch,
+        Nuget
+    }
 
 
 }

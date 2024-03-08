@@ -86,9 +86,9 @@ namespace Bb.Builds
         /// <param name="assemblyLocation"></param>
         /// <param name="assemblyName"></param>
         /// <returns><see cref="BuildCSharp"/>fluent notation</returns>
-        public BuildCSharp AddReferences(string assemblyLocation, string assemblyName = null)
+        public BuildCSharp AddReferences(string assemblyLocation)
         {
-            this.References.AddAssemblyLocation(assemblyLocation, assemblyName);
+            this.References.AddAssemblyLocation(assemblyLocation);
             return this;
         }
 
@@ -101,6 +101,7 @@ namespace Bb.Builds
         /// <returns></returns>
         public BuildCSharp SetNugetController(NugetController controller)
         {
+            controller.CopyPackagesFrom(this.Nugets);
             this._nugets = controller;
             return this;
         }
@@ -692,15 +693,14 @@ namespace Bb.Builds
                     {
                         if (item.LastBuild == null || !item.LastBuild.Success)
                         {
-                            _diagnostics.Error(item.AssemblyName, $"Dependency {item.AssemblyName} not builded");
+                            _diagnostics.Error(item.AssemblyName, $"Dependency {item.AssemblyName} not built");
                             return null;
                         }
                         else
-                            References.AddAssemblyLocation(item.LastBuild.FullAssemblyFile, item.LastBuild.AssemblyName);
+                            References.AddAssemblyLocation(item.LastBuild.FullAssemblyFile);
                     }
 
-
-                    Nugets.Resolve(References, this._diagnostics);
+                    Nugets.ResolvePackages(References, this._diagnostics);
 
                     RoslynCompiler compiler = CreateBuilder();
 

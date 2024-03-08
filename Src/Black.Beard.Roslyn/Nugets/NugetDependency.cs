@@ -7,15 +7,18 @@ namespace Bb.Nugets
     {
 
 
-        public NugetDependency(string id, Version version)
+        public NugetDependency(string id, Version version, NugetGroupDependency parent, NugetDocument nuget)
         {
+
+            this.Nuget = nuget;
+            this.Group = parent;
             Id = id;
             VersionMin = version;
             VersionMax = version;
         }
 
 
-        internal NugetDependency(XElement item)
+        internal NugetDependency(XElement item,  NugetGroupDependency parent, NugetDocument nuget)
         {
 
             foreach (var c in item.Attributes())
@@ -65,6 +68,8 @@ namespace Bb.Nugets
         public Version VersionMin { get; set; }
 
         public Version VersionMax { get; set; }
+        public NugetDocument Nuget { get; }
+        public NugetGroupDependency Group { get; }
 
         public override string ToString()
         {

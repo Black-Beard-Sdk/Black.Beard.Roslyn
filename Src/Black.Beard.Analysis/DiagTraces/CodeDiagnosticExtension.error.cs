@@ -1,13 +1,9 @@
-﻿using System;
-using System.Data.Common;
-using Bb.Analysis.DiagTraces;
-
+﻿
 namespace Bb.Analysis.DiagTraces
 {
 
     public static partial class CodeDiagnosticExtension
     {
-
 
         /// <summary>
         /// Adds the Error diagnostic.

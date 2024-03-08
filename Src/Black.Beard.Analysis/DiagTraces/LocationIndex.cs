@@ -1,9 +1,7 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 
 namespace Bb.Analysis.DiagTraces
 {
-
 
     public class LocationIndex : ILocationIndex
     {
