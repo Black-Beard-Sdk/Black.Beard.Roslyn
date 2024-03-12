@@ -29,6 +29,9 @@ namespace Bb.Nugets
 
         }
 
+        /// <summary>
+        /// Return the references of the library
+        /// </summary>
         public IEnumerable<Reference> References
         {
             get
@@ -72,12 +75,24 @@ namespace Bb.Nugets
 
         }
 
+        /// <summary>
+        /// Version of the nuget
+        /// </summary>
         public Version Version { get; }
 
+        /// <summary>
+        /// Name of the nuget
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// Parent folder
+        /// </summary>
         public FileNugetFolder Parent { get; internal set; }
 
+        /// <summary>
+        /// Metadata of the nuget
+        /// </summary>
         public NugetDocument Metadata { get; private set; }
 
         private DirectoryInfo _path;

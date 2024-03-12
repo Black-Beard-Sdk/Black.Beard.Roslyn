@@ -5,6 +5,11 @@ using System.Xml.Linq;
 
 namespace Bb.Nugets
 {
+
+
+    /// <summary>
+    /// Nuget document
+    /// </summary>
     public class NugetDocument
     {
 
@@ -31,7 +36,6 @@ namespace Bb.Nugets
         {
             return new NugetDocument(path);
         }
-
 
         internal NugetDocument(FileInfo metadataFile)
         {
@@ -76,20 +80,30 @@ namespace Bb.Nugets
 
         }
 
-
+        /// <summary>
+        /// Package nuget Id
+        /// </summary>
         public string Id { get; }
 
+        /// <summary>
+        /// Package nuget version
+        /// </summary>
         public Version Version { get; }
 
+        /// <summary>
+        /// Package nuget description
+        /// </summary>
         public string Description { get; }
 
+        /// <summary>
+        /// Repository informations
+        /// </summary>
         public NugetRepository Repository { get; }
 
         public override string ToString()
         {
             return Id.ToString() + " " + Version.ToString();
         }
-
 
         /// <summary>
         /// return true if the dependencies are for multiple target build
@@ -101,15 +115,23 @@ namespace Bb.Nugets
         /// </summary>
         /// <returns></returns>
         public IEnumerable<NugetGroupDependency> GroupDependencies() => _dependencies;
-        
+
         /// <summary>
         /// return the dependencies for a specific framework
         /// </summary>
         /// <param name="framework"></param>
         /// <returns></returns>
-        public IEnumerable<NugetGroupDependency> GroupDependencies(FrameworkKey frameworkKey)
+        public IEnumerable<NugetGroupDependency> GroupDependencies(FrameworkKey framework, FrameworkVersion frameworkTarget)
         {
-            return _dependencies.Where(c => c.TargetFramework == frameworkKey.Name);
+            return _dependencies.Where(c =>
+            {
+
+                if (!framework.Accept(c.TargetFramework))
+                    return false;
+
+                return true;
+
+            });
         }
 
         /// <summary>
@@ -117,12 +139,14 @@ namespace Bb.Nugets
         /// </summary>
         /// <param name="framework"></param>
         /// <returns></returns>
-        public IEnumerable<NugetGroupDependency> GroupDependencies(string framework)
+        public IEnumerable<NugetGroupDependency> GroupDependencies(FrameworkKey framework)
         {
             return _dependencies.Where(c => c.TargetFramework == framework);
         }
 
-
+        /// <summary>
+        /// List libraries references found in the folder lib
+        /// </summary>
         public IEnumerable<Reference> References => _list;
 
 
@@ -136,6 +160,7 @@ namespace Bb.Nugets
         private FileInfo _metadataFile;
         private string _ns;
         private List<Reference> _list;
+
     }
 
 

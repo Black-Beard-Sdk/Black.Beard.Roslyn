@@ -1,6 +1,7 @@
 ﻿using Bb.Analysis;
 using Bb.Analysis.DiagTraces;
 using Bb.Builds;
+using Bb.Nugets.Versions;
 using ICSharpCode.Decompiler.Util;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -14,22 +15,22 @@ namespace Bb.Nugets
 
 
         /// <summary>
-        /// Is windows platform
+        /// Is Windows platform
         /// </summary>
         public static bool IsWindowsPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         /// <summary>
-        /// Is linux platform
+        /// Is Linux platform
         /// </summary>
         public static bool IsLinuxPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
         /// <summary>
-        /// Is freeBsd platform
+        /// Is FreeBSD platform
         /// </summary>
         public static bool IsFreeBSDPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD);
 
         /// <summary>
-        /// Is osx platform
+        /// Is OSX platform
         /// </summary>
         public static bool IsOsxPlatform = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
@@ -143,7 +144,7 @@ namespace Bb.Nugets
 
             foreach (var item in source._packages)
                 this.AddPackage(item.Item1, item.Item2);
-         
+
             return this;
 
         }
@@ -163,13 +164,11 @@ namespace Bb.Nugets
         /// Add a reference to resolve in the build
         /// </summary>
         /// <param name="nugetName">nuget reference to add</param>
-        /// <param name="version">minimum version to add</param>
-        public void AddPackage(string nugetName, string version)
+        /// <param name="versionMin">minimum version to add</param>
+        public void AddPackage(string nugetName, string versionMin)
         {
-            if (string.IsNullOrEmpty(version))
-                AddPackage(nugetName, (Version)null);
-            else
-                AddPackage(nugetName, new Version(version));
+            Version min = string.IsNullOrEmpty(versionMin) ? null : new Version(versionMin);
+            AddPackage(nugetName, min);
         }
 
 
@@ -180,6 +179,9 @@ namespace Bb.Nugets
         /// <param name="version">minimum version to add</param>
         public void AddPackage(string nugetName, Version version)
         {
+
+            if (version == null)
+                version = new Version(1, 0, 0);
 
             var items = _packages.Where(c => c.Item1 == nugetName).ToList();
 
@@ -217,10 +219,7 @@ namespace Bb.Nugets
             if (framework == null)
                 framework = FrameworkVersion.CurrentVersion;
 
-            List<Reference> list = TryToResolve(assemblyName, out var empty, framework.Key);
-
-            foreach (var compatibility in framework.Compatibilities)
-                list.AddRange(TryToResolve(assemblyName, out empty, compatibility));
+            List<Reference> list = TryToResolve(assemblyName, out var empty, framework);
 
             if (list.Count > 0)
             {
@@ -243,65 +242,57 @@ namespace Bb.Nugets
         internal void ResolvePackages(AssemblyReferences references, ScriptDiagnostics diagnostics)
         {
 
-            var framework = references.Sdk.Key;
+            var framework = references.Sdk;
             var test = true;
             HashSet<string> _h = new HashSet<string>();
-            List<(string, Version)> packages = new List<(string, Version)>();
-
 
             while (test)
             {
-                foreach (var item in _packages)
+
+                var listSource = _packages.ToList();
+                test = false;
+
+                foreach (var item in listSource)
                     if (_h.Add(item.Item1))
                     {
 
-                        List<Reference> list = TryToResolve(item, out var empty, framework.Name);
-
+                        List<Reference> list = TryToResolve(item, out var empty, framework);
                         if (list.Count == 0)   // If missing try to download
                         {
-
                             if (empty)
                                 diagnostics.Information(item.Item1, $"the package nuget {item.Item1} {item.Item2} not contains library.");
 
                             else if (TryToDownload(framework, item.Item1, item.Item2))
                                 list = TryToResolve(item, out empty, framework);
-
-                            else
-                            {
-
-                            }
-
                         }
 
                         if (list.Count > 0)   // Append references
-                            foreach (var c in list.OrderBy(c => c.Version))
-                            {
-                                references.AddReference(c);
-                                packages.AddRange(EnsureDependencies(c.Package, framework));
-                                break;
-                            }
-
+                        {
+                            var reference = list.SelectOptimized(framework);
+                            references.AddReference(reference);
+                            foreach (var r in EnsureDependencies(reference, framework))
+                                if (!_packages.Any(c => c.Item1 != r.Item1 || c.Item2 != r.Item2.Version))
+                                {
+                                    _packages.Add((r.Item1, r.Item2.Version));
+                                    test = true;
+                                }   
+                        }
                     }
-
-                if (packages.Count > 0)
-                {
-                    var lst = packages.Where(x => !_packages.Any(d => x.Item1 == d.Item1)).ToList();
-                    _packages.AddRange(lst);
-                    packages.Clear();
-                }
-                else
-                    test = false;
 
             }
 
         }
 
-        private IEnumerable<(string, Version)> EnsureDependencies(NugetDocument nuget, FrameworkKey framework)
+        private IEnumerable<(string, ConstraintVersion)> EnsureDependencies(Reference reference, FrameworkVersion frameworkTarget)
         {
 
-            foreach (var dependencyGroup in nuget.GroupDependencies(framework))
+            NugetDocument nuget = reference.Package;
+            FrameworkKey framework = reference.Framework;
+
+            var list = nuget.GroupDependencies(frameworkTarget.Key).ToList();
+            foreach (var dependencyGroup in list)
                 foreach (var dependency in dependencyGroup.Dependencies())
-                    yield return (dependency.Id, dependency.VersionMin);
+                    yield return (dependency.Id, dependency.ConstraintVersion);
 
         }
 
@@ -343,7 +334,7 @@ namespace Bb.Nugets
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public virtual bool TryToDownload(FrameworkKey frameworkKey, string name, Version version = null)
+        public virtual bool TryToDownload(FrameworkVersion framework, string name, Version version = null)
         {
 
             bool result = false;
@@ -363,16 +354,18 @@ namespace Bb.Nugets
 
         }
 
+
         public NugetController WithFilter(Func<string, Version, bool> filter)
         {
             Filter = filter;
             return this;
         }
 
+
         public Func<string, Version, bool> Filter { get; set; }
 
 
-        private List<Reference> TryToResolve((string, Version) item, out bool empty, FrameworkKey framework = null)
+        private List<Reference> TryToResolve((string, Version) item, out bool empty, FrameworkVersion framework = null)
         {
 
             empty = false;
@@ -386,7 +379,9 @@ namespace Bb.Nugets
                         empty = true;
 
                     else
-                        lst.AddRange( version.Metadata.References.Where(c => framework == null || c.Framework == framework));
+                        foreach (var reference in version.Metadata.References)
+                            if (framework == null || framework.Accept(reference.Framework))
+                                lst.Add(reference);
 
                 }
 
@@ -394,7 +389,7 @@ namespace Bb.Nugets
 
         }
 
-        private List<Reference> TryToResolve(string item, out bool empty, FrameworkKey framework = null)
+        private List<Reference> TryToResolve(string item, out bool empty, FrameworkVersion framework = null)
         {
 
             empty = false;
@@ -404,11 +399,15 @@ namespace Bb.Nugets
                 foreach (var version in nugetFolder.ResolveAll(item))
                 {
                     var libs = version.Metadata;
-                    
+
                     if (version.Metadata != null && !version.Empty)
                         empty = true;
+
                     else
-                        lst.AddRange( version.Metadata.References.Where(c => framework == null || c.Framework == framework));
+                        foreach (var reference in version.Metadata.References)
+                            if (framework == null || framework.Accept(reference.Framework))
+                                lst.Add(reference);
+
 
                 }
 
@@ -440,6 +439,5 @@ namespace Bb.Nugets
         private readonly List<FileNugetFolders> _folders;
 
     }
-
 
 }

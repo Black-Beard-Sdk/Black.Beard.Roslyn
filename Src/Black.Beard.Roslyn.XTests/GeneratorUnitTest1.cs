@@ -181,6 +181,8 @@ public class Program
         public void TestDownload()
         {
 
+            var sdk = FrameworkVersion.CurrentVersion;
+
             var dir = Path.Combine(Environment.CurrentDirectory, Path.GetRandomFileName());
             var controller = new NugetController()
                 .AddFolder(dir, NugetController.HostNugetOrg)
@@ -192,7 +194,7 @@ public class Program
             var result = controller.Resolve("Black.Beard.Componentmodel");
             if (result == null || result.Any())
             {
-                var test = controller.TryToDownload("Black.Beard.Componentmodel", null);
+                var test = controller.TryToDownload(sdk, "Black.Beard.Componentmodel", null);
                 Assert.True(test);
             }
 

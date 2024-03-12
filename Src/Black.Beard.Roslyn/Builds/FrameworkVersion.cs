@@ -130,16 +130,13 @@ namespace Bb.Builds
         {
 
             this.Directory = directory;
-            this.Compatibilities = new List<string>();
-
+          
             ResolveType(Name);
             ResolveVersion(version);
 
             this.Key = FrameworkKey.Resolve(Version);
 
             this.LanguageVersion = (LanguageVersion)Key.languageVersion;
-            if (Key.Version.Major >= 5)
-                this.Compatibilities.Add("netstandard2.0");
 
             this.CorreclyIdentified = (Type != null && Type != FrameworkType.Unknown) && Key != null;
 
@@ -288,9 +285,6 @@ namespace Bb.Builds
         /// </value>
         public static IEnumerable<FrameworkVersion> All => _versions;
 
-        public List<string> Compatibilities { get; private set; }
-
-
         /// <summary>
         /// Gets the base framework.
         /// </summary>
@@ -408,6 +402,15 @@ namespace Bb.Builds
             return file.Directory.FullName == this.Directory.FullName;
         }
 
+        internal bool Accept(FrameworkKey framework)
+        {
+
+            if (framework == null)
+                return false;
+
+            return this.Key.Accept(framework);
+
+        }
 
         private static FrameworkVersion _current;
         private static object _lock = new object();

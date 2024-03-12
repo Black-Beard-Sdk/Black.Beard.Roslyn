@@ -10,9 +10,18 @@ using System.Diagnostics;
 namespace Bb.Nugets
 {
 
+    /// <summary>
+    /// Nuget compressed document
+    /// </summary>
     public class NugetCompressedDocument
     {
 
+        /// <summary>
+        /// Create a NugetCompressedDocument from a file that contains a nupkg file
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="targetFolder"></param>
+        /// <returns></returns>
         public static NugetCompressedDocument Create(string path, string targetFolder = null)
         {
             DirectoryInfo target = null;
@@ -23,6 +32,13 @@ namespace Bb.Nugets
             return Create(new FileInfo(path), target);
         }
 
+        /// <summary>
+        /// Create a NugetCompressedDocument from a file that contains a nupkg file
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="targetFolder"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
         public static NugetCompressedDocument Create(FileInfo path, DirectoryInfo targetFolder = null)
         {
 

@@ -1,20 +1,51 @@
-﻿using System.Diagnostics;
+﻿using Bb.Nugets.Versions;
+using System.Data;
+using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace Bb.Nugets
 {
+
+    /// <summary>
+    /// Nuget dependency
+    /// </summary>
     public class NugetDependency
     {
 
+        /// <summary>
+        /// create a new instance of <see cref="NugetDependency"/>
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="versionMin"></param>
+        /// <param name="versionMax"></param>
+        /// <param name="parent"></param>
+        /// <param name="nuget"></param>
+        public NugetDependency(string id, Version versionMin, Version versionMax, NugetGroupDependency parent, NugetDocument nuget)
+        {
 
+            this.Nuget = nuget;
+            this.Group = parent;
+            Id = id;
+
+            ConstraintVersion = new ConstraintVersion(-1, versionMin, ContraintEnum.Upper & ContraintEnum.Equal, ContraintEnum.None)
+                .Append(new ConstraintVersion(-1, versionMax, ContraintEnum.None, ContraintEnum.Lower & ContraintEnum.Equal));
+
+        }
+
+        /// <summary>
+        /// create a new instance of <see cref="NugetDependency"/>
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="version"></param>
+        /// <param name="parent"></param>
+        /// <param name="nuget"></param>
         public NugetDependency(string id, Version version, NugetGroupDependency parent, NugetDocument nuget)
         {
 
             this.Nuget = nuget;
             this.Group = parent;
             Id = id;
-            VersionMin = version;
-            VersionMax = version;
+            ConstraintVersion = new ConstraintVersion(-1, version, ContraintEnum.Upper & ContraintEnum.Equal, ContraintEnum.Lower & ContraintEnum.Equal);
         }
 
 
@@ -30,56 +61,36 @@ namespace Bb.Nugets
                         Id = c.Value;
                         break;
                     case "version":
-
-                        if (c.Value.StartsWith("[") && c.Value.EndsWith("]"))
-                        {
-
-                            var value = c.Value.Substring(1, c.Value.Length - 2).Split(',');
-                            if (value.Length > 0)
-                            {
-                                var v1 = value[0];
-                                if (Version.TryParse(v1.Trim(), out Version v))
-                                    VersionMin = v;
-                                VersionMax = v;
-                            }
-                            if (value.Length > 1)
-                            {
-                                var v1 = value[1];
-                                if (Version.TryParse(v1.Trim(), out Version v2))
-                                    VersionMax = v2;
-                            }
-                        }
-                        else if (Version.TryParse(c.Value.Trim(), out Version v3))
-                            VersionMax = v3;
-
-                        else
-                            Trace.TraceInformation($"Version {c.Value} is not valid");
-
-                        break;
-                    default:
+                        this.ConstraintVersion = VersionMatcher.Parse(c.Value);
                         break;
                 }
             }
 
         }
 
+        /// <summary>
+        /// Package nuget Id
+        /// </summary>
         public string Id { get; set; }
 
-        public Version VersionMin { get; set; }
-
-        public Version VersionMax { get; set; }
+        /// <summary>
+        /// Root parent nuget document
+        /// </summary>
         public NugetDocument Nuget { get; }
+
+        /// <summary>
+        /// Parent framework group of dependency
+        /// </summary>
         public NugetGroupDependency Group { get; }
+
+        /// <summary>
+        /// Constraint version
+        /// </summary>
+        public ConstraintVersion ConstraintVersion { get; private set; }
 
         public override string ToString()
         {
-            if (VersionMin == null)
-                return Id.ToString();
-
-            if (VersionMin != VersionMax)
-                return Id.ToString() + " " + VersionMin.ToString() + " " + VersionMax.ToString();
-
-            return Id.ToString() + " " + VersionMin.ToString();
+            return ConstraintVersion?.ToString() ?? "no constraint";
         }
 
     }

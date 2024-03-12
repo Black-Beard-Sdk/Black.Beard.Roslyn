@@ -1,4 +1,5 @@
 ﻿using Bb.Metrology;
+using Bb.Nugets.Versions;
 using System.Diagnostics;
 using static Bb.Nugets.NugetDocument;
 
@@ -29,13 +30,15 @@ namespace Bb.Nugets
 
         }
 
-
         /// <summary>
         /// return true if the resolver can used for download nuget
         /// </summary>
         public bool WithResolver => Hosts.Length > 0;
 
-
+        /// <summary>
+        /// Refresh the folders
+        /// </summary>
+        /// <returns></returns>
         public FileNugetFolders Refresh()
         {
 
@@ -99,10 +102,9 @@ namespace Bb.Nugets
         {
             if (_folders.TryGetValue(item.Item1.ToLower(), out FileNugetFolder folder))
                 foreach (var version in folder)
-                    if (version.Version >= item.Item2)
+                    if ((item.Item2 == null || version.Version >= item.Item2))   // >= minimum version
                         yield return version;
         }
-
 
         /// <summary>
         /// resolve all version by name
@@ -113,13 +115,17 @@ namespace Bb.Nugets
         {
             if (_folders.TryGetValue(item.ToLower(), out FileNugetFolder folder))
                 foreach (var version in folder)
-                        yield return version;
+                    yield return version;
         }
 
-
+        /// <summary>
+        /// Try to download the package nuget
+        /// </summary>
+        /// <param name="dependency"></param>
+        /// <returns></returns>
         public bool TryToDownload(NugetDependency dependency)
         {
-            return TryToDownload(dependency.Id, dependency.VersionMin);
+            return TryToDownload(dependency.Id, dependency.ConstraintVersion.Version);
         }
 
         /// <summary>
@@ -170,10 +176,11 @@ namespace Bb.Nugets
 
                         if (RoslynActivityProvider.WithTelemetry)
                             RoslynActivityProvider.AddProperty("exception", ex.ToString());
-                       
+
                         return false;
 
                     }
+
 
                     // resolve id & version
                     (name, version) = file.ResolveIdAndVersion(System.IO.Path.Combine(tempPath.FullName, "unzip"));
@@ -206,10 +213,19 @@ namespace Bb.Nugets
 
         }
 
+        /// <summary>
+        /// Path of the folder
+        /// </summary>
         public DirectoryInfo Path { get; }
 
+        /// <summary>
+        /// Hosts for resolve missing packages
+        /// </summary>
         public string[] Hosts => _hosts.ToArray();
 
+        /// <summary>
+        /// Parent nuget controller
+        /// </summary>
         public NugetController Parent { get; internal set; }
 
 

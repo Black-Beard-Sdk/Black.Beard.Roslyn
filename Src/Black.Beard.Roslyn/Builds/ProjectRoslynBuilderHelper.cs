@@ -7,6 +7,25 @@ namespace Bb.Builds
 {
 
 
+    internal static class ReferenceTypeExtension
+    {
+
+        public static Reference SelectOptimized(this IEnumerable<Reference> items, FrameworkVersion version)
+        {
+
+            var selections = items.OrderByDescending(c => c.Framework.Version).ToList();
+            var selection = selections.First();
+
+            foreach (var item in selections)
+                if (item.Version > selection.Version)
+                    selection = item;
+
+            return selection;
+
+        }
+
+    }
+
 
     public static class ProjectRoslynBuilderHelper
     {

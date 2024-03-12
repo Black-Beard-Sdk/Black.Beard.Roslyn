@@ -106,7 +106,7 @@ namespace Bb.Builds
         /// </summary>
         /// <param name="filename"></param>
         /// <exception cref="FileNotFoundException"></exception>
-        public AssemblyReferences AddResolveFilename(string assemblyFilename, string assemblyName = null)
+        public AssemblyReferences AddResolveFilename(string assemblyFilename)
         {
 
             FileReferences references = Sdk.GetReferences();
@@ -150,8 +150,10 @@ namespace Bb.Builds
             if (referenceList != null)
                 reference = func(ReferenceType.Local, referenceList.ToList());
 
+
             if (reference != null)
                 return reference;
+
 
             var item = Libs.Items.Where(c => c.Name == assemblyName).FirstOrDefault(); // try to resolve the name of the file assembly
             if (item != null)
@@ -166,12 +168,14 @@ namespace Bb.Builds
                         referenceList.Add(new Reference(item1));
 
                     reference = func(ReferenceType.CollectedByFrameworkNamed, referenceList);
-
                     if (reference != null)
                     {
-                        AddByAssembly(Assembly.LoadFile(reference.Location));
+                        if (AddInRecoveryIfNotFound)
+                            AddAssemblyLocation(reference.Location);
+                        AddAssemblyLocation(reference.Location);
                         return reference;
                     }
+
                 }
 
             }
@@ -189,13 +193,25 @@ namespace Bb.Builds
                 reference = func(ReferenceType.CollectedByFrameworkNamed, referenceList);
 
                 if (reference != null)
+                {
+                    if (AddInRecoveryIfNotFound) 
+                        AddAssemblyLocation(reference.Location);
                     return reference;
+                }
 
             }
 
-            reference = SearchNext(assemblyName, func);
-            if (reference != null)
-                return reference;
+
+            if (UseNugetForRecovery)
+            {
+                reference = SearchNext(assemblyName, func);
+                if (reference != null)
+                {
+                    if (AddInRecoveryIfNotFound)
+                        AddAssemblyLocation(reference.Location);
+                    return reference;
+                }
+            }
 
             return null;
 
@@ -392,6 +408,10 @@ namespace Bb.Builds
 
         #endregion IEnumerable
 
+
+        public bool AddInRecoveryIfNotFound { get; set; }
+
+        public bool UseNugetForRecovery { get; set; }
 
         public FrameworkVersion Sdk { get; internal set; }
 

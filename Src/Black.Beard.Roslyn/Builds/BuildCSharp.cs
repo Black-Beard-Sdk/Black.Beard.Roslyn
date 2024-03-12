@@ -6,13 +6,9 @@ using Bb.Metrology;
 using Bb.Nugets;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using SharpCompress.Common;
-using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
 
 namespace Bb.Builds
 {
@@ -196,29 +192,42 @@ namespace Bb.Builds
             if (enable)
             {
 
-                Usings
-                (
 
-                    new string[]
-                    {
-                        "System",
-                        "System.Collections.Generic",
-                        "System.Linq",
-                        "System.Text",
-                        "System.IO",
-                        "System.Net.Http",
-                        "System.Threading",
-                        "System.Threading.Tasks"
-                    },
+                var o = new List<string>
+                {
+                    "System",
+                    "System.Collections.Generic",
+                    "System.Linq",
+                    "System.Text",
+                    "System.IO",
+                    "System.Net.Http",
+                    "System.Threading",
+                    "System.Threading.Tasks",
+                    "System.Threading"
+                };
 
-                    c => c.IsGlobal = true
 
-                );
+                if (this.Framework.Sdk == FrameworkType.AspNetCore)
+                {
+                    o.Add("System.Net.Http.Json");
+                    o.Add("System.Text.Json");
+                    o.Add("Microsoft.AspNetCore.Builder");
+                    o.Add("Microsoft.AspNetCore.Hosting");
+                    o.Add("Microsoft.AspNetCore.Http");
+                    o.Add("Microsoft.AspNetCore.Routing");
+                    o.Add("Microsoft.Extensions.Configuration");
+                    o.Add("Microsoft.Extensions.DependencyInjection");
+                    o.Add("Microsoft.Extensions.Hosting");
+                    o.Add("Microsoft.Extensions.Logging");
+                }
 
+
+                Usings(o.ToArray(), c => c.IsGlobal = true);
 
             }
             else
                 _usings.Clear();
+
             return this;
         }
 

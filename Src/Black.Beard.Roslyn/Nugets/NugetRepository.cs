@@ -2,6 +2,10 @@
 
 namespace Bb.Nugets
 {
+
+    /// <summary>
+    /// Nuget repository informations
+    /// </summary>
     public class NugetRepository
     {
 
@@ -32,12 +36,24 @@ namespace Bb.Nugets
 
         }
 
+        /// <summary>
+        /// Type of repository
+        /// </summary>
         public string Type { get; }
 
+        /// <summary>
+        /// Url of the repository
+        /// </summary>
         public string Url { get; }
 
+        /// <summary>
+        /// Branch of the repository
+        /// </summary>
         public string Branch { get; }
 
+        /// <summary>
+        /// Commit of the repository
+        /// </summary>
         public string Commit { get; }
 
         public override string ToString()

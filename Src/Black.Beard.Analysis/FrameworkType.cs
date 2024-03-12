@@ -108,7 +108,7 @@ namespace Bb.Analysis
             {
                 var f = stack.GetFrame(i);
                 var m = f.GetMethod();
-                var a = m.DeclaringType.Assembly;
+                var a = m.DeclaringType?.Assembly;
                 if (a != null && a.GetName().Name != "System.Private.CoreLib" && !a.IsDynamic)
                     _h.Add(a);
             }
