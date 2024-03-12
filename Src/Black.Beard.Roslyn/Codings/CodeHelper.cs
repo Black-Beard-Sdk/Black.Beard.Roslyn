@@ -20,7 +20,12 @@ namespace Bb.Codings
                     System.Diagnostics.Debugger.Break();
         }
 
-
+        /// <summary>
+        /// Create expression[argument1, argument2, ...]
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
         public static ElementAccessExpressionSyntax ElementAccess(ExpressionSyntax expression, params ExpressionSyntax[] arguments)
         {
             return SyntaxFactory.ElementAccessExpression(
@@ -889,16 +894,54 @@ namespace Bb.Codings
 
         }
 
+        /// <summary>
+        /// Convert string to IdentifierNameSyntax (Roslyn)
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
         public static IdentifierNameSyntax Identifier(this string self)
         {            
             return SyntaxFactory.IdentifierName(self.EnsureLiteralName());
         }
 
+
+        /// <summary>
+        /// convert string to MemberAccessExpressionSyntax (Roslyn)
+        /// </summary>
+        /// <param name="self"></param>
+        /// <param name="self2"></param>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public static MemberAccessExpressionSyntax Identifiers(this string self, string self2, params string[] items)
+        {
+
+            var left = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, self.Identifier(), self2.Identifier());
+
+            foreach (var item in items)
+            {
+                var right = item.Identifier();
+                left = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, left, right);
+            }
+
+            return left;
+
+        }
+
+        /// <summary>
+        /// convert list of StantementSyntax to SyntaxList
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
         public static BlockSyntax ToBlock(this SyntaxList<StatementSyntax> self)
         {
             return SyntaxFactory.Block(self);
         }
 
+        /// <summary>
+        /// convert syntaxKind to token
+        /// </summary>
+        /// <param name="self"></param>
+        /// <returns></returns>
         public static SyntaxToken ToToken(this SyntaxKind self)
         {
             return SyntaxFactory.Token(self);
