@@ -17,7 +17,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.27" />
+	  <PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.30" />
 	</ItemGroup>
 
 	<ItemGroup>
