@@ -44,14 +44,21 @@ namespace Bb.Builds
                             if (_current == null)
                                 throw new NotImplementedException("Not implemented for this platform");
 
+                            if (FrameworkVersion._versions == null)
+                                InitializeAllFrameworks();
 
-                            var uu = FrameworkVersion._versions.Where(c => c.Key == _current.Key 
-                                                                        && c.Type == _current.Type
-                                                                        && c.Version == _current.Version           
-                                                                     ).ToList().ToList();
+                            if (FrameworkVersion._versions != null)
+                            {
 
-                             if (uu.Count == 1)
-                                _current = uu[0];
+                                var uu = FrameworkVersion._versions.Where(c => c.Key == _current.Key
+                                                                            && c.Type == _current.Type
+                                                                            && c.Version == _current.Version
+                                                                         ).FirstOrDefault();
+
+                                if (uu != null)
+                                    _current = uu;
+
+                            }
 
                         }
 
@@ -124,13 +131,13 @@ namespace Bb.Builds
 
 
         #region Resolve current key
-            
+
 
         private FrameworkVersion Intialize(DirectoryInfo directory, string Name, Version version)
         {
 
             this.Directory = directory;
-          
+
             ResolveType(Name);
             ResolveVersion(version);
 
