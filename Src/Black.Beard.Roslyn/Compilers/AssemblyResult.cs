@@ -38,11 +38,19 @@ namespace Bb.Compilers
         public List<CodeObject> Objects { get; internal set; }
 
         public SyntaxTree[] SyntaxTree { get; internal set; }
+
         public string AssemblyFile { get; internal set; }
+
         public string AssemblyPdb { get; internal set; }
+
         public AssemblyReferences References { get; internal set; }
+
         public string AssemblyBuildConfig { get; internal set; }
 
+        /// <summary>
+        /// Load assembly in the current app domain
+        /// </summary>
+        /// <returns></returns>
         public Assembly LoadAssembly()
         {
 
@@ -56,17 +64,32 @@ namespace Bb.Compilers
 
         }
 
+        /// <summary>
+        /// Prepare the folder to execute the assembly. copy all dependencies in the specified folder.
+        /// </summary>
+        /// <returns></returns>
         public FileInfo PrepareFolderToExecute()
         {
             var directory = Helper.GetTempDir();
             return PrepareFolderToExecute(directory);
         }
 
+        /// <summary>
+        /// Prepare the folder to execute the assembly. copy all dependencies in the specified folder.
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public FileInfo PrepareFolderToExecute(string directory)
         {
             return PrepareFolderToExecute(new DirectoryInfo(directory) ?? throw new ArgumentNullException(nameof(directory)));
         }
 
+        /// <summary>
+        /// Prepare the folder to execute the assembly. copy all dependencies in the specified folder.
+        /// </summary>
+        /// <param name="directory"></param>
+        /// <returns></returns>
         public FileInfo PrepareFolderToExecute(DirectoryInfo directory)
         {
 
@@ -100,6 +123,20 @@ namespace Bb.Compilers
 
         }
 
+        /// <summary>
+        /// Return the list of dependencies
+        /// </summary>
+        /// <returns></returns>
+        public List<DependencyAssemblyNameResolver.AssemblyReference> ResolveDependencies()
+        {
+            return ResolveDependencies(References);
+        }
+
+        /// <summary>
+        /// Return the list of dependencies
+        /// </summary>
+        /// <param name="references"></param>
+        /// <returns></returns>
         public List<DependencyAssemblyNameResolver.AssemblyReference> ResolveDependencies(AssemblyReferences references)
         {
             return DependencyAssemblyNameResolver.Resolve(new FileInfo(FullAssemblyFile), references);
