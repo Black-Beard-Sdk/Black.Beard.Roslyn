@@ -106,7 +106,7 @@ public class Program
                     var cmd = service.RunAndGet(
                         c =>
                         {
-                            c.SetWorkingDirectory(assemblyToRun.Directory)
+                            c.SetWorkingDirectory("C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\6.0.28"/*assemblyToRun.Directory*/)
                                   .CommandWithArgumentList("dotnet.exe", assemblyToRun.FullName)
                                   .UseShellExecute(false)
                                   ;
@@ -122,6 +122,8 @@ public class Program
             }
             else
                 Assert.Fail();
+            
+            
 
             Assert.True(testSuccess);
 

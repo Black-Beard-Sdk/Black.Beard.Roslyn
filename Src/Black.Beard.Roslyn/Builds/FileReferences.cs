@@ -8,18 +8,22 @@ namespace Bb.Builds
     public class FileReferences
     {
 
-        public FileReferences(DirectoryInfo dir)
+        public FileReferences(IEnumerable<DirectoryInfo> directories)
         {
 
-            var _d = new HashSet<string>()
+            var _d = new HashSet<string>();
+            if (directories == null)
+                _directories = new HashSet<DirectoryInfo>(3);
+            else
             {
-                dir.FullName
-            };
+                _directories = new HashSet<DirectoryInfo>(directories.Count() + 3);
 
-            _directories = new HashSet<DirectoryInfo>()
-            {
-                dir
-            };
+                directories.ToList().ForEach(c =>
+                {
+                    _directories.Add(c);
+                    _d.Add(c.FullName);
+                });
+            }
 
             var _trustedAssembliesPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
             HashSet<string> dirs = new HashSet<string>(_trustedAssembliesPaths.Select(c => new FileInfo(c).Directory.FullName));

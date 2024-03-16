@@ -18,7 +18,7 @@ namespace Bb.Builds
 
         private FrameworkVersion()
         {
-
+            _directories = new List<DirectoryInfo>();
         }
 
 
@@ -79,7 +79,8 @@ namespace Bb.Builds
                 foreach (var directory in directories)
                     if (directory.Contains(toFind.WindowDirectory))
                     {
-                        _current = new FrameworkVersion().Intialize(new DirectoryInfo(directory), null, null);
+                        _current = new FrameworkVersion()
+                            .Intialize(new DirectoryInfo(directory), null, null);
                         return _current;
                     }
 
@@ -136,16 +137,17 @@ namespace Bb.Builds
         private FrameworkVersion Intialize(DirectoryInfo directory, string Name, Version version)
         {
 
-            this.Directory = directory;
+            this._directories.Add(directory);
 
             ResolveType(Name);
             ResolveVersion(version);
 
-            this.Key = FrameworkKey.Resolve(Version);
-
-            this.LanguageVersion = (LanguageVersion)Key.languageVersion;
-
-            this.CorreclyIdentified = (Type != null && Type != FrameworkType.Unknown) && Key != null;
+            if (Version != null)
+            {
+                this.Key = FrameworkKey.Resolve(Version);
+                this.LanguageVersion = (LanguageVersion)Key.languageVersion;
+                this.CorreclyIdentified = (Type != null && Type != FrameworkType.Unknown) && Key != null;
+            }
 
             return this;
 
@@ -167,29 +169,35 @@ namespace Bb.Builds
 
         private void ResolveVersion(Version version)
         {
+
+            var p = this.Directory.Combine(".version");
+            this._fileVersionExists = File.Exists(p);
+
             if (version != null)
                 Version = version;
 
             else
             {
-                var p = Path.Combine(this.Directory.FullName, ".version");
-                if (File.Exists(p))
+
+                if (this._fileVersionExists)
                 {
                     var v = File.ReadAllText(p).Split(Environment.NewLine);
                     Version = new Version(v[1]);
                 }
                 else
                 {
+
                     var t = FrameworkKey.GetVersion(this.Directory, this.Directory.Parent.Name);
                     if (t != null && t != FrameworkKey.Unknown)
                         Version = t.Version;
 
-                    else
-                    {
-                        Stop();
-                    }
+                    //else
+                    //{
+                    //    Stop();
+                    //}
 
                 }
+
             }
         }
 
@@ -203,7 +211,11 @@ namespace Bb.Builds
         /// <value>
         /// The directory.
         /// </value>
-        public DirectoryInfo Directory { get; private set; }
+        public DirectoryInfo Directory => _directories.FirstOrDefault();
+
+        public IEnumerable<DirectoryInfo> Directories { get; private set; }
+
+        private List<DirectoryInfo> _directories;
 
 
         public string Name { get; private set; }
@@ -296,6 +308,7 @@ namespace Bb.Builds
         /// Gets the base framework.
         /// </summary>
         public FrameworkVersion Base { get; private set; }
+
         public bool CorreclyIdentified { get; private set; }
 
 
@@ -353,7 +366,11 @@ namespace Bb.Builds
             {
                 var versionList = item?.GetDirectories("*", SearchOption.TopDirectoryOnly);
                 foreach (var directoryVersion in versionList)
-                    versions.Add(new FrameworkVersion().Intialize(directoryVersion, null, null));
+                {
+                    var version = new FrameworkVersion().Intialize(directoryVersion, null, null);
+                    if (version._fileVersionExists)
+                        versions.Add(version);
+                }
             }
 
             // for aspnet and windows resolve the base framework
@@ -385,7 +402,7 @@ namespace Bb.Builds
         /// <returns></returns>
         public FileReferences GetReferences()
         {
-            return _references ?? (_references = new FileReferences(this.Directory));
+            return _references ?? (_references = new FileReferences(this.Directories));
         }
 
 
@@ -423,7 +440,7 @@ namespace Bb.Builds
         private static object _lock = new object();
         private static List<FrameworkVersion> _versions;
         private FileReferences _references;
-
+        private bool _fileVersionExists;
     }
 
 
