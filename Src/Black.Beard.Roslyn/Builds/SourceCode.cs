@@ -12,6 +12,15 @@ namespace Bb.Builds
 
         private SourceCode(FileInfo? file, string datas, string name)
         {
+
+            if (file == null)
+                throw new NullReferenceException(nameof(file));
+
+            file.Refresh();
+
+            if (!file.Exists)
+                throw new FileNotFoundException(nameof(file));
+
             this.File = file;
             this.ReadedAt = DateTime.Now;
             this.Name = name;
@@ -121,7 +130,7 @@ namespace Bb.Builds
         /// Gets the data & time of the loaded source.
         /// </summary>
         /// <value>
-        /// The datetime
+        /// The date time
         /// </value>
         public DateTime ReadedAt { get; private set; }
 
@@ -154,7 +163,7 @@ namespace Bb.Builds
         /// <summary>
         /// Return true if the file was been deleted
         /// </summary>
-        public bool IsDeleted => File != null && File.Exists;
+        public bool IsDeleted => !File.Exists;
 
         /// <summary>
         /// Return true if the file is a generated source
@@ -163,12 +172,10 @@ namespace Bb.Builds
         {
             get
             {
-                if (this.File != null)
-                    return this.File.Name.ToLower().EndsWith(".g.cs");
-                return false;
+                return this.File.Name.ToLower().EndsWith(".g.cs");
             }
         }
-            
+
         #endregion properties
 
 
@@ -181,7 +188,7 @@ namespace Bb.Builds
         public bool HasUpdated()
         {
 
-            if (File != null && File.Exists)
+            if (File.Exists)
             {
                 File.Refresh();
                 return File.LastWriteTime > this.ReadedAt;
@@ -196,12 +203,11 @@ namespace Bb.Builds
         /// </summary>
         public void Reload()
         {
-            if (File != null && File.Exists)
+            if (File.Exists)
             {
-                this.Source = this.Name.LoadFromFile();
                 this.ReadedAt = DateTime.Now;
+                this.Source = this.Filename.LoadFromFile();
             }
-
         }
 
         /// <summary>

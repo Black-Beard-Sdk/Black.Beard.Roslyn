@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Reflection;
+using static Refs.System;
 
 namespace Bb.Builds
 {
@@ -165,7 +166,9 @@ namespace Bb.Builds
         public BuildCSharp AddSource(params string[] paths)
         {
             foreach (var file in paths)
+            {
                 this.Sources.Add(file);
+            }
             return this;
         }
 
@@ -676,12 +679,27 @@ namespace Bb.Builds
         public AssemblyResult Build(string assemblyName = null)
         {
 
+            if (!Sources.Documents.Any())
+            {
+                _diagnostics.Error("No code", "No source code to build");
+                return null;
+            }
+
             _inBuild = true;
 
             try
             {
 
                 BuildDependencies();
+                if (Sources.EnsureUptodated())
+                {
+                    _diagnostics.Warning("code", "the code has changed");
+                    if (!Sources.Documents.Any())
+                    {
+                        _diagnostics.Error("No code", "No source code to build");
+                        return null;
+                    }
+                }
 
                 var key = Sources.GetHashCode();
 

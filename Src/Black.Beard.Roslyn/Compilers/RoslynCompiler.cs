@@ -58,6 +58,11 @@ namespace Bb.Compilers
             foreach (var item in sources.Documents)
                 AddCodeSource(item.Source, item.Filename);
 
+            if (this._sources.Count == 0)
+            {
+                _diagnostics.Error("Compilation", "No source code to compile");
+            }
+
             return this;
 
         }
@@ -524,6 +529,11 @@ namespace Bb.Compilers
             }
 
             result.SyntaxTree = sources.ToArray();
+
+            if (result.SyntaxTree.Length == 0)
+            {
+                _diagnostics.Error("Compilation", "No source code to compile");
+            }
 
             if (RoslynActivityProvider.WithTelemetry)
                 RoslynActivityProvider.AddProperty("scripts", string.Join(", ", this._sources.Select(d => d.Filepath)));

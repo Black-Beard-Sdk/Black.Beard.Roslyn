@@ -43,17 +43,22 @@ namespace Bb.Builds
         /// <summary>
         /// Ensure all sources are uptodated
         /// </summary>
-        public void EnsureUptodated()
+        public bool EnsureUptodated()
         {
-
+            bool changed = false;
             foreach (var item in _sources)
                 if (item.Value.HasUpdated())
                 {
                     if (item.Value.IsDeleted)
+                    {
+                        changed = true;
                         _sources.Remove(item.Key);
+                    }
                     else
                         item.Value.Reload();
                 }
+
+            return changed;
 
         }
 
@@ -64,7 +69,6 @@ namespace Bb.Builds
         public override int GetHashCode()
         {
             uint key = 0;
-            this.EnsureUptodated();
             foreach (var item in _sources.OrderBy(c => c.Key))
             {
                 key ^= item.Value.Name.CalculateCrc32();

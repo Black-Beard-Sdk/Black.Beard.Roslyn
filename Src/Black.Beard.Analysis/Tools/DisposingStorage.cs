@@ -8,25 +8,26 @@ using static Refs.Microsoft.Extensions.Identity;
 namespace Bb.Analysis.Tools
 {
 
+
     /// <summary>
     /// Object for storing data in processing visitor
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class DisposingStorage<T> : IStore
-        where T : IStoreSource
+    public class DisposingStorage : IStore
     {
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DisposingStorage{T}"/> class.
         /// </summary>
         /// <param name="document"></param>
-        public DisposingStorage(T document)
+        public DisposingStorage(IStoreSource document)
         {
             this._dic = new Dictionary<string, object>();
             _documentRoot = document;
             _documentRoot.StorePush(this);
         }
 
+        #region Storing
 
         public void AddInStorage(string key, object value)
         {
@@ -46,13 +47,14 @@ namespace Bb.Analysis.Tools
             return _dic.ContainsKey(key);
         }
 
-
         public void Dispose()
         {
             _documentRoot.StorePop();
         }
 
-        private readonly T _documentRoot;
+        #endregion Storing
+
+        private readonly IStoreSource _documentRoot;
         private readonly Dictionary<string, object> _dic;
     }
 

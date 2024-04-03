@@ -1,10 +1,12 @@
 ﻿namespace Bb.Analysis.Tools
 {
-    public interface IStoreSource : IDisposable
+
+    public interface IStoreSource
+
     {
         void StorePop();
 
-        void StorePush<T>(DisposingStorage<T> disposeStoringClass) where T : IStoreSource;
+        void StorePush(object toDispose);
 
     }
 
