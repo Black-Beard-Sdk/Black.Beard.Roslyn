@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Bb.Builds
 {
@@ -21,7 +22,9 @@ namespace Bb.Builds
             _directories = new List<DirectoryInfo>();
         }
 
-
+        /// <summary>
+        /// return the current running framework
+        /// </summary>
         public static FrameworkVersion CurrentVersion
         {
             get
@@ -108,10 +111,8 @@ namespace Bb.Builds
         private static void SetFromCurrentFolder()
         {
 
-
             var currentType = FrameworkType.Current;
             var currentKey = FrameworkKey.Current;
-
 
             //var loc = GetLocations();
             var _trustedAssembliesPaths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator);
@@ -405,17 +406,6 @@ namespace Bb.Builds
             return _references ?? (_references = new FileReferences(this.Directories));
         }
 
-
-
-
-        [System.Diagnostics.DebuggerStepThrough]
-        [System.Diagnostics.DebuggerNonUserCode]
-        private static void Stop()
-        {
-            if (System.Diagnostics.Debugger.IsAttached)
-                System.Diagnostics.Debugger.Break();
-        }
-
         /// <summary>
         /// return true if the file is located in the sdk directory.
         /// </summary>
@@ -433,6 +423,28 @@ namespace Bb.Builds
                 return false;
 
             return this.Key.Accept(framework);
+
+        }
+
+        /// <summary>
+        /// return the user friendly of the <see cref="FrameworkVersion"/>
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            
+            StringBuilder sb = new StringBuilder();
+            if (!string.IsNullOrEmpty(this.Name))
+            {
+                sb.Append(this.Name);
+                if (this.Version != null)
+                {
+                    sb.Append(", ");
+                    sb.Append(this.Version);
+                }
+            }
+
+            return sb.ToString();
 
         }
 

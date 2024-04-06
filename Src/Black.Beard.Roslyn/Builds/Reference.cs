@@ -62,7 +62,9 @@ namespace Bb.Builds
         public PortableExecutableReference ExecutableReference => _executableReference ?? (_executableReference = MetadataReference.CreateFromFile(Location));
 
         public bool Failed { get; }
+        
         public FrameworkKey? Framework { get; internal set; }
+
         public NugetDocument Package { get; internal set; }
 
         internal void SelectLastest(string location)

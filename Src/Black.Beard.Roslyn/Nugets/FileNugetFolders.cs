@@ -18,7 +18,8 @@ namespace Bb.Nugets
         public FileNugetFolders(string path, params string[] hosts)
         {
 
-            Path = new DirectoryInfo(path);
+            Path = path.AsDirectory();
+            Path.Refresh();
 
             if (!Path.Exists)
                 Path.Create();

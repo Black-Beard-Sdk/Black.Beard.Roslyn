@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 namespace Bb.Analysis.DiagTraces
 {
 
+    [CLSCompliant(false)]
     public class ScriptDiagnostics : IList<ScriptDiagnostic>, INotifyCollectionChanged
     {
 

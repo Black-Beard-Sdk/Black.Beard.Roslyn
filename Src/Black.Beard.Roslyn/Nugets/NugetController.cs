@@ -45,73 +45,68 @@ namespace Bb.Nugets
 
 
         /// <summary>
-        /// Add the default repository to resolve nuget for windows
+        /// Add the default repository to resolve nuget for windows if the system is windows
         /// </summary>
+        /// <param name="nugetHosts">hosts where search package on line</param>
         /// <returns></returns>
-        public NugetController AddDefaultWindowsFolder()
+        public NugetController AddDefaultWindowsFolderIf(params string[] nugetHosts)
         {
-            return AddFolder(DefaultWindowsLocalFolder);
+            return AddFolderIf(NugetController.IsWindowsPlatform, DefaultWindowsLocalFolder, nugetHosts);
         }
 
 
+        /// <summary>
+        /// Add the default repository to resolve nuget for Linux if the system is Linux
+        /// </summary>
+        /// <param name="nugetHosts">hosts where search package on line</param>
+        /// <returns></returns>
+        public NugetController AddDefaultLinuxFolderIf(params string[] nugetHosts)
+        {
+            return AddFolderIf(NugetController.IsLinuxPlatform, DefaultLinuxLocalFolder, nugetHosts);
+        }
+
+      
         /// <summary>
         /// Add the default repository to resolve nuget if filter is true
         /// </summary>
         /// <param name="filter">condition for adding folder</param>
         /// <param name="path">path to store the package downloaded</param>
+        /// <param name="nugetHosts">hosts where search package on line</param>
         /// <returns></returns>
-        public NugetController AddFolderIf(bool filter, string path)
+        public NugetController AddFolderIf(bool filter, string path, params string[] nugetHosts)
         {
+
             if (filter)
-                AddFolder(path);
+                AddFolder(path, nugetHosts);
+
             return this;
+
         }
+
 
 
         /// <summary>
         /// Add the default repository to resolve nuget for windows
         /// </summary>
         /// <param name="path">path to store the package downloaded</param>
+        /// <param name="nugetHosts">host where search package on line</param>
         /// <returns></returns>
-        public NugetController AddFolder(string path)
-        {
-            AddFolder(DefaultWindowsLocalFolder, HostNugetOrg);
-            return this;
-        }
-
-
-        /// <summary>
-        /// Add the default repository to resolve nuget if filter is true
-        /// </summary>
-        /// <param name="filter">condition for adding folder</param>
-        /// <param name="path">path to store the package downloaded</param>
-        /// <param name="hosts">host where search package on line</param>
-        /// <returns></returns>
-        public NugetController AddFolderIf(bool filter, string path, params string[] hosts)
-        {
-            if (filter)
-                AddFolder(path, hosts);
-            return this;
-        }
-
-
-        /// <summary>
-        /// Add the default repository to resolve nuget for windows
-        /// </summary>
-        /// <param name="path">path to store the package downloaded</param>
-        /// <param name="host">host where search package on line</param>
-        /// <returns></returns>
-        public NugetController AddFolder(string path, params string[] hosts)
+        public NugetController AddFolder(string path, params string[] nugetHosts)
         {
 
             if (!_folders.Any(c => c.Path.FullName == path))
-                _folders.Add(new FileNugetFolders(path, hosts)
+            {
+
+                if (nugetHosts == null || nugetHosts.Length == 0)
+                    nugetHosts = new string[] { HostNugetOrg };
+
+                _folders.Add(new FileNugetFolders(path, nugetHosts)
                 {
                     Parent = this,
                 }
                     .Refresh()
                     );
-
+            }
             return this;
 
         }
@@ -432,6 +427,7 @@ namespace Bb.Nugets
 
         public static string HostNugetOrg = "https://www.nuget.org/api/v2/package";
         public static string DefaultWindowsLocalFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
+        public static string DefaultLinuxLocalFolder = Path.Combine("/tmp", "nugets", "packages");
 
 
         private IAssemblyReferenceResolver _next;

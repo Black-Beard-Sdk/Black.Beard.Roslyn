@@ -521,6 +521,10 @@ namespace Bb.Analysis
             return Name.GetHashCode();
         }
 
+        public bool Match(FrameworkKey sdk)
+        {
+            return sdk != null && sdk == this;
+        }
 
         public const string PackageNetStandard = ".NETStandard";
         public const string PackageNetCoreApp = ".NETCoreApp";
