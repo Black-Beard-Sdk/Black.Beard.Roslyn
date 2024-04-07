@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Refs.Microsoft.AspNetCore;
-using static Microsoft.CodeAnalysis.Host.HostWorkspaceServices;
+﻿
 using System.Diagnostics;
 
 namespace Bb.Nugets

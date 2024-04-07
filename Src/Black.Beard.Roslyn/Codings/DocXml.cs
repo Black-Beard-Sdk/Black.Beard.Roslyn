@@ -9,7 +9,7 @@ namespace Bb.Codings
 
 
         /// <summary>
-        /// createan empty line.
+        /// create an empty line.
         /// </summary>
         /// <value>
         /// The empty line.

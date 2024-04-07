@@ -1,5 +1,4 @@
 ﻿using Bb.Analysis.DiagTraces;
-using Bb.Compilers.Exceptions;
 using Microsoft.CodeAnalysis;
 
 namespace Bb.Compilers

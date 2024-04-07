@@ -38,18 +38,7 @@ namespace Bb.Codings
         //                        .ToSeparatedList()))
         //        .WithMembers(members.ToSeparatedList());
         //}
-
-        
-
-        
-
-
-
-
-
-
-
-
+              
 
 
         //public static NamespaceDeclarationSyntax NamespaceDeclaration(

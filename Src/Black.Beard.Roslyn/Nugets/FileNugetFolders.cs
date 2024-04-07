@@ -1,7 +1,5 @@
 ﻿using Bb.Metrology;
-using Bb.Nugets.Versions;
 using System.Diagnostics;
-using static Bb.Nugets.NugetDocument;
 
 namespace Bb.Nugets
 {

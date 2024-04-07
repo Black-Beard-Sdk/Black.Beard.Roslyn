@@ -8,8 +8,6 @@ using System.Text;
 using System.Collections.Immutable;
 using Bb.Codings;
 using Bb.Analysis.DiagTraces;
-using SharpCompress.Common;
-using System.Reflection.Metadata;
 using Bb.Metrology;
 
 namespace Bb.Compilers

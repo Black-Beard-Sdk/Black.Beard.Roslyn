@@ -1,6 +1,4 @@
 ﻿using Bb.Nugets.Versions;
-using System.Data;
-using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace Bb.Nugets

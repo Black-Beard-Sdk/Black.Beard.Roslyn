@@ -1,6 +1,5 @@
 ﻿using Bb.Analysis;
 using Bb.Builds;
-using ICSharpCode.Decompiler.Metadata;
 using System.Diagnostics;
 
 namespace Bb.Nugets

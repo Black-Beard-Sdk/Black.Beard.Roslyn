@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Bb.Compilers.Exceptions
+namespace Bb.Compilers
 {
 
 
@@ -8,25 +8,25 @@ namespace Bb.Compilers.Exceptions
     public class CompilerException : Exception
     {
 
-        public CompilerException(Microsoft.CodeAnalysis.Diagnostic[] diagnostics) : this(
-               GetMessage(diagnostics, DiagnosticSeverity.Error) 
-            ?? GetMessage(diagnostics, DiagnosticSeverity.Warning) 
+        public CompilerException(Diagnostic[] diagnostics) : this(
+               GetMessage(diagnostics, DiagnosticSeverity.Error)
+            ?? GetMessage(diagnostics, DiagnosticSeverity.Warning)
             ?? GetMessage(diagnostics, DiagnosticSeverity.Info))
         {
 
-            this.Diagnostics = diagnostics;
+            Diagnostics = diagnostics;
 
-            this.Infos = diagnostics.Where(diag => diag.Severity == DiagnosticSeverity.Info).ToArray();
-            this.Warnings = diagnostics.Where(diag => diag.Severity == DiagnosticSeverity.Warning).ToArray();
-            this.Errors = diagnostics.Where(diag => diag.Severity == DiagnosticSeverity.Error).ToArray();
+            Infos = diagnostics.Where(diag => diag.Severity == DiagnosticSeverity.Info).ToArray();
+            Warnings = diagnostics.Where(diag => diag.Severity == DiagnosticSeverity.Warning).ToArray();
+            Errors = diagnostics.Where(diag => diag.Severity == DiagnosticSeverity.Error).ToArray();
 
-            this.HaveInfo = Infos.Any();
-            this.HaveWarning = Warnings.Any();
-            this.HaveError = Errors.Any();
+            HaveInfo = Infos.Any();
+            HaveWarning = Warnings.Any();
+            HaveError = Errors.Any();
 
         }
 
-        private static string GetMessage(Microsoft.CodeAnalysis.Diagnostic[] diagnostics, DiagnosticSeverity severity)
+        private static string GetMessage(Diagnostic[] diagnostics, DiagnosticSeverity severity)
         {
             var diagnostic = diagnostics.FirstOrDefault(diag => diag.Severity == severity);
             return diagnostic?.GetMessage() ?? null;

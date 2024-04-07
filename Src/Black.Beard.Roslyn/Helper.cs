@@ -1,9 +1,6 @@
-﻿using Bb.Http;
+﻿using Bb.Extensions;
 using Bb.Nugets;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace Bb
 {

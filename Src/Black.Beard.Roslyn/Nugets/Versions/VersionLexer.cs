@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-
+﻿
 namespace Bb.Nugets.Versions
 {
     internal class VersionLexer
