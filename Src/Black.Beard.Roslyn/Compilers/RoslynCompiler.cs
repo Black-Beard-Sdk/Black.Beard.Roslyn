@@ -511,16 +511,15 @@ namespace Bb.Compilers
             if (sources == null)
                 sources = new List<SyntaxTree>();
 
+            CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(this.LanguageVersion);
+
+            if (this.DocumentationMode != options.DocumentationMode)
+                options.WithDocumentationMode(this.DocumentationMode);
+
             foreach (var item in this._sources)
             {
 
                 result.Documents.Add(item.Filepath);
-
-                CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(this.LanguageVersion);
-
-                if (this.DocumentationMode != options.DocumentationMode)
-                    options.WithDocumentationMode(this.DocumentationMode);
-
                 var stringText = Microsoft.CodeAnalysis.Text.SourceText.From(item.Content, Encoding.UTF8);
                 var tree = SyntaxFactory.ParseSyntaxTree(stringText, options, item.Filepath);
                 sources.Add(tree);
