@@ -1,9 +1,7 @@
-﻿using Microsoft.CodeAnalysis.MSBuild;
+﻿//using Microsoft.CodeAnalysis.MSBuild;
 using System.IO;
 using System;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.Build.Locator;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Emit;
 using Bb.Projects;
@@ -61,56 +59,56 @@ namespace Bb.Build
             return this.Assembly;
         }
 
-        public bool Build(bool inMemory = true, bool load = true)
-        {
+        //public bool Build(bool inMemory = true, bool load = true)
+        //{
 
-            var vsInstance = MSBuildLocator.RegisterDefaults();
+        //    var vsInstance = MSBuildLocator.RegisterDefaults();
 
-            Save();
+        //    Save();
 
-            var task = Task.Run<bool>(async () =>
-            {
+        //    var task = Task.Run<bool>(async () =>
+        //    {
 
-                using (var workspace = MSBuildWorkspace.Create())
-                {
+        //    using (Workspace workspace = MSBuildWorkspace.Create())
+        //        {
 
-                    Project project = await workspace.OpenProjectAsync(ProjectFile).ConfigureAwait(false);
-                    Compilation? compilation = await project.GetCompilationAsync();
+        //            Project project = await workspace.OpenProjectAsync(ProjectFile).ConfigureAwait(false);
+        //            Compilation? compilation = await project.GetCompilationAsync();
 
-                    if (compilation != null)
-                    {
+        //            if (compilation != null)
+        //            {
 
-                        if (inMemory)
-                            return GenerateOnMemory(load, compilation);
+        //                if (inMemory)
+        //                    return GenerateOnMemory(load, compilation);
 
-                        else
-                        {
+        //                else
+        //                {
 
-                            var r = GenerateAssemblyOnDisk(compilation);
-                            if (r != null)
-                            {
-                                if (load)
-                                {
-                                    var result = Load();
-                                    return Assembly != null;
-                                }
-                            }
+        //                    var r = GenerateAssemblyOnDisk(compilation);
+        //                    if (r != null)
+        //                    {
+        //                        if (load)
+        //                        {
+        //                            var result = Load();
+        //                            return Assembly != null;
+        //                        }
+        //                    }
 
-                        }
+        //                }
 
-                    }
+        //            }
                 
-                }
+        //        }
 
-                return false;
+        //        return false;
 
-            });
+        //    });
 
-            task.Wait();
+        //    task.Wait();
 
-            return task.Result;
+        //    return task.Result;
 
-        }
+        //}
 
         public Assembly Assembly { get; protected set; }
 
@@ -296,3 +294,86 @@ namespace Bb.Build
 }
 
 // https://gitter.im/dotnet/roslyn?at=5de833f855066245986b8467
+
+
+//using System;
+//using System.Collections.Generic;
+//using System.IO;
+//using Microsoft.CodeAnalysis;
+//using Microsoft.CodeAnalysis.Emit;
+//using Microsoft.CodeAnalysis.MSBuild;
+
+//namespace Roslyn.TryItOut
+//{
+//    class Program
+//    {
+//        static void Main(string[] args)
+//        {
+//            string solutionUrl = "C:\\Dev\\Roslyn.TryItOut\\Roslyn.TryItOut.sln";
+//            string outputDir = "C:\\Dev\\Roslyn.TryItOut\\output";
+
+//            if (!Directory.Exists(outputDir))
+//            {
+//                Directory.CreateDirectory(outputDir);
+//            }
+
+//            bool success = CompileSolution(solutionUrl, outputDir);
+
+//            if (success)
+//            {
+//                Console.WriteLine("Compilation completed successfully.");
+//                Console.WriteLine("Output directory:");
+//                Console.WriteLine(outputDir);
+//            }
+//            else
+//            {
+//                Console.WriteLine("Compilation failed.");
+//            }
+
+//            Console.WriteLine("Press the any key to exit.");
+//            Console.ReadKey();
+//        }
+
+//        private static bool CompileSolution(string solutionUrl, string outputDir)
+//        {
+//            bool success = true;
+            
+//            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
+//            Solution solution = workspace.OpenSolutionAsync(solutionUrl).Result;
+//            ProjectDependencyGraph projectGraph = solution.GetProjectDependencyGraph();
+//            Dictionary<string, Stream> assemblies = new Dictionary<string, Stream>();
+
+//            foreach (ProjectId projectId in projectGraph.GetTopologicallySortedProjects())
+//            {
+//                Compilation projectCompilation = solution.GetProject(projectId).GetCompilationAsync().Result;
+//                if (null != projectCompilation && !string.IsNullOrEmpty(projectCompilation.AssemblyName))
+//                {
+//                    using (var stream = new MemoryStream())
+//                    {
+//                        EmitResult result = projectCompilation.Emit(stream);
+//                        if (result.Success)
+//                        {
+//                            string fileName = string.Format("{0}.dll", projectCompilation.AssemblyName);
+
+//                            using (FileStream file = File.Create(outputDir + '\\' + fileName))
+//                            {
+//                                stream.Seek(0, SeekOrigin.Begin);
+//                                stream.CopyTo(file);
+//                            }
+//                        }
+//                        else
+//                        {
+//                            success = false;
+//                        }
+//                    }
+//                }
+//                else
+//                {
+//                    success = false;
+//                }
+//            }
+
+//            return success;
+//        }
+//    }
+//}
