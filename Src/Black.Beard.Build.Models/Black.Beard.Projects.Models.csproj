@@ -15,9 +15,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.39" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.39" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.39" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.40" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.40" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Newtonsoft" Version="2.0.40" />
 	</ItemGroup>
 
 	<ItemGroup>
