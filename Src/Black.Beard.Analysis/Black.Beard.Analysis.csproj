@@ -13,11 +13,17 @@
 		<PackageProjectUrl></PackageProjectUrl>
 
 		<PreserveCompilationContext>true</PreserveCompilationContext>
+
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.40" />
+	  <PackageReference Include="Vsxmd" Version="1.4.5">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -30,5 +36,13 @@
 		</None>
 	</ItemGroup>
 
+  <PropertyGroup>
+    <DocumentationMarkdown>$(MSBuildProjectDirectory)\..\..\Docs\$(MSBuildProjectName).md</DocumentationMarkdown>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VsxmdAutoDeleteXml>True</VsxmdAutoDeleteXml>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
 
 </Project>
