@@ -26,10 +26,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="Black.Beard.ComponentModel" Version="1.0.123" />
-		<PackageReference Include="Black.Beard.Helpers" Version="2.0.42" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.42" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Compress" Version="2.0.42" />
-		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.42" />
+		<PackageReference Include="Black.Beard.Helpers" Version="2.0.44" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders" Version="2.0.44" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Compress" Version="2.0.44" />
+		<PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.44" />
 		<PackageReference Include="Black.Beard.Http" Version="1.0.25" />
 		<PackageReference Include="Microsoft.CodeAnalysis" Version="4.11.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
