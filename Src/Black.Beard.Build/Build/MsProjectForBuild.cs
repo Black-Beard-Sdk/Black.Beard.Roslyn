@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Emit;
 using Bb.Projects;
-using System.Collections.Generic;
 
 namespace Bb.Build
 {
