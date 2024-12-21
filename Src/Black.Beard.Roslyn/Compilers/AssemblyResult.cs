@@ -46,6 +46,7 @@ namespace Bb.Compilers
         public AssemblyReferences References { get; internal set; }
 
         public string AssemblyBuildConfig { get; internal set; }
+        public FrameworkVersion Sdk { get; internal set; }
 
         /// <summary>
         /// Load assembly in the current app domain

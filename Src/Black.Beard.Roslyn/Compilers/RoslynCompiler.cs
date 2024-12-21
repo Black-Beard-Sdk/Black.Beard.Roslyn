@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using Bb.Codings;
 using Bb.Analysis.DiagTraces;
 using Bb.Metrology;
+using Bb.Analysis;
 
 namespace Bb.Compilers
 {
@@ -120,7 +121,7 @@ namespace Bb.Compilers
 
         public AssemblyResult Generate(string? assemblyName = null)
         {
-
+            
             if (string.IsNullOrEmpty(assemblyName))
             {
                 var h = this.Hash;
@@ -222,6 +223,7 @@ namespace Bb.Compilers
         /// Add attributes in the assembly
         /// </summary>
         public Dictionary<string, object[]> AssemblyAttributes { get; set; }
+        
         public RuntimeConfig RuntimeConfig { get; set; }
 
         private CSharpCompilationOptions GetCompilationOptions(AssemblyResult result)
@@ -340,6 +342,7 @@ namespace Bb.Compilers
                 AssemblyFile = $"{_assemblyName}.dll",
                 AssemblyPdb = $"{_assemblyName}.pdb",
                 AssemblyBuildConfig = $"{_assemblyName}.runtimeconfig.json",
+                Sdk = this._assemblies.Sdk,
             };
 
             if (RoslynActivityProvider.WithTelemetry)

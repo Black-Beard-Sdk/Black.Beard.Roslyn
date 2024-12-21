@@ -803,8 +803,7 @@ namespace Bb.Builds
         private RoslynCompiler CreateBuilder()
         {
 
-            References.Next(Nugets);
-
+            References.Next(Nugets);         
 
             var compiler = new RoslynCompiler(this.OutputKind, References, _diagnostics)
             {
@@ -819,7 +818,7 @@ namespace Bb.Builds
                 AssemblyAttributes = this._attributes,
                 MainTypeName = this.MainTypeName,
                 Platform = this.Platform,
-                RuntimeConfig = RuntimeConfig,
+                RuntimeConfig = RuntimeConfig,               
             }
 
             .AddCodeSource(Sources)

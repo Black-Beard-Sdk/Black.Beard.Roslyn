@@ -84,7 +84,6 @@ public class Program
                 .SetOutputKind(Microsoft.CodeAnalysis.OutputKind.ConsoleApplication, "Program")
                 .AddSource("Program.cs", payload)
                 ;
-
             var result = builder.Build();
 
             if (result != null && result.Success)
@@ -92,11 +91,39 @@ public class Program
 
                 TaskEventHandler log = (sender, args) =>
                 {
-                    if (args.Status == TaskEventEnum.DataReceived)
-                        if (args.DateReceived?.Data == "Hello World!")
-                            testSuccess = true;
+                    switch (args.Status)
+                    {
+                        case TaskEventEnum.Started:
+                            break;
+                        case TaskEventEnum.FailedToStart:
+                            break;
+                        case TaskEventEnum.ErrorReceived:
+                            break;
+                        case TaskEventEnum.DataReceived:
+                            if (args.DateReceived?.Data == "Hello World!")
+                                testSuccess = true; 
+                            break;
+                        
+                        case TaskEventEnum.RanWithException:
+                            break;
+                        case TaskEventEnum.RanCanceled:
+                            break;
+                        case TaskEventEnum.FailedToCancel:
+                            break;
+                        case TaskEventEnum.Releasing:
+                            break;
+                        case TaskEventEnum.Disposing:
+                            break;
+
+                        case TaskEventEnum.Completed:
+                        default:
+                            break;
+                    }
+
                 };
 
+
+                var path = result.Sdk.Directory;
 
                 var assemblyToRun = result.PrepareFolderToExecute();
 
@@ -106,7 +133,8 @@ public class Program
                     var cmd = service.RunAndGet(
                         c =>
                         {
-                            c.SetWorkingDirectory("C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\6.0.28"/*assemblyToRun.Directory*/)
+
+                            c.SetWorkingDirectory(path)
                                   .CommandWithArgumentList("dotnet.exe", assemblyToRun.FullName)
                                   .UseShellExecute(false)
                                   ;

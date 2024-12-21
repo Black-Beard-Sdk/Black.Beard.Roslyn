@@ -13,15 +13,18 @@ namespace Bb.Builds
         private SourceCode(FileInfo? file, string datas, string name)
         {
 
-            if (file == null)
-                throw new NullReferenceException(nameof(file));
+            if (file != null)
+            {
 
-            file.Refresh();
+                file.Refresh();
 
-            if (!file.Exists)
-                throw new FileNotFoundException(nameof(file));
+                if (!file.Exists)
+                    throw new FileNotFoundException(nameof(file));
 
-            this.File = file;
+                this.File = file;
+
+            }
+
             this.ReadedAt = DateTime.Now;
             this.Name = name;
             this.Source = datas;
@@ -163,7 +166,7 @@ namespace Bb.Builds
         /// <summary>
         /// Return true if the file was been deleted
         /// </summary>
-        public bool IsDeleted => !File.Exists;
+        public bool IsDeleted => !File?.Exists ?? false;
 
         /// <summary>
         /// Return true if the file is a generated source
@@ -188,7 +191,7 @@ namespace Bb.Builds
         public bool HasUpdated()
         {
 
-            if (File.Exists)
+            if (File != null && File.Exists)
             {
                 File.Refresh();
                 return File.LastWriteTime > this.ReadedAt;
@@ -203,7 +206,7 @@ namespace Bb.Builds
         /// </summary>
         public void Reload()
         {
-            if (File.Exists)
+            if (File != null && File.Exists)
             {
                 this.ReadedAt = DateTime.Now;
                 this.Source = this.Filename.LoadFromFile();
