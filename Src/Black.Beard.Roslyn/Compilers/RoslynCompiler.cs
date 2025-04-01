@@ -26,7 +26,7 @@ namespace Bb.Compilers
             this.AssemblyKind = kind;
             this._diagnostics = diagnostics ?? new ScriptDiagnostics();
             this._assemblies = assemblies;
-            this.LanguageVersion = assemblies.Sdk.LanguageVersion;
+            this.LanguageVersion = Enum.Parse<LanguageVersion>(assemblies.Sdk.LanguageVersion.ToString());
 
             assemblies.AddByType(typeof(object));
             assemblies.AddResolveFilename(Refs.mscorlib.AssemblyFile);
@@ -121,7 +121,7 @@ namespace Bb.Compilers
 
         public AssemblyResult Generate(string? assemblyName = null)
         {
-            
+
             if (string.IsNullOrEmpty(assemblyName))
             {
                 var h = this.Hash;
@@ -223,7 +223,7 @@ namespace Bb.Compilers
         /// Add attributes in the assembly
         /// </summary>
         public Dictionary<string, object[]> AssemblyAttributes { get; set; }
-        
+
         public RuntimeConfig RuntimeConfig { get; set; }
 
         private CSharpCompilationOptions GetCompilationOptions(AssemblyResult result)
@@ -256,9 +256,9 @@ namespace Bb.Compilers
                     c.SetCustomProperty("MainTypeName", this.MainTypeName ?? string.Empty);
                 });
 
-            if (!string.IsNullOrEmpty(this.MainTypeName))            
+            if (!string.IsNullOrEmpty(this.MainTypeName))
                 compilationOptions = compilationOptions.WithMainTypeName(this.MainTypeName);
-            
+
             if (this.KeyFile != null)
                 compilationOptions = AddSignature(compilationOptions);
 
@@ -348,10 +348,10 @@ namespace Bb.Compilers
             if (RoslynActivityProvider.WithTelemetry)
                 RoslynActivityProvider.Set(c =>
                 {
-                    c.SetCustomProperty("sdkName",          this._assemblies.Sdk.Key.Name);
-                    c.SetCustomProperty("sdkVersion",       this._assemblies.Sdk.Key.Version);
+                    c.SetCustomProperty("sdkName", this._assemblies.Sdk.Key.Name);
+                    c.SetCustomProperty("sdkVersion", this._assemblies.Sdk.Key.Version);
                     c.SetCustomProperty("frameworkVersion", this._assemblies.Sdk.Key.Name);
-                    c.SetCustomProperty("frameworkName",    this._assemblies.Sdk.Type.Name);
+                    c.SetCustomProperty("frameworkName", this._assemblies.Sdk.Type.Name);
 
                     c.SetCustomProperty("AssemblyName", result.AssemblyName);
                     c.SetCustomProperty("AssemblyFile", result.FullAssemblyFile);
@@ -537,7 +537,7 @@ namespace Bb.Compilers
 
             if (RoslynActivityProvider.WithTelemetry)
                 RoslynActivityProvider.AddProperty("scripts", string.Join(", ", this._sources.Select(d => d.Filepath)));
-            
+
         }
 
         #endregion Methods

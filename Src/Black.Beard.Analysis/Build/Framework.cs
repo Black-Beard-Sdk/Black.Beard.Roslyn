@@ -1,6 +1,5 @@
 ﻿
 using Bb.Analysis;
-using Microsoft.CodeAnalysis.CSharp;
 
 namespace Bb.Builds
 {
@@ -75,7 +74,7 @@ namespace Bb.Builds
         /// <value>
         /// The language version.
         /// </value>
-        public LanguageVersion GetLanguageVersion()
+        public CsLanguageVersion GetLanguageVersion()
         {
             var f = GetFrameworkVersion();
             if (f == null)
@@ -86,12 +85,12 @@ namespace Bb.Builds
         /// <summary>
         /// 
         /// </summary>
-        internal void Reset()
+        public void Reset()
         {
             this.Versions.Clear();
         }
 
-        public LanguageVersion LanguageVersion { get; set; } = LanguageVersion.CSharp6;
+        public CsLanguageVersion LanguageVersion { get; set; } = CsLanguageVersion.CSharp6;
 
         /// <summary>
         /// return true whether has version.

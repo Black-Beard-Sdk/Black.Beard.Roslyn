@@ -1,6 +1,4 @@
 ﻿using Bb.Analysis;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -146,7 +144,7 @@ namespace Bb.Builds
             if (Version != null)
             {
                 this.Key = FrameworkKey.Resolve(Version);
-                this.LanguageVersion = (LanguageVersion)Key.languageVersion;
+                this.LanguageVersion = (CsLanguageVersion)Key.languageVersion;
                 this.CorreclyIdentified = (Type != null && Type != FrameworkType.Unknown) && Key != null;
             }
 
@@ -171,7 +169,7 @@ namespace Bb.Builds
         private void ResolveVersion(Version version)
         {
 
-            var p = this.Directory.Combine(".version");
+            var p = Path.Combine(this.Directory.FullName, ".version");
             this._fileVersionExists = File.Exists(p);
 
             if (version != null)
@@ -232,7 +230,7 @@ namespace Bb.Builds
         public FrameworkType Type { get; private set; }
 
 
-        public LanguageVersion LanguageVersion { get; set; } = LanguageVersion.CSharp6;
+        public CsLanguageVersion LanguageVersion { get; set; } = CsLanguageVersion.CSharp6;
 
 
 
@@ -416,7 +414,7 @@ namespace Bb.Builds
             return file.Directory.FullName == this.Directory.FullName;
         }
 
-        internal bool Accept(FrameworkKey framework)
+        public bool Accept(FrameworkKey framework)
         {
 
             if (framework == null)
@@ -455,5 +453,21 @@ namespace Bb.Builds
         private bool _fileVersionExists;
     }
 
+    public enum CsLanguageVersion
+    {
+        CSharp1 = 1,
+        CSharp2 = 2,
+        CSharp3 = 3,
+        CSharp4 = 4,
+        CSharp5 = 5,
+        CSharp6 = 6,
+        CSharp7 = 7,
+        CSharp7_1 = 701,
+        CSharp7_2 = 702,
+        CSharp7_3 = 703,
+        CSharp8_0 = 800,
+        Preview = 900,
+        Latest = int.MaxValue
+    }
 
 }

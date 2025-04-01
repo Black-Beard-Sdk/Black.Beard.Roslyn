@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<RootNamespace>Bb.Analysis</RootNamespace>
@@ -19,7 +19,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Black.Beard.ComponentModel" Version="1.0.179" />
 	  <PackageReference Include="Black.Beard.Helpers.ContentLoaders.Files" Version="2.0.54" />
+	  <PackageReference Include="NuGet.Frameworks" Version="6.13.2" />
+    <PackageReference Include="NuGet.Configuration" Version="6.13.2" />
+    <PackageReference Include="NuGet.Protocol" Version="6.13.2" />
 	  <PackageReference Include="Vsxmd" Version="1.4.5">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
