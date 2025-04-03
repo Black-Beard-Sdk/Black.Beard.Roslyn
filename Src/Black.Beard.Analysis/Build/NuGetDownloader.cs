@@ -87,7 +87,7 @@ namespace Bb.Nugets
             if (packageMetadata == null || !packageMetadata.Any())
                 throw new Exception($"Package {packageId} not found.");
 
-            if (version != null)
+            if (version == null)
             {
                 // Find the latest version
                 package = packageMetadata.OrderByDescending(p => p.Identity.Version).FirstOrDefault();

@@ -25,7 +25,7 @@ namespace UnitTests
                 })
                 ;
 
-            var items = await service.GetPackageFilesAsync("Black.Beard.ComponentModel");
+            var items = await service.GetPackageFilesAsync("Black.Beard.ComponentModel", null);
 
 
             List<AssemblyMatched> assemblies = new List<AssemblyMatched>();
