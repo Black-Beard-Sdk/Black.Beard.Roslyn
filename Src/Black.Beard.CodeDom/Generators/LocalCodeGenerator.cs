@@ -179,9 +179,6 @@ namespace Bb.Generators
             return GenerateCode(new LocalSqlServerCodeProvider(), statement);
         }
 
-
-
-
     }
 
 }

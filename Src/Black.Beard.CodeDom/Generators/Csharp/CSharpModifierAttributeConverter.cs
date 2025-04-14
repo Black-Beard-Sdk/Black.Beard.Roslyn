@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel;
 using System.Globalization;
 
@@ -13,13 +12,13 @@ namespace Bb.Generators.Csharp
         protected abstract string[] Names { get; }
         protected abstract object DefaultValue { get; }
 
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) =>
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType) =>
             sourceType == typeof(string) ? true : base.CanConvertFrom(context, sourceType);
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
-            string name = value as string;
-            if (name != null)
+
+            if (value is string name && !string.IsNullOrEmpty(name))
             {
                 string[] names = Names;
                 for (int i = 0; i < names.Length; i++)
@@ -34,7 +33,7 @@ namespace Bb.Generators.Csharp
             return DefaultValue;
         }
 
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
             if (destinationType == null)
             {
@@ -58,10 +57,10 @@ namespace Bb.Generators.Csharp
             return base.ConvertTo(context, culture, value, destinationType);
         }
 
-        public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) => true;
+        public override bool GetStandardValuesExclusive(ITypeDescriptorContext? context) => true;
 
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) => true;
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) => true;
 
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context) => new StandardValuesCollection(Values);
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext? context) => new StandardValuesCollection(Values);
     }
 }

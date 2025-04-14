@@ -1,14 +1,15 @@
-﻿using System.CodeDom;
+﻿using System;
+using System.CodeDom;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Reflection;
 
 namespace Bb.Generators.Csharp
 {
-
     public class LocalCSharpCodeProvider : CodeDomProvider
     {
-
         private readonly LocalCSharpCodeGenerator _generator;
 
         public LocalCSharpCodeProvider()

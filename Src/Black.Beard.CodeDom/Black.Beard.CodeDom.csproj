@@ -13,7 +13,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.CodeDom" Version="9.0.3" />
+		<PackageReference Include="Black.Beard.Expressions" Version="1.0.196" />
+		<PackageReference Include="System.CodeDom" Version="9.0.4" />
 		<PackageReference Include="Vsxmd" Version="1.4.5">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
